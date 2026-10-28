@@ -132,35 +132,33 @@ export function subscribeToProjects(onUpdate: (projects: Project[]) => void) {
 }
 
 /**
- * Seed initial 35 blueprint projects into Firestore if not present
+ * Seed or update blueprint projects into Firestore matching official spreadsheet
  */
 export async function seedInitialProjects() {
   try {
-    const projectsCol = collection(db, 'projects');
-    const existing = await getDocs(projectsCol);
-    if (!existing.empty) return;
-
     for (const project of SEED_PROJECTS) {
-      await setDoc(doc(db, 'projects', project.id), {
-        title: project.title,
-        zone: project.zone,
-        category: project.category,
-        booth_code: project.booth_code,
-        booth_number: project.booth_number,
-        position_x: project.position_x,
-        position_y: project.position_y,
-        position_z: project.position_z,
-        image_url: project.image_url,
-        description: project.description,
-        tagline: project.tagline || '',
-        members: project.members,
-        tech_stack: project.tech_stack || [],
-        vote_count: project.vote_count || 0,
-        createdAt: serverTimestamp(),
-      });
+      await setDoc(
+        doc(db, 'projects', project.id),
+        {
+          title: project.title,
+          zone: project.zone,
+          category: project.category,
+          booth_code: project.booth_code,
+          booth_number: project.booth_number,
+          position_x: project.position_x,
+          position_y: project.position_y,
+          position_z: project.position_z,
+          image_url: project.image_url,
+          description: project.description,
+          tagline: project.tagline || '',
+          members: project.members,
+          tech_stack: project.tech_stack || [],
+        },
+        { merge: true }
+      );
     }
   } catch (err) {
-    console.warn('Firestore seeding skipped or restricted:', err);
+    console.warn('Firestore seeding notice:', err);
   }
 }
 

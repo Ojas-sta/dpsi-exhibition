@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { getDeviceFingerprint } from '@/lib/fingerprint';
-import { subscribeToProjects, onFirebaseAuthStateChange } from '@/lib/firebase';
+import { subscribeToProjects, onFirebaseAuthStateChange, seedInitialProjects } from '@/lib/firebase';
 import TopNavHUD from '@/components/ui/TopNavHUD';
 import MobileBottomDock from '@/components/ui/MobileBottomDock';
 import ProjectDetailDrawer from '@/components/ui/ProjectDetailDrawer';
@@ -37,6 +37,9 @@ export default function HomePage() {
     getDeviceFingerprint().then((fp) => {
       setDeviceFingerprint(fp);
     });
+
+    // Seed or update Firestore projects with official spreadsheet data
+    seedInitialProjects();
 
     // 1. Listen for Firebase Auth changes
     const unsubAuth = onFirebaseAuthStateChange((firebaseUser) => {
