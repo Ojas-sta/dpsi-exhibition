@@ -23,13 +23,21 @@ import {
 import { Project } from '@/types';
 import { SEED_PROJECTS } from '@/data/seedProjects';
 
+const rawApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+export const isFirebaseConfigured = Boolean(
+  rawApiKey &&
+    !rawApiKey.includes('placeholder') &&
+    rawApiKey !== 'AIzaSyDPSIExhibitionBuildPlaceholderKey000'
+);
+
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+  // Use a format-compliant placeholder key for build-time static prerendering if env is omitted
+  apiKey: rawApiKey || 'AIzaSyDPSIExhibitionBuildPlaceholderKey000',
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'smarthome-88486.firebaseapp.com',
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'smarthome-88486',
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'smarthome-88486.firebasestorage.app',
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '123456789',
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '1:123456789:web:abcdef',
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || '',
 };
 
@@ -73,6 +81,9 @@ export async function signInWithGoogleRedirect() {
  * Check and resolve any pending redirect sign-in result on page load
  */
 export async function checkRedirectResult(): Promise<User | null> {
+  if (!isFirebaseConfigured || typeof window === 'undefined') {
+    return null;
+  }
   try {
     const result = await getRedirectResult(auth);
     return result?.user ?? null;
@@ -110,6 +121,9 @@ export async function signOutFromFirebase() {
  * Listen for auth state changes
  */
 export function onFirebaseAuthStateChange(callback: (user: User | null) => void) {
+  if (!isFirebaseConfigured || typeof window === 'undefined') {
+    return () => {};
+  }
   return onAuthStateChanged(auth, callback);
 }
 
@@ -119,6 +133,10 @@ export function onFirebaseAuthStateChange(callback: (user: User | null) => void)
  * hydrated with live votes and updates from Firestore.
  */
 export function subscribeToProjects(onUpdate: (projects: Project[]) => void) {
+  if (!isFirebaseConfigured || typeof window === 'undefined') {
+    onUpdate(SEED_PROJECTS);
+    return () => {};
+  }
   const projectsCol = collection(db, 'projects');
   const q = query(projectsCol);
 
@@ -227,7 +245,8 @@ export async function castVoteInFirebase(
   payload: VoteSubmissionPayload
 ): Promise<VoteSubmissionResponse> {
   try {
-    const response = await fetch('/api/vote', {
+    const voteApiUrl = process.env.NEXT_PUBLIC_VOTE_API_URL || '/api/vote';
+    const response = await fetch(voteApiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -95,8 +95,9 @@ export default function ProjectDetailDrawer() {
     try {
       const fingerprint = await getDeviceFingerprint();
 
-      // Submit exclusively to serverless anti-cheat endpoint (eliminates duplicate client-side transactions)
-      const res = await fetch('/api/vote', {
+      // Submit exclusively to serverless anti-cheat endpoint (supports deployed Cloud Function or local API route)
+      const voteApiUrl = process.env.NEXT_PUBLIC_VOTE_API_URL || '/api/vote';
+      const res = await fetch(voteApiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

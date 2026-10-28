@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import FloorAndEnvironment from './FloorAndEnvironment';
@@ -29,15 +29,6 @@ function CanvasLoader() {
 export default function ExhibitionCanvas() {
   const selectProject = useExhibitionStore((state) => state.selectProject);
   const isMobile = useExhibitionStore((state) => state.isMobile);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return <CanvasLoader />;
-  }
 
   return (
     <div className="relative isolate w-full h-[100dvh] select-none touch-none">
