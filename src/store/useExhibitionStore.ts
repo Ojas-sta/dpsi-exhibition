@@ -4,38 +4,39 @@ import { SEED_PROJECTS } from '@/data/seedProjects';
 
 export const CAMERA_PRESETS: Record<'overview' | ZoneType, CameraViewConfig> = {
   overview: {
-    position: [0, 52, 26],
-    target: [0, 0, -6],
+    // Zoomed out elevated perspective capturing the full exhibition floor and overhead banner
+    position: [0, 68, 54],
+    target: [0, 0, -12],
   },
   'zone-1': {
-    position: [-36, 18, 4],
+    position: [-36, 22, 12],
     target: [-36, 1.2, -6],
   },
   'zone-2': {
-    position: [11, 26, 16],
+    position: [11, 30, 24],
     target: [11, 1.2, 1],
   },
   'zone-3': {
-    position: [0, 26, -18],
+    position: [0, 32, -14],
     target: [0, 1.2, -36],
   },
 };
 
 export const MOBILE_CAMERA_PRESETS: Record<'overview' | ZoneType, CameraViewConfig> = {
   overview: {
-    position: [0, 72, 38],
-    target: [0, 0, -6],
+    position: [0, 86, 62],
+    target: [0, 0, -10],
   },
   'zone-1': {
-    position: [-36, 26, 10],
+    position: [-36, 28, 14],
     target: [-36, 1.2, -6],
   },
   'zone-2': {
-    position: [11, 36, 26],
+    position: [11, 38, 30],
     target: [11, 1.2, 1],
   },
   'zone-3': {
-    position: [0, 36, -16],
+    position: [0, 38, -14],
     target: [0, 1.2, -36],
   },
 };
@@ -57,6 +58,7 @@ interface ExhibitionState {
   isLeaderboardOpen: boolean;
   isDrawerOpen: boolean;
   isAuthModalOpen: boolean;
+  isSearchOpen: boolean;
   activeLeaderboardTab: CategoryType | 'All';
 
   // Projects & Live Data
@@ -73,6 +75,7 @@ interface ExhibitionState {
   setLeaderboardOpen: (open: boolean) => void;
   setDrawerOpen: (open: boolean) => void;
   setAuthModalOpen: (open: boolean) => void;
+  setSearchOpen: (open: boolean) => void;
   setActiveLeaderboardTab: (tab: CategoryType | 'All') => void;
   setDeviceFingerprint: (fingerprint: string) => void;
   setUser: (user: ExhibitionUser | null) => void;
@@ -90,6 +93,7 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
   isLeaderboardOpen: false,
   isDrawerOpen: false,
   isAuthModalOpen: false,
+  isSearchOpen: false,
   activeLeaderboardTab: 'All',
 
   projects: SEED_PROJECTS,
@@ -149,6 +153,7 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
   setLeaderboardOpen: (open) => set({ isLeaderboardOpen: open }),
   setDrawerOpen: (open) => set({ isDrawerOpen: open }),
   setAuthModalOpen: (open) => set({ isAuthModalOpen: open }),
+  setSearchOpen: (open) => set({ isSearchOpen: open }),
   setActiveLeaderboardTab: (tab) => set({ activeLeaderboardTab: tab }),
   setDeviceFingerprint: (fingerprint) => set({ deviceFingerprint: fingerprint }),
   setUser: (user) => set({ user }),

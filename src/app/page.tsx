@@ -11,6 +11,7 @@ import ProjectDetailDrawer from '@/components/ui/ProjectDetailDrawer';
 import LiveLeaderboard from '@/components/ui/LiveLeaderboard';
 import TwoDFallbackGrid from '@/components/ui/TwoDFallbackGrid';
 import AuthModal from '@/components/ui/AuthModal';
+import ProjectSearchModal from '@/components/ui/ProjectSearchModal';
 import { MousePointerClick, Move, ZoomIn } from 'lucide-react';
 
 const ExhibitionCanvas = dynamic(
@@ -117,6 +118,7 @@ export default function HomePage() {
       <ProjectDetailDrawer />
       <LiveLeaderboard />
       <AuthModal />
+      <ProjectSearchModal />
     </main>
   );
 }

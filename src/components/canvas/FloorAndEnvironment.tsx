@@ -36,6 +36,37 @@ export default function FloorAndEnvironment() {
       {/* 1. FLOOR PLAN BASES (Matching Blueprint)                  */}
       {/* ========================================================= */}
       
+      {/* Floating Space Station Foundation Slabs & Edge Underglow */}
+      <mesh position={[-1, -0.4, 0]}>
+        <boxGeometry args={[46.4, 0.78, 42.4]} />
+        <meshStandardMaterial color="#080c16" roughness={0.7} metalness={0.8} />
+      </mesh>
+      {/* Main Hall Cosmic Underglow Rim */}
+      <mesh position={[-1, -0.1, 0]}>
+        <boxGeometry args={[46.7, 0.08, 42.7]} />
+        <meshStandardMaterial color="#0284c7" emissive="#0284c7" emissiveIntensity={0.65} />
+      </mesh>
+
+      {/* Top Arena Foundation Slab & Edge Underglow */}
+      <mesh position={[-1, -0.4, -36]}>
+        <boxGeometry args={[46.4, 0.78, 24.4]} />
+        <meshStandardMaterial color="#080c16" roughness={0.7} metalness={0.8} />
+      </mesh>
+      <mesh position={[-1, -0.1, -36]}>
+        <boxGeometry args={[46.7, 0.08, 24.7]} />
+        <meshStandardMaterial color="#f59e0b" emissive="#d97706" emissiveIntensity={0.6} />
+      </mesh>
+
+      {/* Show & Tell Foundation Slab & Edge Underglow */}
+      <mesh position={[-36, -0.4, -6]} rotation={[0, -0.22, 0]}>
+        <boxGeometry args={[20.4, 0.78, 10.4]} />
+        <meshStandardMaterial color="#0d0e1a" roughness={0.7} metalness={0.8} />
+      </mesh>
+      <mesh position={[-36, -0.1, -6]} rotation={[0, -0.22, 0]}>
+        <boxGeometry args={[20.6, 0.08, 10.6]} />
+        <meshStandardMaterial color="#a855f7" emissive="#9333ea" emissiveIntensity={0.6} />
+      </mesh>
+
       {/* Main Exhibition Hall Floor (Obsidian Slate Satin) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-1, -0.01, 0]} receiveShadow>
         <planeGeometry args={[46, 42]} />

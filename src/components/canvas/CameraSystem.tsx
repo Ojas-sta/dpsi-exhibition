@@ -23,16 +23,16 @@ export default function CameraSystem() {
     <CameraControls
       ref={controlsRef}
       makeDefault
-      smoothTime={isMobile ? 0.65 : 0.85}
-      minDistance={isMobile ? 6 : 4}
-      maxDistance={isMobile ? 120 : 95}
+      smoothTime={isMobile ? 0.6 : 0.75}
+      minDistance={isMobile ? 5 : 3.5}
+      maxDistance={isMobile ? 240 : 210}
       maxPolarAngle={Math.PI / 2.05} // Prevent camera going below floor
-      minPolarAngle={Math.PI / 9}
-      dollySpeed={isMobile ? 1.0 : 0.8}
-      truckSpeed={isMobile ? 1.0 : 0.8}
-      azimuthRotateSpeed={isMobile ? 0.8 : 0.9}
-      polarRotateSpeed={isMobile ? 0.7 : 0.8}
-      draggingSmoothTime={0.15}
+      minPolarAngle={Math.PI / 12}
+      dollySpeed={isMobile ? 1.0 : 0.85}
+      truckSpeed={isMobile ? 1.0 : 0.85}
+      azimuthRotateSpeed={isMobile ? 0.85 : 0.9}
+      polarRotateSpeed={isMobile ? 0.75 : 0.85}
+      draggingSmoothTime={0.12}
     />
   );
 }

@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   User,
   LogOut,
+  Search,
 } from 'lucide-react';
 
 export default function MobileBottomDock() {
@@ -19,6 +20,7 @@ export default function MobileBottomDock() {
   const isLeaderboardOpen = useExhibitionStore((state) => state.isLeaderboardOpen);
   const setLeaderboardOpen = useExhibitionStore((state) => state.setLeaderboardOpen);
   const setAuthModalOpen = useExhibitionStore((state) => state.setAuthModalOpen);
+  const setSearchOpen = useExhibitionStore((state) => state.setSearchOpen);
   const isDrawerOpen = useExhibitionStore((state) => state.isDrawerOpen);
   const user = useExhibitionStore((state) => state.user);
   const setUser = useExhibitionStore((state) => state.setUser);
@@ -63,8 +65,17 @@ export default function MobileBottomDock() {
           </div>
         )}
 
-        {/* Action Controls: 2D/3D toggle, Leaderboard, Auth */}
+        {/* Action Controls: Search, 2D/3D toggle, Leaderboard, Auth */}
         <div className="flex items-center gap-1.5">
+          {/* Quick Search */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="p-2.5 rounded-xl text-xs font-bold bg-slate-900 text-amber-400 border border-slate-800 active:scale-95 transition-all"
+            title="Search Projects & Students"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
           {/* 3D / 2D Toggle */}
           <button
             onClick={() => setViewMode(viewMode === '3d' ? '2d' : '3d')}

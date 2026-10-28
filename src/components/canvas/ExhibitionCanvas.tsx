@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import FloorAndEnvironment from './FloorAndEnvironment';
+import MilkyWayBackground from './MilkyWayBackground';
 import Zone1ShowAndTell from './Zone1ShowAndTell';
 import Zone2InnovationHub from './Zone2InnovationHub';
 import Zone3RoboticsArena from './Zone3RoboticsArena';
@@ -45,10 +46,10 @@ export default function ExhibitionCanvas() {
         <Canvas
           shadows={!isMobile}
           camera={{
-            position: isMobile ? [0, 72, 38] : [0, 52, 26],
-            fov: isMobile ? 50 : 42,
+            position: isMobile ? [0, 86, 62] : [0, 68, 54],
+            fov: isMobile ? 50 : 44,
             near: 0.1,
-            far: 300,
+            far: 1500,
           }}
           dpr={isMobile ? [1, 1.25] : [1, 1.5]}
           gl={{
@@ -60,6 +61,9 @@ export default function ExhibitionCanvas() {
             selectProject(null);
           }}
         >
+          {/* Cosmic Milky Way Galactic Background */}
+          <MilkyWayBackground />
+
           {/* Architectural Floor & Environment */}
           <FloorAndEnvironment />
 
