@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { getDeviceFingerprint } from '@/lib/fingerprint';
+import { castVoteInFirebase } from '@/lib/firebase';
 import confetti from 'canvas-confetti';
 import {
   X,
@@ -119,6 +120,14 @@ export default function ProjectDetailDrawer() {
       markProjectVoted(selectedProject.id);
       incrementProjectVote(selectedProject.id);
       setVoteSuccessMessage('Vote successfully verified and recorded!');
+
+      // Synchronize vote to Firebase Cloud Firestore asynchronously
+      castVoteInFirebase({
+        projectId: selectedProject.id,
+        fingerprint,
+        userId: user.id,
+        userEmail: user.email,
+      }).catch((e) => console.warn('Firebase vote sync notice:', e));
 
       confetti({
         particleCount: 80,

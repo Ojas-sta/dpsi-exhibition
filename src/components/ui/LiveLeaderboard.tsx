@@ -83,8 +83,8 @@ export default function LiveLeaderboard() {
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-slate-800 bg-gradient-to-r from-amber-500/15 via-[#0b101c] to-amber-500/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-lg shadow-amber-500/15">
-                <Trophy className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-700/80 p-1 flex items-center justify-center shadow-lg shadow-amber-500/10 shrink-0">
+                <img src="/dpsi_crest.png" alt="DPSI Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <div className="flex items-center gap-2">

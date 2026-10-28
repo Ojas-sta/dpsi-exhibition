@@ -29,6 +29,10 @@ export const metadata: Metadata = {
   title: 'DPSI Tech & Innovation Exhibition | 3D Floor Plan & Live Voting',
   description:
     'Interactive 3D Virtual Floor Plan matching the physical blueprint: Physical (P01-12), Digital (D01-12), Business (B01-07), and Robotics Arenas for DPS Indirapuram.',
+  icons: {
+    icon: '/dpsi_crest.png',
+    apple: '/dpsi_crest.png',
+  },
 };
 
 export default function RootLayout({

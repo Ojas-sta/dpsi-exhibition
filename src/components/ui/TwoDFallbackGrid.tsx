@@ -53,7 +53,7 @@ export default function TwoDFallbackGrid() {
       <div className="max-w-7xl mx-auto space-y-5">
         
         {/* Banner Section */}
-        <div className="p-5 sm:p-7 rounded-3xl bg-gradient-to-br from-[#111827] via-[#090d16] to-amber-950/20 border border-slate-800 shadow-2xl relative overflow-hidden">
+        <div className="p-5 sm:p-7 rounded-3xl bg-gradient-to-br from-[#111827] via-[#090d16] to-amber-950/20 border border-slate-800 shadow-2xl relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative z-10 max-w-3xl space-y-1.5">
             <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
               OFFICIAL FLOOR PLAN DIRECTORY
@@ -64,6 +64,9 @@ export default function TwoDFallbackGrid() {
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans">
               Browse all aisles matching the physical blueprint: <strong>P (Physical)</strong>, <strong>D (Digital)</strong>, and <strong>B (Business)</strong>. Cast your verified anti-cheat vote now.
             </p>
+          </div>
+          <div className="relative z-10 shrink-0 hidden sm:flex items-center justify-center p-2 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl">
+            <img src="/dpsi_logo.png" alt="DPSI" className="h-10 w-auto object-contain" />
           </div>
         </div>
 

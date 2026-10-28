@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { getDeviceFingerprint } from '@/lib/fingerprint';
+import { subscribeToProjects, onFirebaseAuthStateChange } from '@/lib/firebase';
 import TopNavHUD from '@/components/ui/TopNavHUD';
 import MobileBottomDock from '@/components/ui/MobileBottomDock';
 import ProjectDetailDrawer from '@/components/ui/ProjectDetailDrawer';
@@ -21,6 +22,8 @@ export default function HomePage() {
   const viewMode = useExhibitionStore((state) => state.viewMode);
   const setDeviceFingerprint = useExhibitionStore((state) => state.setDeviceFingerprint);
   const setIsMobile = useExhibitionStore((state) => state.setIsMobile);
+  const setProjects = useExhibitionStore((state) => state.setProjects);
+  const setUser = useExhibitionStore((state) => state.setUser);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -35,8 +38,30 @@ export default function HomePage() {
       setDeviceFingerprint(fp);
     });
 
-    return () => window.removeEventListener('resize', checkMobile);
-  }, [setIsMobile, setDeviceFingerprint]);
+    // 1. Listen for Firebase Auth changes
+    const unsubAuth = onFirebaseAuthStateChange((firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          id: firebaseUser.uid,
+          email: firebaseUser.email || 'user@dpsi.in',
+          name: firebaseUser.displayName || 'Visitor',
+        });
+      }
+    });
+
+    // 2. Real-time Firebase Firestore synchronization
+    const unsubProjects = subscribeToProjects((liveProjects) => {
+      if (liveProjects && liveProjects.length > 0) {
+        setProjects(liveProjects);
+      }
+    });
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      unsubAuth();
+      unsubProjects();
+    };
+  }, [setIsMobile, setDeviceFingerprint, setProjects, setUser]);
 
   return (
     <main className="relative w-screen h-[100dvh] overflow-hidden bg-[#070b14] font-sans">
