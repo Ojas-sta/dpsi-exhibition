@@ -62,11 +62,12 @@ export default function TwoDFallbackGrid() {
               DPS Indirapuram Tech & Innovation Exhibition
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans">
-              Browse all aisles matching the physical blueprint: <strong>P (Physical)</strong>, <strong>D (Digital)</strong>, and <strong>B (Business)</strong>. Cast your verified anti-cheat vote now.
+              Browse student innovations across the official blueprint aisles: <strong>P (Physical)</strong>, <strong>D (Digital)</strong>, and <strong>B (Business)</strong>. Cast your verified vote for your favorite project.
             </p>
           </div>
-          <div className="relative z-10 shrink-0 hidden sm:flex items-center justify-center px-3 py-2 rounded-2xl bg-white border border-white/20 shadow-xl max-w-[260px]">
-            <img src="/dps_indirapuram_logo.png" alt="DPS Indirapuram" className="h-10 sm:h-11 w-auto object-contain" />
+          <div className="relative z-10 shrink-0 flex items-center justify-center px-3 py-2 rounded-2xl bg-white border border-slate-200 shadow-xl max-w-[260px] self-start sm:self-auto">
+            <img src="/dps_shield.png" alt="DPS Indirapuram Emblem" className="h-10 w-auto object-contain block sm:hidden" />
+            <img src="/dps_indirapuram_logo.png" alt="DPS Indirapuram" className="h-10 sm:h-11 w-auto object-contain hidden sm:block" />
           </div>
         </div>
 

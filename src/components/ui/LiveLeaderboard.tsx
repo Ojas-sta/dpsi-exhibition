@@ -83,11 +83,16 @@ export default function LiveLeaderboard() {
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-slate-800 bg-gradient-to-r from-amber-500/15 via-[#0b101c] to-amber-500/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 px-2.5 py-1 rounded-xl bg-white shadow-md flex items-center justify-center shrink-0 border border-white/20">
+              <div className="h-10 px-2 sm:px-2.5 py-1 rounded-xl bg-white shadow-md flex items-center justify-center shrink-0 border border-slate-200">
+                <img
+                  src="/dps_shield.png"
+                  alt="DPS Indirapuram Emblem"
+                  className="h-full w-auto object-contain block sm:hidden"
+                />
                 <img
                   src="/dps_indirapuram_logo.png"
                   alt="DPS Indirapuram Logo"
-                  className="h-full w-auto max-w-[140px] sm:max-w-[170px] object-contain"
+                  className="h-full w-auto max-w-[140px] sm:max-w-[170px] object-contain hidden sm:block"
                 />
               </div>
               <div>
