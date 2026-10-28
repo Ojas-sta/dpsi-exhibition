@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   User,
   LogOut,
+  Search,
 } from 'lucide-react';
 
 export default function TopNavHUD() {
@@ -19,6 +20,7 @@ export default function TopNavHUD() {
   const isLeaderboardOpen = useExhibitionStore((state) => state.isLeaderboardOpen);
   const setLeaderboardOpen = useExhibitionStore((state) => state.setLeaderboardOpen);
   const setAuthModalOpen = useExhibitionStore((state) => state.setAuthModalOpen);
+  const setSearchModalOpen = useExhibitionStore((state) => state.setSearchModalOpen);
   const user = useExhibitionStore((state) => state.user);
   const setUser = useExhibitionStore((state) => state.setUser);
 
@@ -104,8 +106,21 @@ export default function TopNavHUD() {
           </nav>
         )}
 
-        {/* Right: Controls (3D/2D, Leaderboard, Auth) */}
+        {/* Right: Controls (Search, 3D/2D, Leaderboard, Auth) */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Quick Search Button */}
+          <button
+            onClick={() => setSearchModalOpen(true)}
+            className="flex items-center gap-2 h-10 px-2.5 sm:px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold shadow-inner transition-all group"
+            title="Search projects (⌘K)"
+          >
+            <Search className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+            <span className="hidden xl:inline text-slate-400 group-hover:text-slate-200">Search</span>
+            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-400">
+              ⌘K
+            </span>
+          </button>
+
           {/* 3D vs 2D Toggle */}
           <div className="hidden sm:flex items-center p-0.5 rounded-xl bg-slate-900/90 border border-slate-800/90 h-10 shadow-inner">
             <button

@@ -57,6 +57,7 @@ interface ExhibitionState {
   isLeaderboardOpen: boolean;
   isDrawerOpen: boolean;
   isAuthModalOpen: boolean;
+  isSearchModalOpen: boolean;
   activeLeaderboardTab: CategoryType | 'All';
 
   // Projects & Live Data
@@ -73,6 +74,7 @@ interface ExhibitionState {
   setLeaderboardOpen: (open: boolean) => void;
   setDrawerOpen: (open: boolean) => void;
   setAuthModalOpen: (open: boolean) => void;
+  setSearchModalOpen: (open: boolean) => void;
   setActiveLeaderboardTab: (tab: CategoryType | 'All') => void;
   setDeviceFingerprint: (fingerprint: string) => void;
   setUser: (user: ExhibitionUser | null) => void;
@@ -90,6 +92,7 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
   isLeaderboardOpen: false,
   isDrawerOpen: false,
   isAuthModalOpen: false,
+  isSearchModalOpen: false,
   activeLeaderboardTab: 'All',
 
   projects: SEED_PROJECTS,
@@ -149,6 +152,7 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
   setLeaderboardOpen: (open) => set({ isLeaderboardOpen: open }),
   setDrawerOpen: (open) => set({ isDrawerOpen: open }),
   setAuthModalOpen: (open) => set({ isAuthModalOpen: open }),
+  setSearchModalOpen: (open) => set({ isSearchModalOpen: open }),
   setActiveLeaderboardTab: (tab) => set({ activeLeaderboardTab: tab }),
   setDeviceFingerprint: (fingerprint) => set({ deviceFingerprint: fingerprint }),
   setUser: (user) => set({ user }),
