@@ -23,9 +23,10 @@ rules_version = '2';
 //   - tech_stack: list (optional, <= 30 items, array of technologies)
 //   - vote_count: number (required, >= 0, atomic vote counter)
 //   - created_at / createdAt: timestamp or string (optional)
+//   - updated_at / updatedAt: timestamp or string (optional)
 //
 // Collection: votes
-// Document ID: Composite string (${projectId}_${fingerprint}) or unique identifier
+// Document ID: Composite string (${projectId}_${fingerprint})
 // Fields:
 //   - projectId: string (required, 1-50 chars, must reference an existing project)
 //   - userId: string (required, 1-128 chars, auth UID or verified guest ID)
@@ -111,7 +112,7 @@ service cloud.firestore {
         'id', 'title', 'zone', 'category', 'booth_code', 'booth_number',
         'position_x', 'position_y', 'position_z', 'image_url',
         'description', 'tagline', 'members', 'tech_stack', 'vote_count',
-        'created_at', 'createdAt'
+        'created_at', 'createdAt', 'updated_at', 'updatedAt'
       ];
 
       return data.keys().hasAll(requiredFields) &&
@@ -132,12 +133,15 @@ service cloud.firestore {
         isValidOptionalString(data, 'tagline', 0, 500) &&
         (!('tech_stack' in data) || (data.tech_stack is list && data.tech_stack.size() <= 30)) &&
         (!('created_at' in data) || data.created_at is timestamp || isValidString(data.created_at, 1, 50)) &&
-        (!('createdAt' in data) || data.createdAt is timestamp || isValidString(data.createdAt, 1, 50));
+        (!('createdAt' in data) || data.createdAt is timestamp || isValidString(data.createdAt, 1, 50)) &&
+        (!('updated_at' in data) || data.updated_at is timestamp || isValidString(data.updated_at, 1, 50)) &&
+        (!('updatedAt' in data) || data.updatedAt is timestamp || isValidString(data.updatedAt, 1, 50));
     }
 
-    // Isolated counter increment check: only vote_count may change and strictly by +1
+    // Isolated counter increment check: requires auth, only vote_count may change and strictly by +1
     function isValidProjectVoteIncrement() {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vote_count']) &&
+      return isAuthenticated() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vote_count']) &&
         request.resource.data.vote_count == resource.data.vote_count + 1 &&
         request.resource.data.vote_count is number &&
         request.resource.data.vote_count >= 0;
@@ -151,10 +155,12 @@ service cloud.firestore {
         'userEmail', 'createdAt', 'timestamp'
       ];
 
-      return data.keys().hasAll(requiredFields) &&
+      return isAuthenticated() &&
+        data.keys().hasAll(requiredFields) &&
         data.keys().hasOnly(allowedFields) &&
         isValidString(data.projectId, 1, 50) &&
         isValidString(data.userId, 1, 128) &&
+        (data.userId == request.auth.uid || request.auth.token.firebase.sign_in_provider == 'anonymous') &&
         isValidString(data.deviceFingerprint, 1, 128) &&
         (!('ipHash' in data) || isValidString(data.ipHash, 1, 128)) &&
         (!('userEmail' in data) || data.userEmail == null || isValidEmail(data.userEmail)) &&
@@ -162,16 +168,8 @@ service cloud.firestore {
         (!('timestamp' in data) || isValidTimestamp(data.timestamp) || (data.timestamp is number && data.timestamp > 0)) &&
         // Ensure the target project exists in the database
         exists(/databases/$(database)/documents/projects/$(data.projectId)) &&
-        // Anti-cheat verification:
-        // Canonical composite document ID (${projectId}_${fingerprint}) guarantees atomic uniqueness,
-        // or for any custom unique ID, ensure the device has not already voted for this project.
-        (
-          voteId == data.projectId + '_' + data.deviceFingerprint ||
-          (
-            isValidString(voteId, 1, 128) &&
-            !exists(/databases/$(database)/documents/votes/$(data.projectId + '_' + data.deviceFingerprint))
-          )
-        );
+        // Anti-cheat verification: enforce atomic composite ID (${projectId}_${fingerprint})
+        voteId == data.projectId + '_' + data.deviceFingerprint;
     }
 
     // ===============================================================
@@ -194,7 +192,7 @@ service cloud.firestore {
 
       // Project updates:
       // 1. Authenticated Administrators can update project information (must pass full domain validation)
-      // 2. Visitors / clients can only increment the vote_count field atomically by +1
+      // 2. Authenticated visitors / clients can only increment the vote_count field atomically by +1
       allow update: if (isAdmin() && isValidProject(request.resource.data)) ||
                        isValidProjectVoteIncrement();
     }
@@ -203,8 +201,9 @@ service cloud.firestore {
     // Collection: votes
     // ===============================================================
     match /votes/{voteId} {
-      // Read allowed for users/clients to verify existing vote state
-      allow read: if true;
+      // PII Protection: Only allow reading own vote or admin audit; disallow public listing
+      allow get: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
 
       // Votes can be created once if required fields and anti-cheat constraints pass
       allow create: if isValidVote(request.resource.data, voteId);
