@@ -30,8 +30,8 @@ export const metadata: Metadata = {
   description:
     'Interactive 3D Virtual Floor Plan matching the physical blueprint: Physical (P01-12), Digital (D01-12), Business (B01-07), and Robotics Arenas for DPS Indirapuram.',
   icons: {
-    icon: '/dpsi_crest.png',
-    apple: '/dpsi_crest.png',
+    icon: '/dps_shield.png',
+    apple: '/dps_shield.png',
   },
 };
 

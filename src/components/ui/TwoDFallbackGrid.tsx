@@ -65,8 +65,8 @@ export default function TwoDFallbackGrid() {
               Browse all aisles matching the physical blueprint: <strong>P (Physical)</strong>, <strong>D (Digital)</strong>, and <strong>B (Business)</strong>. Cast your verified anti-cheat vote now.
             </p>
           </div>
-          <div className="relative z-10 shrink-0 hidden sm:flex items-center justify-center p-2 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl">
-            <img src="/dpsi_logo.png" alt="DPSI" className="h-10 w-auto object-contain" />
+          <div className="relative z-10 shrink-0 hidden sm:flex items-center justify-center px-3 py-2 rounded-2xl bg-white border border-white/20 shadow-xl max-w-[260px]">
+            <img src="/dps_indirapuram_logo.png" alt="DPS Indirapuram" className="h-10 sm:h-11 w-auto object-contain" />
           </div>
         </div>
 

@@ -91,12 +91,9 @@ export default function AuthModal() {
           {/* Modal Header */}
           <div className="space-y-1.5 pr-8">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-11 h-11 rounded-2xl bg-slate-900 p-1.5 flex items-center justify-center shadow-md">
-                <img src="/dpsi_crest.png" alt="DPSI Logo" className="w-full h-full object-contain" />
+              <div className="h-10 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shadow-sm">
+                <img src="/dps_indirapuram_logo.png" alt="DPS Indirapuram Logo" className="h-full w-auto max-w-[170px] object-contain" />
               </div>
-              <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/80">
-                DPS Indirapuram
-              </span>
             </div>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
               Sign In to Vote

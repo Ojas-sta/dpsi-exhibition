@@ -33,17 +33,27 @@ export default function TopNavHUD() {
       <div className="mx-auto max-w-7xl flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl bg-[#0b101c]/90 backdrop-blur-xl border border-slate-800 shadow-2xl shadow-black/80">
         
         {/* Brand & Live Indicator */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900/90 border border-slate-700/80 p-1 flex items-center justify-center shadow-lg shadow-amber-500/10 overflow-hidden shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <div className="h-9 sm:h-10 px-2 sm:px-2.5 py-1 rounded-xl bg-white shadow-md flex items-center justify-center shrink-0 border border-white/20">
+            {/* Mobile: crisp compact shield */}
             <img
-              src="/dpsi_crest.png"
-              alt="DPSI Logo"
-              className="w-full h-full object-contain"
+              src="/dps_shield.png"
+              alt="DPS Indirapuram Shield"
+              className="h-full w-auto object-contain block sm:hidden"
+            />
+            {/* Tablet & Desktop: official full DPS Indirapuram logo */}
+            <img
+              src="/dps_indirapuram_logo.png"
+              alt="DPS Indirapuram"
+              className="h-full w-auto max-w-[140px] sm:max-w-[175px] md:max-w-[195px] object-contain hidden sm:block"
             />
           </div>
+
+          <div className="hidden sm:block h-6 w-px bg-slate-800" />
+
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xs sm:text-sm font-extrabold tracking-tight text-white flex items-center gap-1.5">
+              <h1 className="text-xs sm:text-sm font-extrabold tracking-tight text-white flex items-center gap-1.5 whitespace-nowrap">
                 Tech & Innovation Expo
               </h1>
               <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
