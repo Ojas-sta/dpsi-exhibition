@@ -2,11 +2,13 @@
 
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { ZoneType } from '@/types';
+import { signOutFromFirebase } from '@/lib/firebase';
 import {
   Trophy,
   Box,
   LayoutGrid,
   User,
+  LogOut,
 } from 'lucide-react';
 
 export default function MobileBottomDock() {
@@ -19,6 +21,7 @@ export default function MobileBottomDock() {
   const setAuthModalOpen = useExhibitionStore((state) => state.setAuthModalOpen);
   const isDrawerOpen = useExhibitionStore((state) => state.isDrawerOpen);
   const user = useExhibitionStore((state) => state.user);
+  const setUser = useExhibitionStore((state) => state.setUser);
 
   const zones: { id: 'overview' | ZoneType; label: string; short: string }[] = [
     { id: 'overview', label: 'All', short: 'All' },
@@ -84,10 +87,30 @@ export default function MobileBottomDock() {
             <span>Ranks</span>
           </button>
 
-          {/* Auth Button */}
+          {/* Auth Button & Mobile Sign-Out */}
           {user ? (
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-xs">
-              {user.name.charAt(0)}
+            <div className="flex items-center gap-1">
+              <div
+                className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-xs"
+                title={user.name}
+              >
+                {user.name.charAt(0)}
+              </div>
+              <button
+                onClick={async () => {
+                  try {
+                    await signOutFromFirebase();
+                  } catch (e) {
+                    console.warn('Mobile sign-out notice:', e);
+                  } finally {
+                    setUser(null);
+                  }
+                }}
+                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-400 border border-slate-800 transition-colors"
+                title="Sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
             </div>
           ) : (
             <button

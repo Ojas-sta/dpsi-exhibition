@@ -3,15 +3,9 @@ import {
   getFirestore,
   collection,
   doc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  increment,
   onSnapshot,
-  runTransaction,
   writeBatch,
   query,
-  orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
 import {
@@ -97,8 +91,7 @@ export function subscribeToProjects(onUpdate: (projects: Project[]) => void) {
     q,
     (snapshot) => {
       if (snapshot.empty) {
-        // If Firestore collection is empty, trigger seed and keep full seed list
-        seedInitialProjects();
+        // If Firestore collection is empty, render canonical seed list without unauthorized writes
         onUpdate(SEED_PROJECTS);
         return;
       }
@@ -177,64 +170,49 @@ export async function seedInitialProjects() {
   }
 }
 
-/**
- * Cast a verified vote via Firestore Atomic Transaction with anti-cheat duplicate protection
- */
-export async function castVoteInFirebase(payload: {
+export interface VoteSubmissionPayload {
   projectId: string;
   fingerprint: string;
   userId: string;
   userEmail?: string;
-}): Promise<{ success: boolean; message: string; alreadyVoted?: boolean }> {
-  const { projectId, fingerprint, userId, userEmail } = payload;
-  const voteDocId = `${projectId}_${fingerprint}`;
-  const voteRef = doc(db, 'votes', voteDocId);
-  const projectRef = doc(db, 'projects', projectId);
+}
 
+export interface VoteSubmissionResponse {
+  success: boolean;
+  message: string;
+  alreadyVoted?: boolean;
+  newVoteCount?: number;
+}
+
+/**
+ * Cast a verified vote via the authoritative serverless voting endpoint (/api/vote).
+ * Eliminates direct client-side transactions, enforcing server-side rate-limiting and atomic deduplication.
+ */
+export async function castVoteInFirebase(
+  payload: VoteSubmissionPayload
+): Promise<VoteSubmissionResponse> {
   try {
-    return await runTransaction(db, async (transaction) => {
-      const voteDoc = await transaction.get(voteRef);
-      if (voteDoc.exists()) {
-        return {
-          success: false,
-          alreadyVoted: true,
-          message: 'Anti-Cheat Alert: This device hardware has already voted for this project.',
-        };
-      }
-
-      // Check project exists
-      const projDoc = await transaction.get(projectRef);
-      const currentVotes = projDoc.exists() ? (projDoc.data()?.vote_count || 0) : 0;
-
-      // Atomic write vote record
-      transaction.set(voteRef, {
-        projectId,
-        userId: userId || 'anonymous',
-        userEmail: userEmail || null,
-        deviceFingerprint: fingerprint,
-        createdAt: serverTimestamp(),
-      });
-
-      // Atomic increment project vote count
-      transaction.set(
-        projectRef,
-        {
-          vote_count: currentVotes + 1,
-        },
-        { merge: true }
-      );
-
-      return {
-        success: true,
-        message: 'Vote successfully verified and recorded in Firebase Realtime!',
-      };
+    const response = await fetch('/api/vote', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
     });
-  } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : 'Error recording vote';
-    // Fallback if client direct transaction is restricted by rules
+
+    const data = await response.json().catch(() => ({}));
+
     return {
-      success: true,
-      message: 'Vote recorded locally: ' + errorMsg,
+      success: response.ok && Boolean(data.success),
+      message: data.message || (response.ok ? 'Vote recorded successfully' : 'Failed to record vote'),
+      alreadyVoted: Boolean(data.alreadyVoted) || response.status === 409,
+      newVoteCount: typeof data.newVoteCount === 'number' ? data.newVoteCount : undefined,
+    };
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Network error during vote submission';
+    return {
+      success: false,
+      message: errorMsg,
     };
   }
 }

@@ -42,3 +42,8 @@ next-env.d.ts
 
 # cloudflare wrangler
 .wrangler/
+
+# Firebase Functions build and deps
+**/node_modules/
+**/lib/
+.agents/

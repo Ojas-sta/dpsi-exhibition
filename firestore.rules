@@ -138,15 +138,6 @@ service cloud.firestore {
         (!('updatedAt' in data) || data.updatedAt is timestamp || isValidString(data.updatedAt, 1, 50));
     }
 
-    // Isolated counter increment check: requires auth, only vote_count may change and strictly by +1
-    function isValidProjectVoteIncrement() {
-      return isAuthenticated() &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vote_count']) &&
-        request.resource.data.vote_count == resource.data.vote_count + 1 &&
-        request.resource.data.vote_count is number &&
-        request.resource.data.vote_count >= 0;
-    }
-
     // Full domain validator for Vote documents
     function isValidVote(data, voteId) {
       let requiredFields = ['projectId', 'userId', 'deviceFingerprint'];
@@ -160,7 +151,7 @@ service cloud.firestore {
         data.keys().hasOnly(allowedFields) &&
         isValidString(data.projectId, 1, 50) &&
         isValidString(data.userId, 1, 128) &&
-        (data.userId == request.auth.uid || request.auth.token.firebase.sign_in_provider == 'anonymous') &&
+        data.userId == request.auth.uid &&
         isValidString(data.deviceFingerprint, 1, 128) &&
         (!('ipHash' in data) || isValidString(data.ipHash, 1, 128)) &&
         (!('userEmail' in data) || data.userEmail == null || isValidEmail(data.userEmail)) &&
@@ -190,11 +181,9 @@ service cloud.firestore {
       allow create: if isAdmin() && isValidProject(request.resource.data);
       allow delete: if isAdmin();
 
-      // Project updates:
-      // 1. Authenticated Administrators can update project information (must pass full domain validation)
-      // 2. Authenticated visitors / clients can only increment the vote_count field atomically by +1
-      allow update: if (isAdmin() && isValidProject(request.resource.data)) ||
-                       isValidProjectVoteIncrement();
+      // Only administrators can update project information (must pass full domain validation)
+      // Note: All vote counting is handled server-side via Cloud Functions v2 and firebase-admin
+      allow update: if isAdmin() && isValidProject(request.resource.data);
     }
 
     // ===============================================================

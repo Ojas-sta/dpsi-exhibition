@@ -2,6 +2,7 @@
 
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { ZoneType } from '@/types';
+import { signOutFromFirebase } from '@/lib/firebase';
 import {
   Trophy,
   Box,
@@ -152,7 +153,15 @@ export default function TopNavHUD() {
                   {user.name}
                 </span>
                 <button
-                  onClick={() => setUser(null)}
+                  onClick={async () => {
+                    try {
+                      await signOutFromFirebase();
+                    } catch (e) {
+                      console.warn('Sign out notice:', e);
+                    } finally {
+                      setUser(null);
+                    }
+                  }}
                   title="Sign out"
                   className="text-slate-400 hover:text-rose-400 ml-0.5 transition-colors"
                 >

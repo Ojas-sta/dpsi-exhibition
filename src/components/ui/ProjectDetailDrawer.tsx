@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { getDeviceFingerprint } from '@/lib/fingerprint';
-import { castVoteInFirebase } from '@/lib/firebase';
 import confetti from 'canvas-confetti';
 import {
   X,
@@ -96,6 +95,7 @@ export default function ProjectDetailDrawer() {
     try {
       const fingerprint = await getDeviceFingerprint();
 
+      // Submit exclusively to serverless anti-cheat endpoint (eliminates duplicate client-side transactions)
       const res = await fetch('/api/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -107,27 +107,36 @@ export default function ProjectDetailDrawer() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-      if (!res.ok || !data.success) {
-        setVoteError(data.message || 'Vote verification failed.');
-        if (data.alreadyVoted) {
-          markProjectVoted(selectedProject.id);
-        }
+      // 409 Conflict: Already voted from this hardware fingerprint or user account
+      if (res.status === 409 || data.alreadyVoted) {
+        markProjectVoted(selectedProject.id);
+        setVoteError(
+          data.message ||
+            'Anti-Cheat Alert: A vote has already been recorded for this project from this device or account.'
+        );
         return;
       }
 
+      // 429 Too Many Requests: Volumetric flood protection
+      if (res.status === 429) {
+        setVoteError(
+          data.message || 'Rate limit reached: Too many requests. Please wait a moment before trying again.'
+        );
+        return;
+      }
+
+      // 400 Bad Request or 500 Internal Error
+      if (!res.ok || !data.success) {
+        setVoteError(data.message || 'Vote verification failed. Please try again.');
+        return;
+      }
+
+      // 200 OK: Validated & atomically recorded
       markProjectVoted(selectedProject.id);
       incrementProjectVote(selectedProject.id);
-      setVoteSuccessMessage('Vote successfully verified and recorded!');
-
-      // Synchronize vote to Firebase Cloud Firestore asynchronously
-      castVoteInFirebase({
-        projectId: selectedProject.id,
-        fingerprint,
-        userId: user.id,
-        userEmail: user.email,
-      }).catch((e) => console.warn('Firebase vote sync notice:', e));
+      setVoteSuccessMessage(data.message || 'Vote successfully verified and recorded!');
 
       confetti({
         particleCount: 80,

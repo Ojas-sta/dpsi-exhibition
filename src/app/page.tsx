@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { getDeviceFingerprint } from '@/lib/fingerprint';
-import { subscribeToProjects, onFirebaseAuthStateChange, seedInitialProjects } from '@/lib/firebase';
+import { subscribeToProjects, onFirebaseAuthStateChange } from '@/lib/firebase';
 import TopNavHUD from '@/components/ui/TopNavHUD';
 import MobileBottomDock from '@/components/ui/MobileBottomDock';
 import ProjectDetailDrawer from '@/components/ui/ProjectDetailDrawer';
@@ -38,10 +38,7 @@ export default function HomePage() {
       setDeviceFingerprint(fp);
     });
 
-    // Seed or update Firestore projects with official spreadsheet data
-    seedInitialProjects();
-
-    // 1. Listen for Firebase Auth changes
+    // 1. Centralized Firebase Auth state synchronization (single source of truth)
     const unsubAuth = onFirebaseAuthStateChange((firebaseUser) => {
       if (firebaseUser) {
         setUser({
@@ -49,6 +46,8 @@ export default function HomePage() {
           email: firebaseUser.email || 'user@dpsi.in',
           name: firebaseUser.displayName || 'Visitor',
         });
+      } else {
+        setUser(null);
       }
     });
 

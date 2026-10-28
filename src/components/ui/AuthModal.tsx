@@ -6,11 +6,11 @@ import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { signInWithGoogle, signInAsGuest } from '@/lib/firebase';
 import {
   X,
-  ShieldCheck,
   CheckCircle,
   Fingerprint,
   Lock,
   UserCheck,
+  AlertTriangle,
 } from 'lucide-react';
 
 export default function AuthModal() {
@@ -21,11 +21,13 @@ export default function AuthModal() {
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   if (!isAuthModalOpen) return null;
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
+    setAuthError(null);
     try {
       const firebaseUser = await signInWithGoogle();
       if (firebaseUser) {
@@ -34,17 +36,21 @@ export default function AuthModal() {
           email: firebaseUser.email || 'user@dpsi.in',
           name: firebaseUser.displayName || 'Verified Judge (Google)',
         });
+        setAuthModalOpen(false);
       }
-      setAuthModalOpen(false);
     } catch (err: unknown) {
-      console.warn('Google sign-in fallback:', err);
-      // Fallback guest judge profile
-      setUser({
-        id: 'user_google_' + Math.random().toString(36).substring(2, 9),
-        email: 'judge.dpsi@gmail.com',
-        name: 'Verified Judge (Google)',
-      });
-      setAuthModalOpen(false);
+      console.error('Google sign-in error:', err);
+      const errorMsg =
+        err instanceof Error && err.message.includes('popup-closed-by-user')
+          ? 'Sign-in window was closed before completion. Please try again.'
+          : err instanceof Error && err.message.includes('cancelled-popup-request')
+          ? 'Another sign-in popup is already open.'
+          : err instanceof Error && err.message.includes('auth/unauthorized-domain')
+          ? 'Domain not authorized for OAuth in Firebase Console. Please use Visitor Pass.'
+          : err instanceof Error
+          ? err.message
+          : 'Failed to sign in with Google. Please try again or use Visitor Pass.';
+      setAuthError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -54,6 +60,8 @@ export default function AuthModal() {
     e.preventDefault();
     if (!guestName.trim()) return;
 
+    setLoading(true);
+    setAuthError(null);
     try {
       const guest = await signInAsGuest(guestName.trim(), guestEmail.trim());
       setUser({
@@ -61,14 +69,17 @@ export default function AuthModal() {
         name: guest.displayName,
         email: guest.email,
       });
-    } catch {
-      setUser({
-        id: 'visitor_' + Math.random().toString(36).substring(2, 9),
-        name: guestName.trim(),
-        email: guestEmail.trim() || `${guestName.toLowerCase().replace(/\s+/g, '')}@dpsi-visitor.in`,
-      });
+      setAuthModalOpen(false);
+    } catch (err: unknown) {
+      console.error('Guest sign-in error:', err);
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : 'Unable to issue verified visitor pass. Please check your connection.';
+      setAuthError(errorMsg);
+    } finally {
+      setLoading(false);
     }
-    setAuthModalOpen(false);
   };
 
   return (
@@ -82,7 +93,10 @@ export default function AuthModal() {
         >
           {/* Close button */}
           <button
-            onClick={() => setAuthModalOpen(false)}
+            onClick={() => {
+              setAuthError(null);
+              setAuthModalOpen(false);
+            }}
             className="absolute top-4 right-4 p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-900 transition-colors"
           >
             <X className="w-4 h-4" />
@@ -115,9 +129,20 @@ export default function AuthModal() {
             </div>
             <div className="flex items-center gap-2 text-slate-700">
               <Lock className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-              <span>Layer 3: PostgreSQL Composite Constraints</span>
+              <span>Layer 3: Cloud Functions v2 Atomic Anti-Cheat & Firestore Rules</span>
             </div>
           </div>
+
+          {/* Error Alert */}
+          {authError && (
+            <div className="my-3 p-3 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-800">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Authentication Failed</p>
+                <p className="text-[11px] mt-0.5 text-rose-700/90">{authError}</p>
+              </div>
+            </div>
+          )}
 
           {/* Google Sign-In Button */}
           <button
