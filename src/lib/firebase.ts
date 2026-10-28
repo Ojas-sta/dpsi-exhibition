@@ -12,6 +12,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   signInAnonymously,
   updateProfile,
@@ -40,11 +42,44 @@ export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 /**
- * Sign in using Google OAuth
+ * Sign in using Google OAuth with automatic redirect fallback if popup is blocked
  */
 export async function signInWithGoogle() {
-  const result = await signInWithPopup(auth, googleProvider);
-  return result.user;
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+  } catch (err: unknown) {
+    const isPopupBlocked =
+      (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'auth/popup-blocked') ||
+      (err instanceof Error && err.message.includes('popup-blocked'));
+
+    if (isPopupBlocked) {
+      console.warn('Popup blocked by browser. Falling back to signInWithRedirect...');
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    }
+    throw err;
+  }
+}
+
+/**
+ * Direct redirect-based Google sign in (useful for mobile browsers or strict popup blockers)
+ */
+export async function signInWithGoogleRedirect() {
+  await signInWithRedirect(auth, googleProvider);
+}
+
+/**
+ * Check and resolve any pending redirect sign-in result on page load
+ */
+export async function checkRedirectResult(): Promise<User | null> {
+  try {
+    const result = await getRedirectResult(auth);
+    return result?.user ?? null;
+  } catch (err) {
+    console.error('Redirect sign-in resolution error:', err);
+    return null;
+  }
 }
 
 /**

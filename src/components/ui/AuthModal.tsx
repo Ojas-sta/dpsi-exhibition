@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
-import { signInWithGoogle, signInAsGuest } from '@/lib/firebase';
+import { signInWithGoogle, signInWithGoogleRedirect, signInAsGuest } from '@/lib/firebase';
 import {
   X,
   CheckCircle,
@@ -37,16 +37,33 @@ export default function AuthModal() {
           name: firebaseUser.displayName || 'Verified Judge (Google)',
         });
         setAuthModalOpen(false);
+      } else {
+        // Returned null because popup was blocked and signInWithRedirect was automatically initiated
+        setAuthError('Popup blocked by browser. Redirecting you to Google Sign-In...');
       }
     } catch (err: unknown) {
       console.error('Google sign-in error:', err);
+      const isPopupBlocked =
+        (err && typeof err === 'object' && 'code' in err && (err as { code: string }).code === 'auth/popup-blocked') ||
+        (err instanceof Error && err.message.includes('popup-blocked'));
+
+      if (isPopupBlocked) {
+        setAuthError('Browser blocked the popup window. Redirecting to Google Sign-In...');
+        try {
+          await signInWithGoogleRedirect();
+          return;
+        } catch (redirectErr) {
+          console.error('Redirect sign-in error:', redirectErr);
+        }
+      }
+
       const errorMsg =
         err instanceof Error && err.message.includes('popup-closed-by-user')
           ? 'Sign-in window was closed before completion. Please try again.'
           : err instanceof Error && err.message.includes('cancelled-popup-request')
           ? 'Another sign-in popup is already open.'
           : err instanceof Error && err.message.includes('auth/unauthorized-domain')
-          ? 'Domain not authorized for OAuth in Firebase Console. Please use Visitor Pass.'
+          ? 'Domain not authorized for OAuth in Firebase Console. Please use Visitor Pass below.'
           : err instanceof Error
           ? err.message
           : 'Failed to sign in with Google. Please try again or use Visitor Pass.';
@@ -135,12 +152,23 @@ export default function AuthModal() {
 
           {/* Error Alert */}
           {authError && (
-            <div className="my-3 p-3 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-800">
-              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold">Authentication Failed</p>
-                <p className="text-[11px] mt-0.5 text-rose-700/90">{authError}</p>
+            <div className="my-3 p-3 rounded-2xl bg-rose-50 border border-rose-200 flex flex-col gap-2 text-xs text-rose-800">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold">Authentication Notice</p>
+                  <p className="text-[11px] mt-0.5 text-rose-700/90">{authError}</p>
+                </div>
               </div>
+              {authError.toLowerCase().includes('popup') && (
+                <button
+                  type="button"
+                  onClick={() => signInWithGoogleRedirect()}
+                  className="self-start text-[11px] font-bold text-rose-900 underline hover:no-underline"
+                >
+                  Click here to sign in with direct page redirect →
+                </button>
+              )}
             </div>
           )}
 

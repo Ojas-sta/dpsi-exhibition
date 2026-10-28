@@ -27,7 +27,9 @@
         "supportEmail": "admin@dpsi-visitor.in",
         "authorizedRedirectUris": [
           "https://smarthome-88486.firebaseapp.com/__/auth/handler",
-          "http://localhost:3000"
+          "http://localhost:3000",
+          "https://dpsiexibition.pages.dev/__/auth/handler",
+          "https://dpsiexibition.pages.dev"
         ]
       }
     }

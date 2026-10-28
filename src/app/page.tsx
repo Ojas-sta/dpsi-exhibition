@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { getDeviceFingerprint } from '@/lib/fingerprint';
-import { subscribeToProjects, onFirebaseAuthStateChange } from '@/lib/firebase';
+import { subscribeToProjects, onFirebaseAuthStateChange, checkRedirectResult } from '@/lib/firebase';
 import TopNavHUD from '@/components/ui/TopNavHUD';
 import MobileBottomDock from '@/components/ui/MobileBottomDock';
 import ProjectDetailDrawer from '@/components/ui/ProjectDetailDrawer';
@@ -38,7 +38,18 @@ export default function HomePage() {
       setDeviceFingerprint(fp);
     });
 
-    // 1. Centralized Firebase Auth state synchronization (single source of truth)
+    // 1. Check for pending redirect OAuth results
+    checkRedirectResult().then((redirectUser) => {
+      if (redirectUser) {
+        setUser({
+          id: redirectUser.uid,
+          email: redirectUser.email || 'user@dpsi.in',
+          name: redirectUser.displayName || 'Visitor',
+        });
+      }
+    }).catch(console.error);
+
+    // 2. Centralized Firebase Auth state synchronization (single source of truth)
     const unsubAuth = onFirebaseAuthStateChange((firebaseUser) => {
       if (firebaseUser) {
         setUser({
