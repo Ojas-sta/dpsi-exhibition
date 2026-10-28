@@ -1,69 +1,84 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { useExhibitionStore } from '@/store/useExhibitionStore';
+import { getDeviceFingerprint } from '@/lib/fingerprint';
+import TopNavHUD from '@/components/ui/TopNavHUD';
+import MobileBottomDock from '@/components/ui/MobileBottomDock';
+import ProjectDetailDrawer from '@/components/ui/ProjectDetailDrawer';
+import LiveLeaderboard from '@/components/ui/LiveLeaderboard';
+import TwoDFallbackGrid from '@/components/ui/TwoDFallbackGrid';
+import AuthModal from '@/components/ui/AuthModal';
+import { MousePointerClick, Move, ZoomIn } from 'lucide-react';
+
+const ExhibitionCanvas = dynamic(
+  () => import('@/components/canvas/ExhibitionCanvas'),
+  { ssr: false }
+);
+
+export default function HomePage() {
+  const viewMode = useExhibitionStore((state) => state.viewMode);
+  const setDeviceFingerprint = useExhibitionStore((state) => state.setDeviceFingerprint);
+  const setIsMobile = useExhibitionStore((state) => state.setIsMobile);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMob = window.innerWidth < 768;
+      setIsMobile(isMob);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    getDeviceFingerprint().then((fp) => {
+      setDeviceFingerprint(fp);
+    });
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [setIsMobile, setDeviceFingerprint]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="relative w-screen h-[100dvh] overflow-hidden bg-[#070b14] font-sans">
+      {/* Top HUD Navigation Bar */}
+      <TopNavHUD />
+
+      {/* Main Exhibition Floor (3D WebGL Hall or 2D Bento Directory) */}
+      {viewMode === '3d' ? (
+        <div className="relative isolate w-full h-full">
+          <ExhibitionCanvas />
+
+          {/* Desktop Only: Bottom Left Camera Gesture Legend */}
+          <div className="hidden lg:flex fixed bottom-4 left-6 z-30 items-center gap-4 px-4 py-2.5 rounded-2xl bg-[#0b101c]/85 backdrop-blur-md border border-slate-800 text-[11px] text-slate-400 pointer-events-none shadow-xl font-mono">
+            <div className="flex items-center gap-1.5">
+              <MousePointerClick className="w-3.5 h-3.5 text-amber-400" />
+              <span>Tap Booth</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-slate-700" />
+            <div className="flex items-center gap-1.5">
+              <Move className="w-3.5 h-3.5 text-slate-300" />
+              <span>Drag to Orbit</span>
+            </div>
+            <div className="w-1 h-1 rounded-full bg-slate-700" />
+            <div className="flex items-center gap-1.5">
+              <ZoomIn className="w-3.5 h-3.5 text-slate-300" />
+              <span>Pinch / Scroll to Zoom</span>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      ) : (
+        <div className="w-full h-full overflow-y-auto">
+          <TwoDFallbackGrid />
         </div>
-      </main>
-    </div>
+      )}
+
+      {/* Mobile Floating Action Dock */}
+      <MobileBottomDock />
+
+      {/* Slide-out Drawers & Modals */}
+      <ProjectDetailDrawer />
+      <LiveLeaderboard />
+      <AuthModal />
+    </main>
   );
 }
