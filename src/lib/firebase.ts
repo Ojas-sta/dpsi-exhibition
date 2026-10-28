@@ -9,6 +9,7 @@ import {
   increment,
   onSnapshot,
   runTransaction,
+  writeBatch,
   query,
   orderBy,
   serverTimestamp,
@@ -85,7 +86,8 @@ export function onFirebaseAuthStateChange(callback: (user: User | null) => void)
 
 /**
  * Real-time subscription to all exhibition projects from Cloud Firestore.
- * Automatically updates live when any user votes anywhere in the world.
+ * Always guarantees ALL 35 blueprint projects are returned and rendered,
+ * hydrated with live votes and updates from Firestore.
  */
 export function subscribeToProjects(onUpdate: (projects: Project[]) => void) {
   const projectsCol = collection(db, 'projects');
@@ -95,51 +97,61 @@ export function subscribeToProjects(onUpdate: (projects: Project[]) => void) {
     q,
     (snapshot) => {
       if (snapshot.empty) {
-        // If Firestore collection is empty, seed it with the blueprint projects
+        // If Firestore collection is empty, trigger seed and keep full seed list
         seedInitialProjects();
+        onUpdate(SEED_PROJECTS);
         return;
       }
 
-      const projectsList: Project[] = [];
+      // Map Firestore docs by ID (case-insensitive for safety)
+      const firestoreMap = new Map<string, Record<string, unknown>>();
       snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        projectsList.push({
-          id: docSnap.id,
-          title: data.title || '',
-          zone: data.zone,
-          category: data.category,
-          booth_code: data.booth_code || docSnap.id.toUpperCase(),
-          booth_number: data.booth_number || 0,
-          position_x: data.position_x ?? 0,
-          position_y: data.position_y ?? 0,
-          position_z: data.position_z ?? 0,
-          image_url: data.image_url || '/placeholder.png',
-          description: data.description || '',
-          tagline: data.tagline,
-          members: Array.isArray(data.members) ? data.members : [],
-          tech_stack: Array.isArray(data.tech_stack) ? data.tech_stack : [],
-          vote_count: typeof data.vote_count === 'number' ? data.vote_count : 0,
-        });
+        firestoreMap.set(docSnap.id.toLowerCase(), docSnap.data());
       });
 
-      // Preserve canonical blueprint order
-      onUpdate(projectsList);
+      // Always merge against canonical SEED_PROJECTS so no booth is EVER missing from the 3D scene
+      const mergedProjects: Project[] = SEED_PROJECTS.map((seedProj) => {
+        const remoteData = firestoreMap.get(seedProj.id.toLowerCase());
+        if (remoteData) {
+          return {
+            ...seedProj,
+            vote_count:
+              typeof remoteData.vote_count === 'number'
+                ? remoteData.vote_count
+                : seedProj.vote_count,
+            title: (remoteData.title as string) || seedProj.title,
+            description: (remoteData.description as string) || seedProj.description,
+            members:
+              Array.isArray(remoteData.members) && remoteData.members.length > 0
+                ? (remoteData.members as string[])
+                : seedProj.members,
+            image_url: (remoteData.image_url as string) || seedProj.image_url,
+          };
+        }
+        return seedProj;
+      });
+
+      onUpdate(mergedProjects);
     },
     (err) => {
-      console.warn('Firestore subscription notice (using fallback seed):', err.message);
+      console.warn('Firestore subscription notice (using local seed):', err.message);
+      onUpdate(SEED_PROJECTS);
     }
   );
 }
 
 /**
- * Seed or update blueprint projects into Firestore matching official spreadsheet
+ * Seed all 35 blueprint projects into Firestore via atomic batch write
  */
 export async function seedInitialProjects() {
   try {
+    const batch = writeBatch(db);
     for (const project of SEED_PROJECTS) {
-      await setDoc(
-        doc(db, 'projects', project.id),
+      const docRef = doc(db, 'projects', project.id);
+      batch.set(
+        docRef,
         {
+          id: project.id,
           title: project.title,
           zone: project.zone,
           category: project.category,
@@ -153,12 +165,15 @@ export async function seedInitialProjects() {
           tagline: project.tagline || '',
           members: project.members,
           tech_stack: project.tech_stack || [],
+          vote_count: project.vote_count || 0,
+          updatedAt: serverTimestamp(),
         },
         { merge: true }
       );
     }
+    await batch.commit();
   } catch (err) {
-    console.warn('Firestore seeding notice:', err);
+    console.warn('Firestore batch seeding notice:', err);
   }
 }
 

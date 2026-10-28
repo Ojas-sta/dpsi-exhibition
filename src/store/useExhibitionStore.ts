@@ -174,5 +174,18 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
     });
   },
 
-  setProjects: (projects) => set({ projects }),
+  setProjects: (incoming) => {
+    if (!incoming || incoming.length === 0) return;
+    if (incoming.length < SEED_PROJECTS.length) {
+      // Guaranteed failsafe: merge so all 35 blueprint booths are always rendered
+      const map = new Map(incoming.map((p) => [p.id.toLowerCase(), p]));
+      const complete = SEED_PROJECTS.map((sp) => {
+        const found = map.get(sp.id.toLowerCase());
+        return found ? { ...sp, ...found } : sp;
+      });
+      set({ projects: complete });
+      return;
+    }
+    set({ projects: incoming });
+  },
 }));
