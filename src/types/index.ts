@@ -18,6 +18,7 @@ export interface Project {
   position_x: number;
   position_y: number;
   position_z: number;
+  rotation_y?: number;
   image_url: string;
   description: string;
   tagline?: string;

@@ -80,11 +80,11 @@ export default function FloorAndEnvironment() {
 
       {/* 
         Left Angled Pavilion (Show & Tell)
-        Solid box: top at y=0.0, height=0.8, bottom at y=-0.8
+        Aligned with blueprint angle (-0.24 rad) & Dual-Row Layout
       */}
-      <group position={[-36, 0, -6]} rotation={[0, -0.22, 0]}>
+      <group position={[-34, 0, 0]} rotation={[0, -0.24, 0]}>
         <mesh position={[0, -0.4, 0]} receiveShadow>
-          <boxGeometry args={[14, 0.8, 26]} />
+          <boxGeometry args={[12, 0.8, 24]} />
           <meshStandardMaterial
             color="#141124"
             roughness={0.48}
@@ -93,7 +93,7 @@ export default function FloorAndEnvironment() {
         </mesh>
         {/* Base Accent strictly BELOW at y=-0.82 */}
         <mesh position={[0, -0.82, 0]}>
-          <boxGeometry args={[14.5, 0.08, 26.5]} />
+          <boxGeometry args={[12.4, 0.08, 24.4]} />
           <meshStandardMaterial color="#9333ea" emissive="#7e22ce" emissiveIntensity={0.6} />
         </mesh>
       </group>
@@ -136,32 +136,32 @@ export default function FloorAndEnvironment() {
         </mesh>
       </group>
 
-      {/* Internal Serpentine Partition Walls (From Blueprint) */}
-      <group position={[0, 0.7, 0]}>
-        {/* Horizontal divider above P07-P10 */}
-        <mesh position={[7.5, 0, -11.5]}>
-          <boxGeometry args={[21, 1.4, 0.15]} />
-          <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.2} transparent opacity={0.85} />
+      {/* Central Spine Divider between Left & Right Horseshoe Clusters (From Blueprint) */}
+      <group position={[0.5, 0.7, -2.5]}>
+        {/* Longitudinal partition separating P11-D04 row and D10-D05 row */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[0.2, 1.4, 30]} />
+          <meshStandardMaterial color="#334155" metalness={0.7} roughness={0.3} />
         </mesh>
-        <mesh position={[18, 0, -9.25]}>
-          <boxGeometry args={[0.15, 1.4, 4.5]} />
-          <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.2} transparent opacity={0.85} />
-        </mesh>
+      </group>
 
-        {/* Partition 2 (Between P11-D02 and D05-D08) */}
-        <mesh position={[7.5, 0, 2.5]}>
-          <boxGeometry args={[21, 1.4, 0.15]} />
-          <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.2} transparent opacity={0.85} />
+      {/* Decorative Plants in Top Right Corner (next to B02/B03 as in Blueprint) */}
+      <group position={[18.5, 0, -16.5]}>
+        <mesh position={[0, 0.4, 0]}>
+          <cylinderGeometry args={[0.35, 0.28, 0.8, 16]} />
+          <meshStandardMaterial color="#334155" />
         </mesh>
-        <mesh position={[18, 0, 4.75]}>
-          <boxGeometry args={[0.15, 1.4, 4.5]} />
-          <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.2} transparent opacity={0.85} />
+        <mesh position={[0, 1.0, 0]}>
+          <sphereGeometry args={[0.48, 16, 16]} />
+          <meshStandardMaterial color="#10b981" roughness={0.6} />
         </mesh>
-
-        {/* Partition 3 (Between D09-D12 and Business B aisle) */}
-        <mesh position={[7.5, 0, 15]}>
-          <boxGeometry args={[21, 1.4, 0.15]} />
-          <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.2} transparent opacity={0.85} />
+        <mesh position={[1.1, 0.35, 0.8]}>
+          <cylinderGeometry args={[0.3, 0.24, 0.7, 16]} />
+          <meshStandardMaterial color="#334155" />
+        </mesh>
+        <mesh position={[1.1, 0.9, 0.8]}>
+          <sphereGeometry args={[0.42, 16, 16]} />
+          <meshStandardMaterial color="#059669" roughness={0.6} />
         </mesh>
       </group>
 

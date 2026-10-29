@@ -12,20 +12,20 @@ export type NavZoneId =
   | 'business';
 
 export const CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
-  // Zoomed-out master view matching user screenshot: captures Show & Tell, Main Hall, Robotics, and overhead banner
+  // Zoomed-out master view capturing full floor & cosmos
   overview: {
     position: [-10, 74, 56],
     target: [-10, 0, -14],
   },
   'zone-1': {
-    // Show & Tell angled pavilion
-    position: [-36, 22, 14],
-    target: [-36, 1.2, -6],
+    // Show & Tell angled dual-row pavilion
+    position: [-34, 20, 16],
+    target: [-34, 1.2, 0],
   },
   'zone-2': {
     // Main Hall comprehensive view
-    position: [12, 34, 28],
-    target: [12, 1.2, 2],
+    position: [0, 36, 26],
+    target: [0, 1.2, -3],
   },
   'zone-3': {
     // Robotics arenas
@@ -33,19 +33,19 @@ export const CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
     target: [-1, 1.2, -36],
   },
   physical: {
-    // Physical Booths P01-P12
-    position: [13, 26, 12],
-    target: [13, 1.2, -9],
+    // Physical Booths P01-P12 in Left Horseshoe Cluster
+    position: [-10, 26, 16],
+    target: [-10, 1.2, -3],
   },
   digital: {
-    // Digital Booths D01-D12
-    position: [13, 26, 26],
-    target: [13, 1.2, 5],
+    // Digital Booths D01-D12 central view
+    position: [0, 26, 16],
+    target: [0, 1.2, -3],
   },
   business: {
-    // Business Booths B01-B07
-    position: [13, 24, 36],
-    target: [13, 1.2, 17],
+    // Business Booths B01-B07 in Right Horseshoe Cluster
+    position: [12, 26, 16],
+    target: [12, 1.2, -3],
   },
 };
 
@@ -55,28 +55,28 @@ export const MOBILE_CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
     target: [-10, 0, -14],
   },
   'zone-1': {
-    position: [-36, 30, 18],
-    target: [-36, 1.2, -6],
+    position: [-34, 28, 20],
+    target: [-34, 1.2, 0],
   },
   'zone-2': {
-    position: [12, 44, 36],
-    target: [12, 1.2, 2],
+    position: [0, 46, 36],
+    target: [0, 1.2, -3],
   },
   'zone-3': {
     position: [-1, 40, -10],
     target: [-1, 1.2, -36],
   },
   physical: {
-    position: [13, 34, 18],
-    target: [13, 1.2, -9],
+    position: [-10, 34, 24],
+    target: [-10, 1.2, -3],
   },
   digital: {
-    position: [13, 34, 32],
-    target: [13, 1.2, 5],
+    position: [0, 34, 24],
+    target: [0, 1.2, -3],
   },
   business: {
-    position: [13, 32, 42],
-    target: [13, 1.2, 17],
+    position: [12, 34, 24],
+    target: [12, 1.2, -3],
   },
 };
 

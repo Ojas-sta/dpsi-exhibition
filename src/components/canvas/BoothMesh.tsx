@@ -98,6 +98,7 @@ export default function BoothMesh({ project }: BoothMeshProps) {
     <group
       ref={meshGroupRef}
       position={[project.position_x, project.position_y, project.position_z]}
+      rotation={[0, project.rotation_y || 0, 0]}
       onClick={handleClick}
       onPointerDown={isMobile ? handleClick : undefined}
       onPointerOver={(e) => {
@@ -177,7 +178,7 @@ export default function BoothMesh({ project }: BoothMeshProps) {
       </mesh>
 
       {/* 4. Two Exhibitor Red Chairs / Stools (from Blueprint) */}
-      <group position={[0, 0, 0.85]}>
+      <group position={[0, 0, -0.85]}>
         <mesh position={[-0.5, 0.35, 0]} castShadow>
           <boxGeometry args={[0.4, 0.08, 0.4]} />
           <meshStandardMaterial color="#dc2626" roughness={0.4} />
