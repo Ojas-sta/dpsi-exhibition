@@ -1,7 +1,7 @@
 'use client';
 
 import { useExhibitionStore } from '@/store/useExhibitionStore';
-import { ZoomIn, ZoomOut, RotateCcw, Compass } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 export default function CameraControlsWidget() {
   const viewMode = useExhibitionStore((state) => state.viewMode);

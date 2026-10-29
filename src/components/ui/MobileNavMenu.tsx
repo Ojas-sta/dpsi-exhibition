@@ -39,7 +39,7 @@ export default function MobileNavMenu() {
     title: string;
     subtitle: string;
     badge: string;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     color: string;
   }[] = [
     {

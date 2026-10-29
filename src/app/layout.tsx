@@ -35,6 +35,9 @@ export const metadata: Metadata = {
   },
 };
 
+import AmbientBackground from '@/components/ui/AmbientBackground';
+import CustomCursor from '@/components/ui/CustomCursor';
+
 export default function RootLayout({
   children,
 }: {
@@ -43,10 +46,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${spaceGrotesk.variable} h-full dark antialiased`}
+      className={`${outfit.variable} ${spaceGrotesk.variable} dark antialiased`}
     >
-      <body className="h-full w-full overflow-hidden bg-[#070b14] text-[#f1f5f9] font-sans select-none touch-manipulation">
-        {children}
+      <body className="min-h-screen w-full bg-[#000000] text-[#f1f5f9] font-sans selection:bg-[#2ea043] selection:text-black relative">
+        {/* [ ELEMENT 04 ] :: REFRACTIVE GLASS AERO-SHARDS SIMULATION in the background of all pages */}
+        <AmbientBackground />
+
+        {/* Dynamic BlobCursor liquid chrome pointer element that renders behind text */}
+        <CustomCursor />
+
+        <div className="relative z-10">
+          {children}
+        </div>
       </body>
     </html>
   );

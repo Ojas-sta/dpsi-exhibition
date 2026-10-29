@@ -1,12 +1,10 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
-import { CategoryType, Project } from '@/types';
-import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient';
+import { CategoryType } from '@/types';
 import {
-  Trophy,
   X,
   Medal,
   ThumbsUp,
@@ -28,36 +26,9 @@ export default function LiveLeaderboard() {
   const isLeaderboardOpen = useExhibitionStore((state) => state.isLeaderboardOpen);
   const setLeaderboardOpen = useExhibitionStore((state) => state.setLeaderboardOpen);
   const projects = useExhibitionStore((state) => state.projects);
-  const setProjects = useExhibitionStore((state) => state.setProjects);
   const selectProject = useExhibitionStore((state) => state.selectProject);
   const activeTab = useExhibitionStore((state) => state.activeLeaderboardTab);
   const setActiveTab = useExhibitionStore((state) => state.setActiveLeaderboardTab);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return;
-
-    const channel = supabase
-      .channel('realtime_projects_leaderboard')
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'projects' },
-        (payload) => {
-          const updatedRow = payload.new as Project;
-          const currentList = useExhibitionStore.getState().projects;
-          const nextList = currentList.map((p) =>
-            p.id === updatedRow.id ? { ...p, vote_count: updatedRow.vote_count } : p
-          );
-          setProjects(nextList);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      if (supabase) {
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [setProjects]);
 
   const sortedProjects = useMemo(() => {
     const list =

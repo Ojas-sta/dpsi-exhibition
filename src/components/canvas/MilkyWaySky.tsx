@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo, Suspense } from 'react';
+import { useRef, useEffect, Suspense } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
@@ -11,8 +11,9 @@ function MilkyWaySphere({ isMobile }: { isMobile: boolean }) {
   const texture = useTexture(texturePath);
   const meshRef = useRef<THREE.Mesh>(null);
 
-  useMemo(() => {
+  useEffect(() => {
     if (texture) {
+      // eslint-disable-next-line react-hooks/immutability
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.ClampToEdgeWrapping;

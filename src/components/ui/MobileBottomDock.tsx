@@ -9,7 +9,6 @@ import {
   User,
   LogOut,
   Search,
-  Compass,
 } from 'lucide-react';
 
 export default function MobileBottomDock() {

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Project, ZoneType, CategoryType, CameraViewConfig } from '@/types';
+import { Project, CategoryType, CameraViewConfig } from '@/types';
 import { SEED_PROJECTS } from '@/data/seedProjects';
 
 export type NavZoneId =
@@ -98,6 +98,7 @@ interface ExhibitionState {
   isDrawerOpen: boolean;
   isAuthModalOpen: boolean;
   isSearchOpen: boolean;
+  isSearchModalOpen: boolean;
   isMobileMenuOpen: boolean;
   activeLeaderboardTab: CategoryType | 'All';
 
@@ -116,6 +117,7 @@ interface ExhibitionState {
   setDrawerOpen: (open: boolean) => void;
   setAuthModalOpen: (open: boolean) => void;
   setSearchOpen: (open: boolean) => void;
+  setSearchModalOpen: (open: boolean) => void;
   setMobileMenuOpen: (open: boolean) => void;
   setActiveLeaderboardTab: (tab: CategoryType | 'All') => void;
   setDeviceFingerprint: (fingerprint: string) => void;
@@ -138,6 +140,7 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
   isDrawerOpen: false,
   isAuthModalOpen: false,
   isSearchOpen: false,
+  isSearchModalOpen: false,
   isMobileMenuOpen: false,
   activeLeaderboardTab: 'All',
 
@@ -201,7 +204,8 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
   setLeaderboardOpen: (open) => set({ isLeaderboardOpen: open }),
   setDrawerOpen: (open) => set({ isDrawerOpen: open }),
   setAuthModalOpen: (open) => set({ isAuthModalOpen: open }),
-  setSearchOpen: (open) => set({ isSearchOpen: open }),
+  setSearchOpen: (open) => set({ isSearchOpen: open, isSearchModalOpen: open }),
+  setSearchModalOpen: (open) => set({ isSearchOpen: open, isSearchModalOpen: open }),
   setMobileMenuOpen: (open) => set({ isMobileMenuOpen: open }),
   setActiveLeaderboardTab: (tab) => set({ activeLeaderboardTab: tab }),
   setDeviceFingerprint: (fingerprint) => set({ deviceFingerprint: fingerprint }),

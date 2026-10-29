@@ -6,15 +6,12 @@ import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { signInWithGoogle, signInWithGoogleRedirect, signInAsGuest } from '@/lib/firebase';
 import {
   X,
-  CheckCircle2,
   ShieldCheck,
   UserCheck,
   AlertCircle,
-  Sparkles,
   ArrowRight,
   User,
   Mail,
-  ExternalLink,
 } from 'lucide-react';
 
 export default function AuthModal() {

@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -45,5 +46,5 @@ next-env.d.ts
 
 # Firebase Functions build and deps
 **/node_modules/
-**/lib/
+/firebase-functions/lib/
 .agents/

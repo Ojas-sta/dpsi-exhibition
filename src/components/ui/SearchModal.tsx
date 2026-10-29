@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { Project } from '@/types';
 import { Search, X, MapPin, Users, Sparkles, ArrowRight } from 'lucide-react';
@@ -16,6 +16,11 @@ export default function SearchModal() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const handleClose = useCallback(() => {
+    setQuery('');
+    setSearchOpen(false);
+  }, [setSearchOpen]);
+
   // Keyboard shortcut listener (Cmd+K / Ctrl+K / slash)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -26,23 +31,22 @@ export default function SearchModal() {
         e.preventDefault();
         setSearchOpen(true);
       } else if (e.key === 'Escape' && isSearchOpen) {
-        setSearchOpen(false);
+        handleClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSearchOpen, setSearchOpen]);
+  }, [isSearchOpen, setSearchOpen, handleClose]);
 
   // Auto focus input on modal open
   useEffect(() => {
     if (isSearchOpen) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         inputRef.current?.focus();
+        setSelectedIndex(0);
       }, 50);
-      setSelectedIndex(0);
-    } else {
-      setQuery('');
+      return () => clearTimeout(timer);
     }
   }, [isSearchOpen]);
 
@@ -81,7 +85,7 @@ export default function SearchModal() {
   const handleSelect = (project: Project) => {
     setViewMode('3d');
     selectProject(project);
-    setSearchOpen(false);
+    handleClose();
   };
 
   if (!isSearchOpen) return null;
@@ -91,7 +95,7 @@ export default function SearchModal() {
       {/* Backdrop tap to close */}
       <div
         className="fixed inset-0"
-        onClick={() => setSearchOpen(false)}
+        onClick={handleClose}
         aria-hidden="true"
       />
 
@@ -131,7 +135,7 @@ export default function SearchModal() {
           {filteredProjects.length === 0 ? (
             <div className="py-12 text-center text-slate-500">
               <Sparkles className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-60" />
-              <p className="text-sm font-medium">No exhibition projects matched "{query}"</p>
+              <p className="text-sm font-medium">No exhibition projects matched &quot;{query}&quot;</p>
               <p className="text-xs text-slate-600 mt-1">Try searching by student name, code (P01-P12, D01-D12), or topic</p>
             </div>
           ) : (

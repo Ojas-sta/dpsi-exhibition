@@ -1,0 +1,484 @@
+'use client';
+
+import React, { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, CSSProperties } from 'react';
+import { gsap } from 'gsap';
+
+import './TextLoop.css';
+
+const VIEW_W = 1200;
+const VIEW_H = 520;
+const CX = VIEW_W / 2;
+const CY = VIEW_H / 2;
+const EDGE_PAD = 6;
+const FADE_STEPS = 8;
+const MAX_FLING = 2600;
+const MAX_BOOST = 1600;
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+const smootherstep = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
+const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+const wrap = (v: number, length: number) => {
+  if (length <= 0) return 0;
+  return ((v % length) + length) % length;
+};
+
+const circleRadius = (curviness: number, ribbonWidth: number, cy: number) =>
+  Math.min(90 + Math.max(0, curviness) * 0.95, Math.max(20, cy - Math.max(0, ribbonWidth) / 2 - EDGE_PAD));
+
+const buildPath = (shape: string, curviness: number, ribbonWidth: number, cy: number, mirrored = false) => {
+  const c = Math.max(0, curviness);
+  const room = Math.max(16, cy - Math.max(0, ribbonWidth) / 2 - EDGE_PAD);
+  const flip = mirrored ? -1 : 1;
+
+  switch (shape) {
+    case 'circle': {
+      const r = circleRadius(curviness, ribbonWidth, cy);
+      if (mirrored) {
+        const rx = r * 1.22;
+        const ry = r * 0.42;
+        return `M ${CX - rx} ${cy} A ${rx} ${ry} 0 1 1 ${CX + rx} ${cy} A ${rx} ${ry} 0 1 1 ${CX - rx} ${cy} Z`;
+      }
+      return `M ${CX - r} ${cy} A ${r} ${r} 0 1 1 ${CX + r} ${cy} A ${r} ${r} 0 1 1 ${CX - r} ${cy} Z`;
+    }
+    case 'infinity': {
+      const r = 150 + c * 1.4;
+      const h = Math.min(60 + c * 0.95, room);
+      return [
+        `M ${CX} ${cy}`,
+        `C ${CX + r * 0.55} ${cy - h} ${CX + r} ${cy - h} ${CX + r} ${cy}`,
+        `C ${CX + r} ${cy + h} ${CX + r * 0.55} ${cy + h} ${CX} ${cy}`,
+        `C ${CX - r * 0.55} ${cy - h} ${CX - r} ${cy - h} ${CX - r} ${cy}`,
+        `C ${CX - r} ${cy + h} ${CX - r * 0.55} ${cy + h} ${CX} ${cy}`,
+        'Z'
+      ].join(' ');
+    }
+    case 'arch': {
+      const rise = Math.min(60 + c * 0.6, room * 1.8) * flip;
+      return `M 120 ${cy + rise / 2} Q ${CX} ${cy - rise * 1.4} ${VIEW_W - 120} ${cy + rise / 2}`;
+    }
+    case 'line':
+      return `M -320 ${cy} L ${VIEW_W + 320} ${cy}`;
+    case 'wave':
+    default: {
+      const a = Math.min(c * 1.1, room * 0.85) * flip;
+      return `M -320 ${cy} Q -160 ${cy - a} 0 ${cy} T 320 ${cy} T 640 ${cy} T 960 ${cy} T 1280 ${cy} T ${VIEW_W + 320} ${cy}`;
+    }
+  }
+};
+
+const buildFade = (edgeFade: number) => {
+  const width = Math.min(1, Math.max(0, edgeFade)) * 0.3;
+  if (width <= 0) return [];
+  const stops: { offset: number; opacity: number }[] = [];
+  for (let i = 0; i <= FADE_STEPS; i++) {
+    const t = i / FADE_STEPS;
+    stops.push({ offset: t * width, opacity: smootherstep(t) });
+  }
+  for (let i = FADE_STEPS; i >= 0; i--) {
+    const t = i / FADE_STEPS;
+    stops.push({ offset: 1 - t * width, opacity: smootherstep(t) });
+  }
+  return stops;
+};
+
+const parseHex = (value: string) => {
+  const match = /^#?([\da-f]{3}|[\da-f]{6})$/i.exec(String(value || '').trim());
+  if (!match) return null;
+  const hex = match[1].length === 3 ? match[1].replace(/./g, ch => ch + ch) : match[1];
+  return [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16));
+};
+
+const tint = (color: string, amount: number) => {
+  const rgb = parseHex(color);
+  if (!rgb) return color;
+  return `#${rgb
+    .map(v =>
+      Math.round(v + (255 - v) * amount)
+        .toString(16)
+        .padStart(2, '0')
+    )
+    .join('')}`;
+};
+
+const inkOn = (color: string) => {
+  const rgb = parseHex(color);
+  if (!rgb) return '#ffffff';
+  const [r, g, b] = rgb.map(v => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.2 ? '#120f17' : '#ffffff';
+};
+
+export interface TextLoopProps {
+  text?: string;
+  shape?: 'wave' | 'circle' | 'infinity' | 'arch' | 'line';
+  path?: string;
+  speed?: number;
+  direction?: 'forward' | 'reverse';
+  separator?: string;
+  curviness?: number;
+  tilt?: number;
+  fontSize?: number;
+  fontWeight?: number | string;
+  letterSpacing?: number;
+  uppercase?: boolean;
+  color?: string;
+  ribbon?: boolean;
+  ribbonColor?: string;
+  ribbonWidth?: number;
+  edgeFade?: number;
+  pauseOnHover?: boolean;
+  cross?: boolean;
+  crossColor?: string;
+  crossAngle?: number;
+  draggable?: boolean;
+  scrollBoost?: number;
+  outline?: boolean;
+  outlineWidth?: number;
+  className?: string;
+  style?: CSSProperties;
+}
+
+export default function TextLoop({
+  text = 'React ✦ Bits',
+  shape = 'wave',
+  path,
+  speed = 90,
+  direction = 'forward',
+  separator = '✦',
+  curviness = 90,
+  tilt = 0,
+  fontSize = 46,
+  fontWeight = 800,
+  letterSpacing = 2,
+  uppercase = true,
+  color,
+  ribbon = true,
+  ribbonColor = '#5227FF',
+  ribbonWidth = 86,
+  edgeFade = 0,
+  pauseOnHover = true,
+  cross = false,
+  crossColor,
+  crossAngle = 16,
+  draggable = false,
+  scrollBoost = 0,
+  outline = false,
+  outlineWidth = 1.5,
+  className = '',
+  style = {}
+}: TextLoopProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const crossPathRef = useRef<SVGPathElement>(null);
+  const measureRef = useRef<SVGTextElement>(null);
+  const headRef = useRef<SVGTextPathElement>(null);
+  const crossHeadRef = useRef<SVGTextPathElement>(null);
+  
+  const progressRef = useRef(0);
+  const crossProgressRef = useRef(0);
+  const hoverScaleRef = useRef(1);
+  const velocityRef = useRef(0);
+
+  const [metrics, setMetrics] = useState({ length: 0, reps: 2, unitWidth: 0, crossLength: 0, crossReps: 2 });
+
+  const rawId = useId();
+  const pathId = `text-loop-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const crossId = `${pathId}-cross`;
+  const fadeId = `${pathId}-fade`;
+  const maskId = `${pathId}-mask`;
+
+  const viewHeight = shape === 'circle' || shape === 'infinity' ? 440 : shape === 'arch' ? 220 : 130;
+  const cy = viewHeight / 2;
+
+  const d = useMemo(() => path || buildPath(shape, curviness, ribbonWidth, cy), [path, shape, curviness, ribbonWidth, cy]);
+  const crossD = useMemo(() => {
+    if (!cross) return '';
+    if (path) return path;
+    return buildPath(shape, curviness, ribbonWidth, cy, shape === 'wave' || shape === 'arch' || shape === 'circle');
+  }, [cross, path, shape, curviness, ribbonWidth, cy]);
+  const fade = useMemo(() => buildFade(edgeFade), [edgeFade]);
+  const fill = color || (ribbon ? '#ffffff' : 'currentColor');
+
+  const half = cross ? crossAngle / 2 : 0;
+  const mainAngle = tilt + half;
+  const crossAngleDeg = tilt - half;
+  const mainTransform = mainAngle ? `rotate(${mainAngle} ${CX} ${cy})` : undefined;
+  const crossTransform = crossAngleDeg ? `rotate(${crossAngleDeg} ${CX} ${cy})` : undefined;
+  const crossTape = crossColor || tint(ribbonColor, 0.62);
+  const crossFill = ribbon ? inkOn(crossTape) : crossColor || 'currentColor';
+  const crossDim = !ribbon && !crossColor ? 0.45 : 1;
+
+  const unit = useMemo(() => {
+    const base = uppercase ? String(text).toUpperCase() : String(text);
+    const gap = separator ? `\u00A0${separator}\u00A0` : '\u00A0\u00A0\u00A0';
+    return `${base}${gap}`;
+  }, [text, separator, uppercase]);
+
+  const textStyle: CSSProperties = useMemo(
+    () => ({ fontSize: `${fontSize}px`, fontWeight, letterSpacing: `${letterSpacing}px`, fontFamily: 'inherit' }),
+    [fontSize, fontWeight, letterSpacing]
+  );
+
+  useIsomorphicLayoutEffect(() => {
+    const pathEl = pathRef.current;
+    const measureEl = measureRef.current;
+    if (!pathEl || !measureEl) return;
+
+    let cancelled = false;
+
+    const measure = () => {
+      if (cancelled) return;
+      let length = 0;
+      let unitWidth = 0;
+      let crossLength = 0;
+      try {
+        length = pathEl.getTotalLength();
+        unitWidth = measureEl.getComputedTextLength();
+        crossLength = crossPathRef.current ? crossPathRef.current.getTotalLength() : 0;
+      } catch {
+        return;
+      }
+      if (!length) return;
+
+      const estimatedUnitWidth = Math.max(200, unit.length * (fontSize * 0.65 + (letterSpacing || 0)));
+      const actualUnitWidth = unitWidth > 50 ? unitWidth : estimatedUnitWidth;
+      const repsFor = (total: number) => Math.max(2, Math.ceil((total + actualUnitWidth * 2) / actualUnitWidth) + 1);
+      const next = { length, reps: repsFor(length), unitWidth: actualUnitWidth, crossLength, crossReps: repsFor(crossLength) };
+      setMetrics(prev =>
+        prev.length === next.length &&
+        prev.reps === next.reps &&
+        prev.unitWidth === next.unitWidth &&
+        prev.crossLength === next.crossLength &&
+        prev.crossReps === next.crossReps
+          ? prev
+          : next
+      );
+    };
+
+    measure();
+    if (typeof document !== 'undefined' && (document as any).fonts?.ready) {
+      (document as any).fonts.ready.then(measure).catch(() => {});
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [d, crossD, unit, fontSize, fontWeight, letterSpacing]);
+
+  // Repeated text string
+  const repeatedMainText = useMemo(() => {
+    return unit.repeat(Math.max(2, metrics.reps));
+  }, [unit, metrics.reps]);
+
+  const repeatedCrossText = useMemo(() => {
+    return unit.repeat(Math.max(2, metrics.crossReps));
+  }, [unit, metrics.crossReps]);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    let isDragging = false;
+    let lastX = 0;
+
+    const onEnter = () => {
+      if (pauseOnHover) {
+        gsap.to(hoverScaleRef, { current: 0, duration: 0.35, ease: 'power2.out' });
+      }
+    };
+    const onLeave = () => {
+      if (pauseOnHover) {
+        gsap.to(hoverScaleRef, { current: 1, duration: 0.5, ease: 'power2.out' });
+      }
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (!draggable) return;
+      isDragging = true;
+      lastX = e.clientX;
+      velocityRef.current = 0;
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging) return;
+      const dx = e.clientX - lastX;
+      lastX = e.clientX;
+      velocityRef.current = dx * 60;
+      progressRef.current += dx;
+      crossProgressRef.current -= dx;
+    };
+
+    const onPointerUp = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      gsap.to(velocityRef, { current: 0, duration: 0.8, ease: 'power2.out' });
+    };
+
+    root.addEventListener('pointerenter', onEnter);
+    root.addEventListener('pointerleave', onLeave);
+    if (draggable) {
+      root.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    }
+
+    // Scroll boost listener
+    let scrollTimeout: NodeJS.Timeout | null = null;
+    let boostVel = 0;
+    const onScroll = () => {
+      if (scrollBoost <= 0) return;
+      boostVel = clamp(scrollBoost * 30, -MAX_BOOST, MAX_BOOST);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        gsap.to({ b: boostVel }, {
+          b: 0,
+          duration: 0.5,
+          onUpdate() {
+            boostVel = (this as any).targets()[0].b;
+          }
+        });
+      }, 50);
+    };
+    if (scrollBoost > 0) {
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
+
+    // GSAP Ticker Loop
+    const dirSign = direction === 'forward' ? 1 : -1;
+    const ticker = (_time: number, deltaTime: number) => {
+      const wrapSpan = metrics.unitWidth > 50 ? metrics.unitWidth : (metrics.length || 1000);
+      const dt = deltaTime / 1000;
+      const currentSpeed = (speed * dirSign * hoverScaleRef.current + boostVel + (isDragging ? 0 : velocityRef.current)) * dt;
+      
+      progressRef.current = wrap(progressRef.current + currentSpeed, wrapSpan);
+      if (headRef.current) {
+        headRef.current.setAttribute('startOffset', `${-progressRef.current}`);
+      }
+
+      if (crossHeadRef.current) {
+        crossProgressRef.current = wrap(crossProgressRef.current - currentSpeed, wrapSpan);
+        crossHeadRef.current.setAttribute('startOffset', `${-crossProgressRef.current}`);
+      }
+    };
+
+    gsap.ticker.add(ticker);
+
+    return () => {
+      gsap.ticker.remove(ticker);
+      root.removeEventListener('pointerenter', onEnter);
+      root.removeEventListener('pointerleave', onLeave);
+      if (draggable) {
+        root.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+      }
+      if (scrollBoost > 0) {
+        window.removeEventListener('scroll', onScroll);
+      }
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+    };
+  }, [speed, direction, pauseOnHover, draggable, scrollBoost, metrics.length, metrics.unitWidth, metrics.crossLength]);
+
+  return (
+    <div
+      ref={rootRef}
+      className={['text-loop-wrapper', className].filter(Boolean).join(' ')}
+      style={{
+        position: 'relative',
+        width: '100%',
+        overflow: 'hidden',
+        cursor: draggable ? 'grab' : 'default',
+        ...style
+      }}
+    >
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${VIEW_W} ${viewHeight}`}
+        className="text-loop-svg"
+        style={{ width: '100%', height: 'auto', display: 'block' }}
+      >
+        <defs>
+          <path id={pathId} ref={pathRef} d={d} fill="none" />
+          {cross && <path id={crossId} ref={crossPathRef} d={crossD} fill="none" />}
+          {fade.length > 0 && (
+            <linearGradient id={fadeId} x1="0%" y1="0%" x2="100%" y2="0%">
+              {fade.map((stop, i) => (
+                <stop key={i} offset={`${stop.offset * 100}%`} stopColor="white" stopOpacity={stop.opacity} />
+              ))}
+            </linearGradient>
+          )}
+          {fade.length > 0 && (
+            <mask id={maskId}>
+              <rect width={VIEW_W} height={viewHeight} fill={`url(#${fadeId})`} />
+            </mask>
+          )}
+        </defs>
+
+        {/* Hidden text measuring node */}
+        <text ref={measureRef} style={{ ...textStyle, visibility: 'hidden', position: 'absolute' }}>
+          {unit}
+        </text>
+
+        <g mask={fade.length > 0 ? `url(#${maskId})` : undefined}>
+          {/* Ribbon paths */}
+          {cross && ribbon && (
+            <path
+              d={crossD}
+              transform={crossTransform}
+              fill="none"
+              stroke={crossTape}
+              strokeWidth={ribbonWidth}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+          {ribbon && (
+            <path
+              d={d}
+              transform={mainTransform}
+              fill="none"
+              stroke={ribbonColor}
+              strokeWidth={ribbonWidth}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+
+          {/* Cross Ribbon Text */}
+          {cross && (
+            <g transform={crossTransform} opacity={crossDim}>
+              <text
+                style={textStyle}
+                fill={outline ? 'none' : crossFill}
+                stroke={outline ? crossFill : undefined}
+                strokeWidth={outline ? outlineWidth : undefined}
+              >
+                <textPath ref={crossHeadRef} href={`#${crossId}`} startOffset="0">
+                  {repeatedCrossText}
+                </textPath>
+              </text>
+            </g>
+          )}
+
+          {/* Main Ribbon Text */}
+          <g transform={mainTransform}>
+            <text
+              style={textStyle}
+              fill={outline ? 'none' : fill}
+              stroke={outline ? fill : undefined}
+              strokeWidth={outline ? outlineWidth : undefined}
+            >
+              <textPath ref={headRef} href={`#${pathId}`} startOffset="0">
+                {repeatedMainText}
+              </textPath>
+            </text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  );
+}
