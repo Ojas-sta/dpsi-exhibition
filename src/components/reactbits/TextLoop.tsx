@@ -23,46 +23,46 @@ const wrap = (v: number, length: number) => {
   return ((v % length) + length) % length;
 };
 
-const circleRadius = (curviness: number, ribbonWidth: number) =>
-  Math.min(90 + Math.max(0, curviness) * 0.95, Math.max(20, CY - Math.max(0, ribbonWidth) / 2 - EDGE_PAD));
+const circleRadius = (curviness: number, ribbonWidth: number, cy: number) =>
+  Math.min(90 + Math.max(0, curviness) * 0.95, Math.max(20, cy - Math.max(0, ribbonWidth) / 2 - EDGE_PAD));
 
-const buildPath = (shape: string, curviness: number, ribbonWidth: number, mirrored = false) => {
+const buildPath = (shape: string, curviness: number, ribbonWidth: number, cy: number, mirrored = false) => {
   const c = Math.max(0, curviness);
-  const room = Math.max(20, CY - Math.max(0, ribbonWidth) / 2 - EDGE_PAD);
+  const room = Math.max(16, cy - Math.max(0, ribbonWidth) / 2 - EDGE_PAD);
   const flip = mirrored ? -1 : 1;
 
   switch (shape) {
     case 'circle': {
-      const r = circleRadius(curviness, ribbonWidth);
+      const r = circleRadius(curviness, ribbonWidth, cy);
       if (mirrored) {
         const rx = r * 1.22;
         const ry = r * 0.42;
-        return `M ${CX - rx} ${CY} A ${rx} ${ry} 0 1 1 ${CX + rx} ${CY} A ${rx} ${ry} 0 1 1 ${CX - rx} ${CY} Z`;
+        return `M ${CX - rx} ${cy} A ${rx} ${ry} 0 1 1 ${CX + rx} ${cy} A ${rx} ${ry} 0 1 1 ${CX - rx} ${cy} Z`;
       }
-      return `M ${CX - r} ${CY} A ${r} ${r} 0 1 1 ${CX + r} ${CY} A ${r} ${r} 0 1 1 ${CX - r} ${CY} Z`;
+      return `M ${CX - r} ${cy} A ${r} ${r} 0 1 1 ${CX + r} ${cy} A ${r} ${r} 0 1 1 ${CX - r} ${cy} Z`;
     }
     case 'infinity': {
       const r = 150 + c * 1.4;
       const h = Math.min(60 + c * 0.95, room);
       return [
-        `M ${CX} ${CY}`,
-        `C ${CX + r * 0.55} ${CY - h} ${CX + r} ${CY - h} ${CX + r} ${CY}`,
-        `C ${CX + r} ${CY + h} ${CX + r * 0.55} ${CY + h} ${CX} ${CY}`,
-        `C ${CX - r * 0.55} ${CY - h} ${CX - r} ${CY - h} ${CX - r} ${CY}`,
-        `C ${CX - r} ${CY + h} ${CX - r * 0.55} ${CY + h} ${CX} ${CY}`,
+        `M ${CX} ${cy}`,
+        `C ${CX + r * 0.55} ${cy - h} ${CX + r} ${cy - h} ${CX + r} ${cy}`,
+        `C ${CX + r} ${cy + h} ${CX + r * 0.55} ${cy + h} ${CX} ${cy}`,
+        `C ${CX - r * 0.55} ${cy - h} ${CX - r} ${cy - h} ${CX - r} ${cy}`,
+        `C ${CX - r} ${cy + h} ${CX - r * 0.55} ${cy + h} ${CX} ${cy}`,
         'Z'
       ].join(' ');
     }
     case 'arch': {
-      const rise = Math.min(120 + c * 1.1, room * 2) * flip;
-      return `M 120 ${CY + rise / 2} Q ${CX} ${CY - rise * 1.5} ${VIEW_W - 120} ${CY + rise / 2}`;
+      const rise = Math.min(60 + c * 0.6, room * 1.8) * flip;
+      return `M 120 ${cy + rise / 2} Q ${CX} ${cy - rise * 1.4} ${VIEW_W - 120} ${cy + rise / 2}`;
     }
     case 'line':
-      return `M -320 ${CY} L ${VIEW_W + 320} ${CY}`;
+      return `M -320 ${cy} L ${VIEW_W + 320} ${cy}`;
     case 'wave':
     default: {
-      const a = Math.min(c * 2.2, room * 2) * flip;
-      return `M -320 ${CY} Q -160 ${CY - a} 0 ${CY} T 320 ${CY} T 640 ${CY} T 960 ${CY} T 1280 ${CY} T ${VIEW_W + 320} ${CY}`;
+      const a = Math.min(c * 1.1, room * 0.85) * flip;
+      return `M -320 ${cy} Q -160 ${cy - a} 0 ${cy} T 320 ${cy} T 640 ${cy} T 960 ${cy} T 1280 ${cy} T ${VIEW_W + 320} ${cy}`;
     }
   }
 };
@@ -193,20 +193,23 @@ export default function TextLoop({
   const fadeId = `${pathId}-fade`;
   const maskId = `${pathId}-mask`;
 
-  const d = useMemo(() => path || buildPath(shape, curviness, ribbonWidth), [path, shape, curviness, ribbonWidth]);
+  const viewHeight = shape === 'circle' || shape === 'infinity' ? 440 : shape === 'arch' ? 220 : 130;
+  const cy = viewHeight / 2;
+
+  const d = useMemo(() => path || buildPath(shape, curviness, ribbonWidth, cy), [path, shape, curviness, ribbonWidth, cy]);
   const crossD = useMemo(() => {
     if (!cross) return '';
     if (path) return path;
-    return buildPath(shape, curviness, ribbonWidth, shape === 'wave' || shape === 'arch' || shape === 'circle');
-  }, [cross, path, shape, curviness, ribbonWidth]);
+    return buildPath(shape, curviness, ribbonWidth, cy, shape === 'wave' || shape === 'arch' || shape === 'circle');
+  }, [cross, path, shape, curviness, ribbonWidth, cy]);
   const fade = useMemo(() => buildFade(edgeFade), [edgeFade]);
   const fill = color || (ribbon ? '#ffffff' : 'currentColor');
 
   const half = cross ? crossAngle / 2 : 0;
   const mainAngle = tilt + half;
   const crossAngleDeg = tilt - half;
-  const mainTransform = mainAngle ? `rotate(${mainAngle} ${CX} ${CY})` : undefined;
-  const crossTransform = crossAngleDeg ? `rotate(${crossAngleDeg} ${CX} ${CY})` : undefined;
+  const mainTransform = mainAngle ? `rotate(${mainAngle} ${CX} ${cy})` : undefined;
+  const crossTransform = crossAngleDeg ? `rotate(${crossAngleDeg} ${CX} ${cy})` : undefined;
   const crossTape = crossColor || tint(ribbonColor, 0.62);
   const crossFill = ribbon ? inkOn(crossTape) : crossColor || 'currentColor';
   const crossDim = !ribbon && !crossColor ? 0.45 : 1;
@@ -401,7 +404,7 @@ export default function TextLoop({
     >
       <svg
         ref={svgRef}
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+        viewBox={`0 0 ${VIEW_W} ${viewHeight}`}
         className="text-loop-svg"
         style={{ width: '100%', height: 'auto', display: 'block' }}
       >
@@ -417,7 +420,7 @@ export default function TextLoop({
           )}
           {fade.length > 0 && (
             <mask id={maskId}>
-              <rect width={VIEW_W} height={VIEW_H} fill={`url(#${fadeId})`} />
+              <rect width={VIEW_W} height={viewHeight} fill={`url(#${fadeId})`} />
             </mask>
           )}
         </defs>

@@ -1050,11 +1050,171 @@ export default function AeroShards({
 
     const fail = error => {
       if (disposed) return;
-      disposed = true;
-      cancelAnimationFrame(raf);
       gpu?.dispose();
       gpu = null;
+      startCanvasFallback();
       onErrorRef.current?.(error instanceof Error ? error : new Error(String(error)));
+    };
+
+    const startCanvasFallback = () => {
+      if (disposed) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      let width = container.clientWidth || 800;
+      let height = container.clientHeight || 500;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+
+      const resizeFallback = () => {
+        width = container.clientWidth || 800;
+        height = container.clientHeight || 500;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+      };
+      window.addEventListener('resize', resizeFallback);
+      cleanups.push(() => window.removeEventListener('resize', resizeFallback));
+
+      const pointer = { x: width / 2, y: height / 2, down: false, holdTime: 0 };
+      const shockwaves: Array<{ x: number; y: number; r: number; maxR: number; alpha: number }> = [];
+
+      const onPointerMove = (e: PointerEvent) => {
+        const rect = container.getBoundingClientRect();
+        pointer.x = e.clientX - rect.left;
+        pointer.y = e.clientY - rect.top;
+      };
+      const onPointerDown = () => {
+        pointer.down = true;
+        pointer.holdTime = performance.now();
+      };
+      const onPointerUp = () => {
+        if (performance.now() - pointer.holdTime < 350) {
+          shockwaves.push({ x: pointer.x, y: pointer.y, r: 10, maxR: Math.max(width, height) * 0.7, alpha: 1 });
+        }
+        pointer.down = false;
+      };
+
+      container.addEventListener('pointermove', onPointerMove);
+      container.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointerup', onPointerUp);
+      cleanups.push(() => {
+        container.removeEventListener('pointermove', onPointerMove);
+        container.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointerup', onPointerUp);
+      });
+
+      const SHARD_COUNT = 140;
+      const shards = Array.from({ length: SHARD_COUNT }, (_, i) => ({
+        t: Math.random(),
+        speed: 0.0006 + Math.random() * 0.0012,
+        lane: (Math.random() - 0.5) * 2,
+        depth: 0.35 + Math.random() * 0.65,
+        size: 16 + Math.random() * 24,
+        rot: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.025,
+        aspect: 0.4 + Math.random() * 0.5,
+        scatterX: (Math.random() * 1.2 - 0.1) * width,
+        scatterY: height * 0.5 + (Math.random() - 0.5) * height * 0.5
+      }));
+
+      let lastTime = performance.now();
+      const tickFallback = (now: number) => {
+        if (disposed) return;
+        const dt = Math.min((now - lastTime) / 1000, 0.1);
+        lastTime = now;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, width, height);
+
+        // Update shockwaves
+        for (let i = shockwaves.length - 1; i >= 0; i--) {
+          const sw = shockwaves[i];
+          sw.r += dt * 450;
+          sw.alpha = Math.max(0, 1 - sw.r / sw.maxR);
+          if (sw.alpha <= 0) {
+            shockwaves.splice(i, 1);
+            continue;
+          }
+          ctx.beginPath();
+          ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(168, 85, 247, ${sw.alpha * 0.65})`;
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        }
+
+        const isHolding = pointer.down && (now - pointer.holdTime > 250);
+
+        // Draw and update shards
+        shards.forEach(shard => {
+          shard.t = (shard.t + shard.speed * (settingsRef.current.speed || 1)) % 1;
+          shard.rot += shard.rotSpeed;
+
+          const ribbonX = (shard.t * 1.3 - 0.15) * width;
+          const ribbonY = height * 0.5 + Math.sin(shard.t * Math.PI * 2.5 + now * 0.001) * height * 0.25 + shard.lane * (height * 0.2);
+
+          let targetX = ribbonX;
+          let targetY = ribbonY;
+
+          if (isHolding) {
+            const angle = Math.atan2(ribbonY - pointer.y, ribbonX - pointer.x) + now * 0.0035;
+            const dist = 50 + shard.lane * 40;
+            targetX = pointer.x + Math.cos(angle) * dist;
+            targetY = pointer.y + Math.sin(angle) * dist;
+          } else {
+            const mdx = ribbonX - pointer.x;
+            const mdy = ribbonY - pointer.y;
+            const mdist = Math.hypot(mdx, mdy);
+            const partRadius = 120;
+            if (mdist < partRadius && mdist > 1) {
+              const force = (1 - mdist / partRadius) * 55;
+              targetX += (mdx / mdist) * force;
+              targetY += (mdy / mdist) * force;
+            }
+          }
+
+          shard.scatterX += (targetX - shard.scatterX) * 0.1;
+          shard.scatterY += (targetY - shard.scatterY) * 0.1;
+
+          ctx.save();
+          ctx.translate(shard.scatterX, shard.scatterY);
+          ctx.rotate(shard.rot);
+          ctx.scale(shard.depth, shard.depth);
+
+          const w = shard.size;
+          const h = shard.size * shard.aspect;
+
+          ctx.beginPath();
+          ctx.moveTo(-w / 2, 0);
+          ctx.lineTo(0, -h / 2);
+          ctx.lineTo(w / 2, 0);
+          ctx.lineTo(0, h / 2);
+          ctx.closePath();
+
+          const grad = ctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2);
+          grad.addColorStop(0, `rgba(99, 102, 241, ${0.45 * shard.depth})`);
+          grad.addColorStop(1, `rgba(168, 85, 247, ${0.75 * shard.depth})`);
+          ctx.fillStyle = grad;
+          ctx.fill();
+
+          ctx.strokeStyle = `rgba(216, 180, 254, ${0.8 * shard.depth})`;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(-w / 2, 0);
+          ctx.lineTo(w / 2, 0);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${0.65 * shard.depth})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.restore();
+        });
+
+        raf = requestAnimationFrame(tickFallback);
+      };
+
+      raf = requestAnimationFrame(tickFallback);
     };
 
     const start = async () => {

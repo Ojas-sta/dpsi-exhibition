@@ -1,6 +1,7 @@
 .tech-text {
   position: relative;
   width: 100%;
+  min-height: 110px;
   height: 100%;
   touch-action: pan-y;
   user-select: none;
