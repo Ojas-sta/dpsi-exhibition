@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
+import * as THREE from 'three';
 import FloorAndEnvironment from './FloorAndEnvironment';
 import Zone1ShowAndTell from './Zone1ShowAndTell';
 import Zone2InnovationHub from './Zone2InnovationHub';
@@ -20,10 +21,16 @@ function CanvasLoader() {
         <Loader2 className="w-5 h-5 text-amber-400 animate-pulse absolute" />
       </div>
       <p className="mt-4 text-xs font-mono tracking-widest text-amber-300 uppercase">
-        Entering Milky Way Exhibition...
+        Rendering Clean Floor Plan...
       </p>
       <p className="text-[11px] text-slate-400 mt-1 font-sans">DPS Indirapuram Tech & Innovation</p>
     </div>
+  );
+}
+
+function SceneSetup() {
+  return (
+    <color attach="background" args={['#060913']} />
   );
 }
 
@@ -41,7 +48,7 @@ export default function ExhibitionCanvas() {
   }
 
   return (
-    <div className="relative isolate w-full h-[100dvh] select-none touch-none">
+    <div className="relative isolate w-full h-[100dvh] select-none touch-none bg-[#060913]">
       <Suspense fallback={<CanvasLoader />}>
         <Canvas
           shadows={!isMobile}
@@ -61,29 +68,32 @@ export default function ExhibitionCanvas() {
             selectProject(null);
           }}
         >
-          {/* Photorealistic Milky Way Cosmic Background & Twinkling Stars */}
+          {/* Default Clean Velvet Space Slate Background */}
+          <SceneSetup />
+
+          {/* Photorealistic Denoised Milky Way Atmosphere */}
           <MilkyWaySky />
 
-          {/* Architectural Floor & Environment */}
+          {/* Architectural Solid PBR Floor & Environment (Zero Noise, Zero Banding) */}
           <FloorAndEnvironment />
 
           {/* Smooth Touch / Mouse Camera Controls */}
           <CameraSystem />
 
-          {/* Exact Blueprint Zones */}
+          {/* Blueprint Exhibition Zones */}
           <Zone1ShowAndTell />
           <Zone2InnovationHub />
           <Zone3RoboticsArena />
 
-          {/* Clean Post Processing */}
+          {/* Clean Post Processing (Subtle Bloom Only on Emissive LEDs) */}
           <EffectComposer multisampling={isMobile ? 0 : 4}>
             <Bloom
-              luminanceThreshold={1.3}
+              luminanceThreshold={1.2}
               mipmapBlur
-              intensity={0.3}
-              radius={0.35}
+              intensity={0.22}
+              radius={0.3}
             />
-            <Vignette eskil={false} offset={0.08} darkness={0.35} />
+            <Vignette eskil={false} offset={0.06} darkness={0.3} />
           </EffectComposer>
         </Canvas>
       </Suspense>
