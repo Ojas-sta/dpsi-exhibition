@@ -82,9 +82,9 @@ export default function FloorAndEnvironment() {
         Left Angled Pavilion (Show & Tell)
         Aligned with blueprint angle (-0.24 rad) & Dual-Row Layout
       */}
-      <group position={[-34, 0, 0]} rotation={[0, -0.24, 0]}>
+      <group position={[-33, 0, 0]} rotation={[0, -0.24, 0]}>
         <mesh position={[0, -0.4, 0]} receiveShadow>
-          <boxGeometry args={[12, 0.8, 24]} />
+          <boxGeometry args={[11.5, 0.8, 22]} />
           <meshStandardMaterial
             color="#141124"
             roughness={0.48}
@@ -93,7 +93,7 @@ export default function FloorAndEnvironment() {
         </mesh>
         {/* Base Accent strictly BELOW at y=-0.82 */}
         <mesh position={[0, -0.82, 0]}>
-          <boxGeometry args={[12.4, 0.08, 24.4]} />
+          <boxGeometry args={[12.0, 0.08, 22.5]} />
           <meshStandardMaterial color="#9333ea" emissive="#7e22ce" emissiveIntensity={0.6} />
         </mesh>
       </group>
@@ -136,12 +136,12 @@ export default function FloorAndEnvironment() {
         </mesh>
       </group>
 
-      {/* Central Spine Divider between Left & Right Horseshoe Clusters (From Blueprint) */}
-      <group position={[0.5, 0.7, -2.5]}>
-        {/* Longitudinal partition separating P11-D04 row and D10-D05 row */}
-        <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[0.2, 1.4, 30]} />
-          <meshStandardMaterial color="#334155" metalness={0.7} roughness={0.3} />
+      {/* Central Open Walkway between Left & Right Horseshoe Clusters (From Blueprint) */}
+      <group position={[0, 0, 0]}>
+        {/* Subtle architectural path runner embedded seamlessly at floor level */}
+        <mesh position={[0, 0.005, 0]} receiveShadow>
+          <boxGeometry args={[2.4, 0.01, 32]} />
+          <meshStandardMaterial color="#1e293b" metalness={0.4} roughness={0.6} />
         </mesh>
       </group>
 

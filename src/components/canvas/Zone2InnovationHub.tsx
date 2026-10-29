@@ -12,7 +12,7 @@ export default function Zone2InnovationHub() {
     <group position={[0, 0, 0]}>
       {/* Overhead Cluster Gateways (Matching Blueprint Posters at Top) */}
       {/* Left Cluster: Physical (P01-P12) & Digital (D01-D04) */}
-      <group position={[-9.25, 4.2, -19.5]}>
+      <group position={[-10.0, 4.2, -19.5]}>
         <mesh>
           <boxGeometry args={[14, 0.85, 0.1]} />
           <meshStandardMaterial color="#0b101c" metalness={0.8} roughness={0.3} />
@@ -27,7 +27,7 @@ export default function Zone2InnovationHub() {
       </group>
 
       {/* Right Cluster: Digital (D05-D12) & Business (B01-B07) */}
-      <group position={[10.25, 4.2, -19.5]}>
+      <group position={[10.0, 4.2, -19.5]}>
         <mesh>
           <boxGeometry args={[14, 0.85, 0.1]} />
           <meshStandardMaterial color="#0b101c" metalness={0.8} roughness={0.3} />

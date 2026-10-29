@@ -19,8 +19,8 @@ export const CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
   },
   'zone-1': {
     // Show & Tell angled dual-row pavilion
-    position: [-34, 20, 16],
-    target: [-34, 1.2, 0],
+    position: [-33, 20, 16],
+    target: [-33, 1.2, 0],
   },
   'zone-2': {
     // Main Hall comprehensive view
@@ -44,8 +44,8 @@ export const CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
   },
   business: {
     // Business Booths B01-B07 in Right Horseshoe Cluster
-    position: [12, 26, 16],
-    target: [12, 1.2, -3],
+    position: [10, 26, 16],
+    target: [10, 1.2, -3],
   },
 };
 
@@ -55,8 +55,8 @@ export const MOBILE_CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
     target: [-10, 0, -14],
   },
   'zone-1': {
-    position: [-34, 28, 20],
-    target: [-34, 1.2, 0],
+    position: [-33, 28, 20],
+    target: [-33, 1.2, 0],
   },
   'zone-2': {
     position: [0, 46, 36],
@@ -75,8 +75,8 @@ export const MOBILE_CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
     target: [0, 1.2, -3],
   },
   business: {
-    position: [12, 34, 24],
-    target: [12, 1.2, -3],
+    position: [10, 34, 24],
+    target: [10, 1.2, -3],
   },
 };
 
