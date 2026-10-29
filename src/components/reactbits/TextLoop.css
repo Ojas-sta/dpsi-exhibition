@@ -1,0 +1,12 @@
+.text-loop-wrapper {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.text-loop-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  pointer-events: auto;
+}

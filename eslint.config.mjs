@@ -13,7 +13,18 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "firebase-functions/**",
+    "*.py",
+    "*.txt",
   ]),
+  {
+    files: ["src/components/reactbits/**"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/ban-ts-comment": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/refs": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

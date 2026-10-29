@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { ZoneType } from '@/types';
 import { signOutFromFirebase } from '@/lib/firebase';
@@ -36,7 +37,7 @@ export default function TopNavHUD() {
       <div className="mx-auto w-full max-w-[1520px] flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-2xl bg-[#080d19]/92 backdrop-blur-2xl border border-slate-800/90 shadow-2xl shadow-black/90">
         
         {/* Left: Brand & DPS Indirapuram Identity */}
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <Link href="/" title="Back to Event Landing Page" className="flex items-center gap-2.5 sm:gap-3 shrink-0 hover:opacity-90 transition-opacity">
           <div className="h-9 px-2 sm:px-2.5 py-1 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 border border-slate-200">
             {/* Mobile: crisp compact shield */}
             <img
@@ -68,7 +69,7 @@ export default function TopNavHUD() {
               Physical (P) • Digital (D) • Business (B)
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Center: Desktop Zone Quick Navigation Jumpers */}
         {viewMode === '3d' && (
