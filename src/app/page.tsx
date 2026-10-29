@@ -60,7 +60,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] text-[#f0f6fc] font-sans selection:bg-[#2ea043] selection:text-black overflow-x-hidden">
+    <div className="min-h-screen bg-[#000000] text-[#f0f6fc] font-sans selection:bg-[#2ea043] selection:text-black overflow-x-clip">
       {/* ─── GITHUB UNIVERSE TOP ANNOUNCEMENT TICKER ─── */}
       <div className="w-full bg-[#0d1117] border-b border-[#21262d] px-4 py-2 flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between">

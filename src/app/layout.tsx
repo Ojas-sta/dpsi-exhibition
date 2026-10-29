@@ -43,9 +43,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${spaceGrotesk.variable} h-full dark antialiased`}
+      className={`${outfit.variable} ${spaceGrotesk.variable} dark antialiased`}
     >
-      <body className="min-h-full w-full overflow-x-hidden bg-[#000000] text-[#f1f5f9] font-sans selection:bg-[#2ea043] selection:text-black">
+      <body className="min-h-screen w-full bg-[#000000] text-[#f1f5f9] font-sans selection:bg-[#2ea043] selection:text-black">
         {children}
       </body>
     </html>

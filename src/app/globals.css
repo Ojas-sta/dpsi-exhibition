@@ -11,9 +11,7 @@ html, body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
-  overscroll-behavior: none;
 }
 
 .font-mono {
@@ -50,9 +48,14 @@ html, body {
   background: #334155;
 }
 
-/* 3D Canvas touch optimizations */
+/* Canvas touch optimizations: allow vertical scroll gestures across canvases */
 canvas {
-  touch-action: none;
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
+}
+
+/* Dedicated 3D room canvas locks touch gestures for OrbitControls */
+.expo-canvas canvas {
+  touch-action: none;
 }
