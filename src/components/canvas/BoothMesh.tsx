@@ -178,7 +178,7 @@ export default function BoothMesh({ project }: BoothMeshProps) {
       </mesh>
 
       {/* 4. Two Exhibitor Red Chairs / Stools (from Blueprint) */}
-      <group position={[0, 0, -0.85]}>
+      <group position={[0, 0, 0.85]}>
         <mesh position={[-0.5, 0.35, 0]} castShadow>
           <boxGeometry args={[0.4, 0.08, 0.4]} />
           <meshStandardMaterial color="#dc2626" roughness={0.4} />
