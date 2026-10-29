@@ -23,15 +23,15 @@ export default function CameraSystem() {
     <CameraControls
       ref={controlsRef}
       makeDefault
-      smoothTime={isMobile ? 0.6 : 0.75}
-      minDistance={isMobile ? 5 : 3.5}
-      maxDistance={isMobile ? 240 : 210}
-      maxPolarAngle={Math.PI / 2.05} // Prevent camera going below floor
-      minPolarAngle={Math.PI / 12}
+      smoothTime={isMobile ? 0.65 : 0.75}
+      minDistance={isMobile ? 5 : 4}
+      maxDistance={isMobile ? 320 : 260} // Allows zooming out to view the full floating floor & Milky Way
+      maxPolarAngle={Math.PI / 2.02} // Prevent camera going below floor level
+      minPolarAngle={Math.PI / 10}
       dollySpeed={isMobile ? 1.0 : 0.85}
       truckSpeed={isMobile ? 1.0 : 0.85}
-      azimuthRotateSpeed={isMobile ? 0.85 : 0.9}
-      polarRotateSpeed={isMobile ? 0.75 : 0.85}
+      azimuthRotateSpeed={isMobile ? 0.8 : 0.9}
+      polarRotateSpeed={isMobile ? 0.7 : 0.8}
       draggingSmoothTime={0.12}
     />
   );

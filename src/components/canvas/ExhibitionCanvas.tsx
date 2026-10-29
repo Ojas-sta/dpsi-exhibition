@@ -4,11 +4,11 @@ import { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
 import FloorAndEnvironment from './FloorAndEnvironment';
-import MilkyWayBackground from './MilkyWayBackground';
 import Zone1ShowAndTell from './Zone1ShowAndTell';
 import Zone2InnovationHub from './Zone2InnovationHub';
 import Zone3RoboticsArena from './Zone3RoboticsArena';
 import CameraSystem from './CameraSystem';
+import MilkyWaySky from './MilkyWaySky';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { Loader2 } from 'lucide-react';
 
@@ -20,7 +20,7 @@ function CanvasLoader() {
         <Loader2 className="w-5 h-5 text-amber-400 animate-pulse absolute" />
       </div>
       <p className="mt-4 text-xs font-mono tracking-widest text-amber-300 uppercase">
-        Rendering Floor Plan...
+        Entering Milky Way Exhibition...
       </p>
       <p className="text-[11px] text-slate-400 mt-1 font-sans">DPS Indirapuram Tech & Innovation</p>
     </div>
@@ -46,10 +46,10 @@ export default function ExhibitionCanvas() {
         <Canvas
           shadows={!isMobile}
           camera={{
-            position: isMobile ? [0, 86, 62] : [0, 68, 54],
-            fov: isMobile ? 50 : 44,
+            position: isMobile ? [-10, 92, 70] : [-10, 74, 56],
+            fov: isMobile ? 48 : 40,
             near: 0.1,
-            far: 1500,
+            far: 2200,
           }}
           dpr={isMobile ? [1, 1.25] : [1, 1.5]}
           gl={{
@@ -61,8 +61,8 @@ export default function ExhibitionCanvas() {
             selectProject(null);
           }}
         >
-          {/* Cosmic Milky Way Galactic Background */}
-          <MilkyWayBackground />
+          {/* Photorealistic Milky Way Cosmic Background & Twinkling Stars */}
+          <MilkyWaySky />
 
           {/* Architectural Floor & Environment */}
           <FloorAndEnvironment />
@@ -75,15 +75,15 @@ export default function ExhibitionCanvas() {
           <Zone2InnovationHub />
           <Zone3RoboticsArena />
 
-          {/* Clean Post Processing (Zero Floor Glare, Subtle Neon Glow) */}
+          {/* Clean Post Processing */}
           <EffectComposer multisampling={isMobile ? 0 : 4}>
             <Bloom
-              luminanceThreshold={1.4} // Crucial: Prevents floor/mesh washout! Only extreme emissive lights glow
+              luminanceThreshold={1.3}
               mipmapBlur
-              intensity={0.35}
-              radius={0.4}
+              intensity={0.3}
+              radius={0.35}
             />
-            <Vignette eskil={false} offset={0.1} darkness={0.4} />
+            <Vignette eskil={false} offset={0.08} darkness={0.35} />
           </EffectComposer>
         </Canvas>
       </Suspense>
