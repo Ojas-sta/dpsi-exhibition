@@ -176,16 +176,14 @@ export default function TextLoop({
   const crossPathRef = useRef<SVGPathElement>(null);
   const measureRef = useRef<SVGTextElement>(null);
   const headRef = useRef<SVGTextPathElement>(null);
-  const tailRef = useRef<SVGTextPathElement>(null);
   const crossHeadRef = useRef<SVGTextPathElement>(null);
-  const crossTailRef = useRef<SVGTextPathElement>(null);
   
   const progressRef = useRef(0);
   const crossProgressRef = useRef(0);
   const hoverScaleRef = useRef(1);
   const velocityRef = useRef(0);
 
-  const [metrics, setMetrics] = useState({ length: 0, reps: 1, crossLength: 0, crossReps: 1 });
+  const [metrics, setMetrics] = useState({ length: 0, reps: 2, unitWidth: 0, crossLength: 0, crossReps: 2 });
 
   const rawId = useId();
   const pathId = `text-loop-${rawId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -246,11 +244,14 @@ export default function TextLoop({
       }
       if (!length) return;
 
-      const repsFor = (total: number) => (unitWidth > 0 ? Math.max(2, Math.ceil((total * 2) / unitWidth) + 1) : 4);
-      const next = { length, reps: repsFor(length), crossLength, crossReps: repsFor(crossLength) };
+      const estimatedUnitWidth = Math.max(200, unit.length * (fontSize * 0.65 + (letterSpacing || 0)));
+      const actualUnitWidth = unitWidth > 50 ? unitWidth : estimatedUnitWidth;
+      const repsFor = (total: number) => Math.max(2, Math.ceil((total + actualUnitWidth * 2) / actualUnitWidth) + 1);
+      const next = { length, reps: repsFor(length), unitWidth: actualUnitWidth, crossLength, crossReps: repsFor(crossLength) };
       setMetrics(prev =>
         prev.length === next.length &&
         prev.reps === next.reps &&
+        prev.unitWidth === next.unitWidth &&
         prev.crossLength === next.crossLength &&
         prev.crossReps === next.crossReps
           ? prev
@@ -349,26 +350,18 @@ export default function TextLoop({
     // GSAP Ticker Loop
     const dirSign = direction === 'forward' ? 1 : -1;
     const ticker = (_time: number, deltaTime: number) => {
-      if (metrics.length <= 0) return;
+      const wrapSpan = metrics.unitWidth > 50 ? metrics.unitWidth : (metrics.length || 1000);
       const dt = deltaTime / 1000;
       const currentSpeed = (speed * dirSign * hoverScaleRef.current + boostVel + (isDragging ? 0 : velocityRef.current)) * dt;
       
-      progressRef.current = wrap(progressRef.current + currentSpeed, metrics.length);
-      if (metrics.crossLength > 0) {
-        crossProgressRef.current = wrap(crossProgressRef.current - currentSpeed, metrics.crossLength);
+      progressRef.current = wrap(progressRef.current + currentSpeed, wrapSpan);
+      if (headRef.current) {
+        headRef.current.setAttribute('startOffset', `${-progressRef.current}`);
       }
 
-      if (headRef.current) {
-        headRef.current.setAttribute('startOffset', `${progressRef.current}`);
-      }
-      if (tailRef.current) {
-        tailRef.current.setAttribute('startOffset', `${progressRef.current - metrics.length}`);
-      }
       if (crossHeadRef.current) {
-        crossHeadRef.current.setAttribute('startOffset', `${crossProgressRef.current}`);
-      }
-      if (crossTailRef.current) {
-        crossTailRef.current.setAttribute('startOffset', `${crossProgressRef.current - metrics.crossLength}`);
+        crossProgressRef.current = wrap(crossProgressRef.current - currentSpeed, wrapSpan);
+        crossHeadRef.current.setAttribute('startOffset', `${-crossProgressRef.current}`);
       }
     };
 
@@ -388,7 +381,7 @@ export default function TextLoop({
       }
       if (scrollTimeout) clearTimeout(scrollTimeout);
     };
-  }, [speed, direction, pauseOnHover, draggable, scrollBoost, metrics.length, metrics.crossLength]);
+  }, [speed, direction, pauseOnHover, draggable, scrollBoost, metrics.length, metrics.unitWidth, metrics.crossLength]);
 
   return (
     <div
@@ -467,9 +460,6 @@ export default function TextLoop({
                 <textPath ref={crossHeadRef} href={`#${crossId}`} startOffset="0">
                   {repeatedCrossText}
                 </textPath>
-                <textPath ref={crossTailRef} href={`#${crossId}`} startOffset={-metrics.crossLength}>
-                  {repeatedCrossText}
-                </textPath>
               </text>
             </g>
           )}
@@ -483,9 +473,6 @@ export default function TextLoop({
               strokeWidth={outline ? outlineWidth : undefined}
             >
               <textPath ref={headRef} href={`#${pathId}`} startOffset="0">
-                {repeatedMainText}
-              </textPath>
-              <textPath ref={tailRef} href={`#${pathId}`} startOffset={-metrics.length}>
                 {repeatedMainText}
               </textPath>
             </text>

@@ -4,38 +4,25 @@ import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
-  Calendar,
-  MapPin,
-  Trophy,
-  Layers,
-  ShieldCheck,
-  Sparkles,
   ArrowRight,
-  ChevronDown,
-  Clock,
-  Radio,
-  Eye,
+  ArrowUpRight,
+  Sparkles,
   Vote,
-  Boxes,
-  Bell,
-  ChevronRight,
-  Code2,
 } from 'lucide-react';
 import { SEED_PROJECTS } from '@/data/seedProjects';
 
-// Dynamic imports with ssr: false for canvas/shader components
+// React Bits Components loaded dynamically for SSR safety
 const GradientASCII = dynamic(() => import('@/components/reactbits/GradientASCII'), {
   ssr: false,
-  loading: () => <div className="absolute inset-0 bg-[#070b14]" />,
 });
 
 const TechText = dynamic(() => import('@/components/reactbits/TechText'), {
   ssr: false,
   loading: () => (
-    <div className="flex items-center justify-center h-full">
-      <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-wider text-cyan-400 font-mono">
+    <div className="flex items-center justify-center w-full h-[300px]">
+      <span className="text-4xl md:text-6xl font-black tracking-widest text-[#2a75d3] font-mono">
         DPSI TECH EXPO
-      </h1>
+      </span>
     </div>
   ),
 });
@@ -53,727 +40,577 @@ const TextLoop = dynamic(() => import('@/components/reactbits/TextLoop'), {
 });
 
 export default function LandingPage() {
-  const [bellOn, setBellOn] = useState(true);
-  const [emailInput, setEmailInput] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'day1' | 'day2'>('day1');
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'Physical' | 'Digital' | 'Business'>('all');
+  const [selectedZone, setSelectedZone] = useState<'all' | 'Physical' | 'Digital' | 'Business'>('all');
+  const [selectedDay, setSelectedDay] = useState<'day1' | 'day2'>('day1');
+  const [email, setEmail] = useState('');
+  const [registered, setRegistered] = useState(false);
 
-  // Filter top projects to display in the showcase
-  const spotlightProjects = SEED_PROJECTS.filter((p) => {
-    if (selectedCategory === 'all') return true;
-    return p.category === selectedCategory;
-  }).slice(0, 6);
+  const filteredProjects = SEED_PROJECTS.filter((p) => {
+    if (selectedZone === 'all') return true;
+    return p.category === selectedZone;
+  });
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (emailInput.trim()) {
-      setSubscribed(true);
-      setBellOn(true);
-      setTimeout(() => setSubscribed(false), 5000);
-      setEmailInput('');
+    if (email.trim()) {
+      setRegistered(true);
+      setTimeout(() => setRegistered(false), 5000);
+      setEmail('');
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950 overflow-x-hidden">
-      {/* ─── STICKY HEADER ─── */}
-      <header className="sticky top-0 z-50 w-full bg-[#070b14]/90 backdrop-blur-2xl border-b border-slate-800/80 px-4 sm:px-8 py-3 transition-all">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          {/* Logo & School Identity */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="h-10 px-2.5 py-1 rounded-xl bg-white shadow-md flex items-center justify-center shrink-0 border border-slate-200 group-hover:scale-105 transition-transform">
-              <img
-                src="/dps_shield.png"
-                alt="DPS Indirapuram"
-                className="h-full w-auto object-contain block sm:hidden"
-              />
-              <img
-                src="/dps_indirapuram_logo.png"
-                alt="DPS Indirapuram"
-                className="h-full w-auto max-w-[140px] sm:max-w-[175px] object-contain hidden sm:block"
-              />
+    <div className="min-h-screen bg-[#000000] text-[#f0f6fc] font-sans selection:bg-[#2ea043] selection:text-black overflow-x-hidden">
+      {/* ─── GITHUB UNIVERSE TOP ANNOUNCEMENT TICKER ─── */}
+      <div className="w-full bg-[#0d1117] border-b border-[#21262d] px-4 py-2 flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse" />
+            <span className="text-[#f0f6fc] font-bold">ANNUAL TECH &amp; INNOVATION SUMMIT 2026</span>
+            <span className="hidden sm:inline text-[#8b949e]">{'// NOVEMBER 14–15 • MAIN AUDITORIUM'}</span>
+          </div>
+          <Link
+            href="/expo"
+            className="flex items-center gap-1 text-[#58a6ff] hover:text-[#79c0ff] font-semibold hover:underline"
+          >
+            <span>Launch 3D Exhibition</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* ─── GITHUB UNIVERSE GRID NAVBAR ─── */}
+      <header className="sticky top-0 z-50 w-full bg-[#000000]/95 backdrop-blur-md border-b border-[#30363d]">
+        <div className="max-w-7xl mx-auto flex items-stretch h-14">
+          {/* Brand Cell */}
+          <Link
+            href="/"
+            className="flex items-center gap-3 px-4 border-r border-[#30363d] hover:bg-[#161b22] transition-colors shrink-0"
+          >
+            <div className="h-8 px-2 py-0.5 rounded bg-white flex items-center justify-center">
+              <img src="/dps_shield.png" alt="DPS Indirapuram" className="h-full w-auto object-contain" />
             </div>
             <div className="hidden md:flex flex-col">
-              <span className="text-[10px] font-mono tracking-widest text-amber-400 uppercase font-bold flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                ANNUAL TECH SUMMIT 2026
+              <span className="text-[12px] font-black tracking-tight text-white uppercase font-mono">
+                DPSI EXPO &apos;26
               </span>
-              <span className="text-xs font-semibold text-slate-300">
-                35 Inventions • 3 Arenas • Live Voting
+              <span className="text-[9px] font-mono text-[#8b949e] tracking-widest">
+                INDIRAPURAM
               </span>
             </div>
           </Link>
 
-          {/* Quick Nav Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-semibold text-slate-400">
-            <a href="#about" className="hover:text-amber-400 transition-colors">
-              Overview
+          {/* Navigation Cells */}
+          <nav className="hidden lg:flex items-stretch text-xs font-mono">
+            <a
+              href="#stage"
+              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+            >
+              {'[ 01 // STAGE ]'}
             </a>
-            <a href="#projects" className="hover:text-amber-400 transition-colors">
-              Featured Projects
+            <a
+              href="#projects"
+              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+            >
+              {'[ 02 // 35 INVENTIONS ]'}
             </a>
-            <a href="#zones" className="hover:text-amber-400 transition-colors">
-              3 Arenas
+            <a
+              href="#arenas"
+              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+            >
+              {'[ 03 // 3 ARENAS ]'}
             </a>
-            <a href="#shards" className="hover:text-amber-400 transition-colors">
-              Materials Lab
+            <a
+              href="#materials"
+              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+            >
+              {'[ 04 // LABS ]'}
             </a>
-            <a href="#voting" className="hover:text-amber-400 transition-colors">
-              Anti-Cheat Voting
+            <a
+              href="#voting"
+              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+            >
+              {'[ 05 // ANTI-CHEAT BALLOT ]'}
             </a>
-            <a href="#schedule" className="hover:text-amber-400 transition-colors">
-              Itinerary
+            <a
+              href="#schedule"
+              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+            >
+              {'[ 06 // ITINERARY ]'}
             </a>
           </nav>
 
-          {/* Header Action: Notification anchor & 3D Hall CTA */}
-          <div className="flex items-center gap-3">
-            <a
-              href="#alerts"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs text-slate-300 hover:text-white transition-all shadow-sm"
-              title="Notifications & Alerts"
-            >
-              <Bell className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline font-mono font-bold text-[11px]">Alerts</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold border border-amber-500/30">
-                3
-              </span>
-            </a>
-
+          {/* Right Action: Launch 3D Hall */}
+          <div className="ml-auto flex items-stretch">
             <Link
               href="/expo"
-              className="relative group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 text-xs font-extrabold shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.03] active:scale-[0.98] transition-all font-mono"
+              className="flex items-center gap-2 px-5 bg-[#238636] hover:bg-[#2ea043] text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5 text-slate-950 animate-pulse" />
-              <span>Enter 3D Hall</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Enter 3D Hall ↗</span>
             </Link>
           </div>
         </div>
       </header>
 
-      {/* ─── HERO SECTION WITH GRADIENT ASCII & TECHTEXT ─── */}
-      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 sm:px-6 pt-8 pb-16 overflow-hidden border-b border-slate-800/60">
-        {/* React Bits Element 1: <GradientASCII /> WebGL Background (subtle, non-blocking) */}
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-45">
-          <GradientASCII
-            colors={['#050811', '#0b1329', '#1e3a8a', '#0284c7']}
-            shape="horizon"
-            characters=" =+xX0S8#@"
-            cellSize={18}
-            density={0.72}
-            mouseInteraction={true}
-            flicker={0.12}
-            glow={0.25}
-            speed={0.65}
-          />
-        </div>
-
-        {/* Ambient Dark Gradient Vignette for Readability */}
-        <div className="absolute inset-0 z-10 pointer-events-none bg-radial-gradient from-transparent via-[#070b14]/65 to-[#070b14]" />
-
-        {/* Hero Content Layer */}
-        <div className="relative z-20 max-w-5xl mx-auto flex flex-col items-center text-center mt-2">
-          {/* Top Pill: Status */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/95 border border-slate-700/80 shadow-2xl backdrop-blur-md mb-6 animate-fade-in">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-[11px] font-mono font-bold tracking-widest text-emerald-400 uppercase">
-              DELHI PUBLIC SCHOOL INDIRAPURAM
-            </span>
-            <span className="text-slate-600">•</span>
-            <span className="text-[11px] font-mono text-slate-300">
-              ANNUAL INNOVATION SUMMIT 2026
-            </span>
-          </div>
-
-          {/* React Bits Element 2: <TechText /> Canvas Wordmark with explicit height */}
-          <div className="w-full max-w-3xl h-28 sm:h-36 md:h-44 mx-auto flex items-center justify-center my-2">
-            <TechText
-              text="DPSI TECH EXPO"
-              color="#38bdf8"
-              fontFamily='"Space Grotesk", "Geist Sans", sans-serif'
-              fontSize={54}
-              fontWeight={900}
-              letterSpacing={6}
-              strokeWidth={2}
-              labels={true}
-              bounce={0.2}
-              draggable={true}
-              clickKick={true}
-            />
-          </div>
-          <h1 className="sr-only">DPSI Tech & Innovation Exhibition 2026</h1>
-
-          {/* Event Subtitle */}
-          <p className="mt-2 max-w-2xl text-base sm:text-lg text-slate-300 leading-relaxed font-normal">
-            Where visionaries, engineers, and young minds converge. Discover over{' '}
-            <strong className="text-white font-semibold">35 live student-engineered innovations</strong>{' '}
-            spanning Artificial Intelligence, Autonomous Robotics, and Sustainable Clean Tech.
-          </p>
-
-          {/* Event Date & Location Badges */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm font-medium text-slate-300">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 backdrop-blur-md">
-              <Calendar className="w-4 h-4 text-amber-400" />
-              <span>November 14-15, 2026 • 09:00 AM IST</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 backdrop-blur-md">
-              <MapPin className="w-4 h-4 text-rose-400" />
-              <span>Main Auditorium & Robotics Wing, DPS Indirapuram</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 backdrop-blur-md">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Live Anti-Cheat Voting Portal</span>
-            </div>
-          </div>
-
-          {/* Call to Actions */}
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md">
-            <Link
-              href="/expo"
-              className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-extrabold text-sm shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-105 active:scale-95 transition-all font-mono"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Launch 3D Floor Plan</span>
-            </Link>
-
-            <a
-              href="#projects"
-              className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-800 font-bold text-sm shadow-lg hover:border-slate-700 transition-all font-mono"
-            >
-              <Boxes className="w-4 h-4 text-amber-400" />
-              <span>Browse Projects</span>
-            </a>
-          </div>
-
-          {/* Real-time stats strip */}
-          <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-3xl pt-6 border-t border-slate-800/80">
-            <div className="flex flex-col items-center p-3 rounded-xl bg-slate-900/40 border border-slate-800/50">
-              <span className="text-2xl sm:text-3xl font-black text-amber-400 font-mono">35</span>
-              <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
-                Student Projects
+      {/* ─── GITHUB UNIVERSE STYLE HERO SECTION ─── */}
+      <section className="border-b border-[#30363d]">
+        <div className="max-w-7xl mx-auto">
+          {/* Giant UNIVERSE-Style Headline */}
+          <div className="px-4 sm:px-8 pt-10 pb-6 border-b border-[#30363d]">
+            <div className="flex items-center justify-between font-mono text-xs text-[#8b949e] mb-3">
+              <span className="flex items-center gap-2 text-[#3fb950]">
+                <span>november 14–15_2026{"}"}</span>
+                <span className="inline-block w-2.5 h-2.5 bg-[#3fb950]" />
+              </span>
+              <span className="hidden sm:inline text-[#8b949e]">
+                in-person &amp; 3d-hall % |35-booths
               </span>
             </div>
-            <div className="flex flex-col items-center p-3 rounded-xl bg-slate-900/40 border border-slate-800/50">
-              <span className="text-2xl sm:text-3xl font-black text-cyan-400 font-mono">3</span>
-              <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
-                Major Arenas
-              </span>
-            </div>
-            <div className="flex flex-col items-center p-3 rounded-xl bg-slate-900/40 border border-slate-800/50">
-              <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">100%</span>
-              <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
-                Anti-Cheat Ballot
-              </span>
-            </div>
-            <div className="flex flex-col items-center p-3 rounded-xl bg-slate-900/40 border border-slate-800/50">
-              <span className="text-2xl sm:text-3xl font-black text-purple-400 font-mono">2,500+</span>
-              <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">
-                Visitors Expected
-              </span>
+
+            {/* Massive Conference Title with Neon Block Accent */}
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter text-white uppercase font-sans leading-none">
+                EXPO&apos;26<span className="inline-block w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#2ea043] ml-2 -mb-1 align-baseline" /><span className="inline-block w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#db61a2] -mb-1 align-baseline" />
+              </h1>
             </div>
           </div>
-        </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center text-slate-500 animate-bounce">
-          <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400">Scroll Down</span>
-          <ChevronDown className="w-4 h-4" />
-        </div>
-      </section>
-
-      {/* ─── REACT BITS ELEMENT 5: <TextLoop /> SLEEK MARQUEE RIBBON ─── */}
-      <section className="relative w-full py-2 bg-slate-950/95 border-y border-slate-800 overflow-hidden shadow-inner">
-        <TextLoop
-          text="DPSI TECH EXPO ✦ PHYSICAL COMPUTING ✦ AI & COMPUTER VISION ✦ SUSTAINABLE BUSINESS ✦ COMBAT ROBOTICS ✦ ANTI-CHEAT LIVE VOTING ✦ DPS INDIRAPURAM"
-          shape="wave"
-          speed={75}
-          direction="forward"
-          separator="✦"
-          curviness={20}
-          fontSize={24}
-          fontWeight={800}
-          letterSpacing={2}
-          uppercase={true}
-          ribbon={true}
-          ribbonColor="#1d4ed8"
-          ribbonWidth={56}
-          cross={true}
-          crossAngle={10}
-          edgeFade={0.4}
-          pauseOnHover={true}
-        />
-      </section>
-
-      {/* ─── 3D VIRTUAL HALL LAUNCHER CARD ─── */}
-      <section className="py-12 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div className="relative rounded-3xl p-6 sm:p-10 bg-gradient-to-r from-[#0c162d] via-[#0b1020] to-[#070b14] border border-cyan-500/30 shadow-2xl overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
-            <div className="lg:col-span-7">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-bold mb-4">
-                <Boxes className="w-3.5 h-3.5" />
-                <span>INTERACTIVE 3D VIRTUAL BLUEPRINT</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                Walk Through All 35 Booths in 3D WebGL
-              </h2>
-              <p className="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed">
-                Experience the school auditorium mapped to real scale. Orbit the arena in 3D, tap any
-                booth to pull up technical abstracts, circuit diagrams, and live demos, and cast your
-                verified ballot directly from your phone or desktop.
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-2 text-xs font-mono">
-                <span className="px-3 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
-                  Physical: P01 - P12
-                </span>
-                <span className="px-3 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
-                  Digital: D01 - D12
-                </span>
-                <span className="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
-                  Business: B01 - B07
-                </span>
-                <span className="px-3 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
-                  Robotics Battle Pit
-                </span>
-              </div>
+          {/* Element 2: <TechText /> in exact previous format */}
+          <div id="stage" className="border-b border-[#30363d] bg-[#050811]/40">
+            <div className="px-4 py-2 border-b border-[#21262d] flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
+              <span>{'[ ELEMENT 02 ] :: INTERACTIVE PHYSICS WORDMARK'}</span>
+              <span className="text-[#58a6ff]">CURSOR INTERACTION ENABLED</span>
             </div>
-
-            <div className="lg:col-span-5 flex flex-col gap-3">
-              <Link
-                href="/expo"
-                className="w-full flex items-center justify-between p-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-all font-mono"
-              >
-                <div className="flex items-center gap-3">
-                  <Sparkles className="w-5 h-5 text-slate-950" />
-                  <div className="text-left">
-                    <p className="text-sm font-black">Launch Full 3D Hall</p>
-                    <p className="text-[11px] opacity-80">Full Floor Plan • Live Voting</p>
-                  </div>
-                </div>
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-
-              <Link
-                href="/expo"
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Trophy className="w-4 h-4 text-amber-400" />
-                  <span>Check Live Leaderboard Standings</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-500" />
-              </Link>
+            <div style={{ width: '100%', height: '300px', position: 'relative' }}>
+              <TechText
+                text="DPSI TECH EXPO"
+                color="#2a75d3"
+                fontFamily='"Space Grotesk", sans-serif'
+                fontSize={56}
+                fontWeight={800}
+                letterSpacing={0}
+              />
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* ─── FEATURED PROJECTS SPOTLIGHT ─── */}
-      <section id="projects" className="py-16 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 mb-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono font-bold mb-3">
-              <Code2 className="w-3.5 h-3.5" />
-              <span>STUDENT INVENTIONS SPOTLIGHT</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Featured Innovations
-            </h2>
-            <p className="mt-2 text-slate-400 text-sm max-w-xl">
-              Inspect student-engineered prototypes competing for the 2026 Innovation Laurels.
-            </p>
-          </div>
-
-          {/* Category Tabs */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold">
-            {(['all', 'Physical', 'Digital', 'Business'] as const).map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg transition-all ${
-                  selectedCategory === cat
-                    ? 'bg-amber-500 text-slate-950 font-bold'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                {cat === 'all' ? 'All (35)' : cat}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Project Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {spotlightProjects.map((project) => (
-            <div
-              key={project.id}
-              className="rounded-2xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 p-5 flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
-            >
+          {/* GitHub Universe 2-Column Bento Split */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#30363d]">
+            {/* Left Column: Terminal Slug & Categories */}
+            <div className="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono font-bold text-xs border border-amber-500/30">
-                    {project.booth_code}
-                  </span>
-                  <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
-                    <Vote className="w-3 h-3 text-emerald-400" />
-                    <span>{project.vote_count} votes</span>
-                  </span>
-                </div>
-
-                <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-1">
-                  {project.title.replace(/^.+•\s*/, '')}
-                </h3>
-                <p className="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
-                  {project.description}
+                <span className="text-xs font-mono text-[#8b949e] uppercase tracking-widest block mb-2">
+                  {'// THE SUMMIT ARCHITECTURE'}
+                </span>
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-mono">
+                  innovate-build-deploy/
+                </h2>
+                <p className="mt-4 text-sm text-[#8b949e] leading-relaxed font-mono">
+                  35 student research teams across Physical Computing, Artificial Intelligence,
+                  Sustainable Enterprise, and Combat Robotics.
                 </p>
-
-                {/* Tech Stack Pills */}
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {project.tech_stack?.slice(0, 3).map((tech, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-0.5 rounded bg-slate-800/80 text-[10px] font-mono text-slate-300"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
               </div>
 
-              <div className="mt-6 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                <span className="text-[11px] text-slate-500 font-mono truncate max-w-[160px]">
-                  {project.members?.join(', ')}
+              <div className="mt-8 grid grid-cols-2 gap-3 font-mono text-xs">
+                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded">
+                  <span className="text-[#3fb950] font-bold block">[ 12 BOOTHS ]</span>
+                  <span className="text-white mt-1 block">Physical Computing (P)</span>
+                </div>
+                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded">
+                  <span className="text-[#58a6ff] font-bold block">[ 12 BOOTHS ]</span>
+                  <span className="text-white mt-1 block">Digital &amp; AI Software (D)</span>
+                </div>
+                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded">
+                  <span className="text-[#d2a8ff] font-bold block">[ 07 BOOTHS ]</span>
+                  <span className="text-white mt-1 block">Business Ventures (B)</span>
+                </div>
+                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded">
+                  <span className="text-[#f0883e] font-bold block">[ 04 HEATS ]</span>
+                  <span className="text-white mt-1 block">Robotics Battle Arena</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Mission statement and Primary Action */}
+            <div className="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between bg-[#040711]/60">
+              <div>
+                <span className="text-xs font-mono text-[#8b949e] uppercase tracking-widest block mb-2">
+                  {'// PURPOSE & INVITATION'}
                 </span>
+                <p className="text-base sm:text-lg text-[#c9d1d9] leading-relaxed font-sans">
+                  From deep-learning soil fertility scanners to hardware ADAS driver assistance and
+                  autonomous maze rovers, experience the next generation of engineers delivering live at
+                  Delhi Public School Indirapuram.
+                </p>
+                <p className="mt-3 text-xs sm:text-sm text-[#8b949e] font-mono">
+                  Inspect blueprints in 3D WebGL, evaluate technical schematics, and submit your verified
+                  ballot through our multi-factor anti-cheat voting portal.
+                </p>
+              </div>
+
+              <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
                 <Link
                   href="/expo"
-                  className="flex items-center gap-1 font-bold text-amber-400 hover:text-amber-300 transition-colors"
+                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[#238636] hover:bg-[#2ea043] text-white font-mono font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-[#238636]/20"
                 >
-                  <span>Vote in 3D</span>
+                  <span>Launch 3D Hall Now</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <a
+                  href="#projects"
+                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white font-mono font-bold text-xs uppercase tracking-wider transition-all"
+                >
+                  <span>Browse 35 Projects [ ⌘K ]</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── ELEMENT 5: <TextLoop /> IN EXACT PREVIOUS FORMAT ─── */}
+      <section className="border-b border-[#30363d] bg-[#040711]">
+        <div className="px-4 py-2 border-b border-[#21262d] flex items-center justify-between text-[11px] font-mono text-[#8b949e] max-w-7xl mx-auto">
+          <span>{'[ ELEMENT 05 ] :: SVG CURVED LOOP RIBBON'}</span>
+          <span className="text-[#a855f7]">LIVE STREAM MARQUEE</span>
+        </div>
+        <div className="py-2 overflow-hidden">
+          <TextLoop
+            text="DPSI TECH & INNOVATION EXPO 2026 ✦ 35 STUDENT INVENTIONS ✦ PHYSICAL PROTOTYPES ✦ AI & COMPUTER VISION ✦ BUSINESS SUSTAINABILITY ✦ COMBAT ROBOTICS ✦ ANTI-CHEAT COMMUNITY BALLOT"
+            shape="wave"
+            speed={90}
+            direction="forward"
+            separator="✦"
+            curviness={90}
+            tilt={0}
+            fontSize={46}
+            fontWeight={800}
+            letterSpacing={2}
+            uppercase
+            ribbon
+            ribbonColor="#5227FF"
+            ribbonWidth={86}
+            edgeFade={0}
+            cross={false}
+            crossAngle={16}
+            draggable={false}
+            scrollBoost={0}
+            outline={false}
+            pauseOnHover
+          />
+        </div>
+      </section>
+
+      {/* ─── ELEMENT 1: <GradientASCII /> IN EXACT PREVIOUS FORMAT ─── */}
+      <section className="border-b border-[#30363d] bg-[#000000]">
+        <div className="max-w-7xl mx-auto">
+          <div className="px-4 py-2 border-b border-[#21262d] flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
+            <span>{'[ ELEMENT 01 ] :: WEBGL2 GRADIENT ASCII SHADER HORIZON'}</span>
+            <span className="text-[#38bdf8]">INTERACTIVE POINTER WAVE</span>
+          </div>
+
+          <div style={{ width: '100%', height: '600px', position: 'relative' }}>
+            <GradientASCII
+              colors={['#1e3fd8', '#f6f8ff', '#a5d8ff', '#38bdf8']}
+              shape="horizon"
+              characters=" =+xX0S8#@"
+              cellSize={18}
+              density={0.8}
+            />
+
+            {/* GitHub Universe Terminal Overlay in Center */}
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
+              <span className="px-3 py-1 rounded bg-black/80 border border-[#30363d] font-mono text-xs text-[#38bdf8] mb-4">
+                {'STAGE_A // COMPUTATIONAL ASCII CANVAS'}
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight text-white max-w-2xl drop-shadow-md">
+                Where Young Visionaries Shape Tomorrow
+              </h2>
+              <p className="mt-3 text-xs sm:text-sm font-mono text-slate-300 max-w-lg">
+                Move your cursor to warp the ASCII matrix field. Real-time dual-pass fragment shader
+                computing character density.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── GITHUB UNIVERSE STYLE 35 INVENTIONS DIRECTORY ─── */}
+      <section id="projects" className="border-b border-[#30363d] py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#30363d]">
+            <div>
+              <span className="text-xs font-mono text-[#3fb950] block mb-1">
+                {'// COMPETING BOOTHS DIRECTORY'}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-white uppercase font-sans tracking-tight">
+                All 35 Inventions
+              </h2>
+            </div>
+
+            {/* Filter Cells */}
+            <div className="flex items-center border border-[#30363d] bg-[#0d1117] rounded text-xs font-mono">
+              {(['all', 'Physical', 'Digital', 'Business'] as const).map((z) => (
+                <button
+                  key={z}
+                  onClick={() => setSelectedZone(z)}
+                  className={`px-3 py-1.5 transition-colors ${
+                    selectedZone === z
+                      ? 'bg-[#238636] text-white font-bold'
+                      : 'text-[#8b949e] hover:text-white'
+                  }`}
+                >
+                  {z === 'all' ? 'All (35)' : z}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* High-Density Session Cards Grid */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y md:divide-y-0 md:gap-4">
+            {filteredProjects.map((p) => (
+              <div
+                key={p.id}
+                className="p-5 border border-[#30363d] bg-[#0d1117] rounded-md hover:border-[#58a6ff] transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between font-mono text-xs mb-2">
+                    <span className="px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[#f0883e] font-bold">
+                      {p.booth_code}
+                    </span>
+                    <span className="text-[#3fb950] flex items-center gap-1">
+                      <Vote className="w-3.5 h-3.5" />
+                      <span>{p.vote_count} votes</span>
+                    </span>
+                  </div>
+
+                  <h3 className="text-base font-bold text-white group-hover:text-[#58a6ff] transition-colors line-clamp-1">
+                    {p.title.replace(/^.+•\s*/, '')}
+                  </h3>
+                  <p className="mt-2 text-xs text-[#8b949e] line-clamp-2 leading-relaxed">
+                    {p.description}
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap gap-1 font-mono text-[10px]">
+                    {p.tech_stack?.slice(0, 3).map((tech, i) => (
+                      <span
+                        key={i}
+                        className="px-1.5 py-0.5 rounded bg-[#161b22] text-[#c9d1d9] border border-[#21262d]"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-3 border-t border-[#21262d] flex items-center justify-between text-xs font-mono">
+                  <span className="text-[#8b949e] truncate max-w-[170px]">
+                    {p.members?.join(', ')}
+                  </span>
+                  <Link
+                    href="/expo"
+                    className="flex items-center gap-1 text-[#58a6ff] hover:text-[#79c0ff] font-bold group-hover:translate-x-0.5 transition-transform"
+                  >
+                    <span>View in 3D</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link
+              href="/expo"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white font-mono text-xs font-bold uppercase transition-colors"
+            >
+              <span>Explore Full 3D Interactive Floor Plan</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── ELEMENT 4: <AeroShards /> IN EXACT PREVIOUS FORMAT ─── */}
+      <section id="materials" className="border-b border-[#30363d] bg-[#000000]">
+        <div className="max-w-7xl mx-auto">
+          <div className="px-4 py-2 border-b border-[#21262d] flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
+            <span>{'[ ELEMENT 04 ] :: REFRACTIVE GLASS AERO-SHARDS SIMULATION'}</span>
+            <span className="text-[#a855f7]">{'PHYSICS LAB // HOVER • CLICK • HOLD'}</span>
+          </div>
+
+          <div style={{ width: '100%', height: '600px', position: 'relative' }}>
+            <AeroShards
+              shardColor="#896ABD"
+              accentColor="#A855F7"
+              placement="full"
+              material="glass"
+              markers="plus"
+              count={1300}
+              depthOfField={0.75}
+              vignette={0.3}
+              mouseInteraction
+              pulseOnClick
+              holdToGather
+            />
+
+            {/* Technical HUD Overlay on Bottom Right */}
+            <div className="absolute bottom-6 right-6 z-20 pointer-events-none p-4 rounded bg-black/85 border border-[#30363d] font-mono text-xs text-[#c9d1d9]">
+              <span className="text-[#a855f7] font-bold block">{'// FUTURE MATERIALS & SPATIAL COMPUTING'}</span>
+              <span className="text-[11px] text-[#8b949e] mt-1 block">
+                Class 11-12 Molecular Physics &amp; Crystal Lattice Demo
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── THE THREE EXHIBITION ARENAS (GITHUB UNIVERSE BENTO) ─── */}
+      <section id="arenas" className="border-b border-[#30363d] py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+          <div className="pb-6 border-b border-[#30363d]">
+            <span className="text-xs font-mono text-[#3fb950] block mb-1">
+              {'// PHYSICAL BLUEPRINT'}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white uppercase font-sans tracking-tight">
+              The Three Arenas
+            </h2>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:gap-6">
+            {/* Arena 1 */}
+            <div className="p-6 border border-[#30363d] bg-[#0d1117] rounded-md flex flex-col justify-between">
+              <div>
+                <span className="px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[#38bdf8] font-mono text-xs font-bold">
+                  {'ZONE_01 // ST01-ST08'}
+                </span>
+                <h3 className="text-xl font-bold text-white mt-3 font-sans">
+                  Show &amp; Tell Prototypes
+                </h3>
+                <p className="mt-2 text-xs text-[#8b949e] leading-relaxed font-mono">
+                  Hands-on working prototypes, renewable energy micro-harvesters, clean water filtration,
+                  and bio-materials engineered by junior innovators.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-[#21262d]">
+                <Link
+                  href="/expo"
+                  className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#58a6ff] hover:underline"
+                >
+                  <span>Enter Zone 1 in 3D</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
-          ))}
-        </div>
 
-        <div className="mt-8 text-center">
-          <Link
-            href="/expo"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white transition-all font-mono"
-          >
-            <span>View All 35 Projects on Floor Plan</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      </section>
-
-      {/* ─── THREE MAJOR EXHIBITION ARENAS ─── */}
-      <section id="zones" className="py-16 px-4 sm:px-6 max-w-7xl mx-auto border-t border-slate-800/80">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono font-bold mb-3">
-            <Layers className="w-3.5 h-3.5" />
-            <span>EXHIBITION FLOOR LAYOUT</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            The Three Exhibition Arenas
-          </h2>
-          <p className="mt-3 text-slate-400 text-sm">
-            Curated to provide students a professional stage to showcase research, code, and physical builds.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Zone 1: Show & Tell */}
-          <div className="rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-cyan-500/40 p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-400 font-mono text-xs font-bold">
-                  ZONE 1
+            {/* Arena 2 */}
+            <div className="p-6 border border-[#30363d] bg-[#0d1117] rounded-md flex flex-col justify-between">
+              <div>
+                <span className="px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[#f0883e] font-mono text-xs font-bold">
+                  {'ZONE_02 // P, D & B PODS'}
                 </span>
-                <span className="text-xs font-mono text-slate-500">Booths ST01 - ST08</span>
+                <h3 className="text-xl font-bold text-white mt-3 font-sans">
+                  The Innovation Hub
+                </h3>
+                <p className="mt-2 text-xs text-[#8b949e] leading-relaxed font-mono">
+                  The flagship hall housing Physical computing (P01-12), Digital AI algorithms (D01-12), and
+                  sustainable Business enterprises (B01-07).
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-white">Show & Tell Prototype Wing</h3>
-              <p className="mt-3 text-xs sm:text-sm text-slate-400 leading-relaxed">
-                Dedicated to hands-on experimental demonstrations, renewable energy harvesters,
-                sustainable water purification, and bio-assistive models crafted by budding scientists.
-              </p>
-              <ul className="mt-5 space-y-2 text-xs text-slate-300">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                  <span>Renewable Clean Energy Micro-Generators</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                  <span>Smart Agri-tech & Soil Sensor Systems</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                  <span>Bio-degradable Plastic Alternatives</span>
-                </li>
-              </ul>
+              <div className="mt-6 pt-4 border-t border-[#21262d]">
+                <Link
+                  href="/expo"
+                  className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#f0883e] hover:underline"
+                >
+                  <span>Enter Zone 2 in 3D</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-slate-800">
-              <Link
-                href="/expo"
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/80 hover:bg-cyan-500/20 text-xs font-bold text-cyan-300 transition-all font-mono"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>View Zone 1 in 3D</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Zone 2: Innovation Hub */}
-          <div className="rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-amber-500/40 p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-400 font-mono text-xs font-bold">
-                  ZONE 2
+            {/* Arena 3 */}
+            <div className="p-6 border border-[#30363d] bg-[#0d1117] rounded-md flex flex-col justify-between">
+              <div>
+                <span className="px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[#db61a2] font-mono text-xs font-bold">
+                  {'ZONE_03 // BATTLE PITS'}
                 </span>
-                <span className="text-xs font-mono text-slate-500">P, D & B Pods</span>
+                <h3 className="text-xl font-bold text-white mt-3 font-sans">
+                  Robotics Arena &amp; Drone Pit
+                </h3>
+                <p className="mt-2 text-xs text-[#8b949e] leading-relaxed font-mono">
+                  Autonomous obstacle-navigating rovers, maze solvers, combat battle-bots, and drone telemetry
+                  stations battling in live heats.
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-white">The Innovation Hub</h3>
-              <p className="mt-3 text-xs sm:text-sm text-slate-400 leading-relaxed">
-                The centerpiece hall featuring Physical computing (P), Digital software & AI models (D),
-                and Business sustainability startup models (B) solving community problems.
-              </p>
-              <ul className="mt-5 space-y-2 text-xs text-slate-300">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  <span>Physical: IoT Edge Devices & Assistive Wearables</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  <span>Digital: AI Medical Diagnostics & Computer Vision</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  <span>Business: Circular Economy Ventures & FinTech</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="mt-8 pt-4 border-t border-slate-800">
-              <Link
-                href="/expo"
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/80 hover:bg-amber-500/20 text-xs font-bold text-amber-300 transition-all font-mono"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>View Zone 2 in 3D</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Zone 3: Robotics Arena */}
-          <div className="rounded-3xl bg-slate-900/60 border border-slate-800 hover:border-purple-500/40 p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 shadow-lg">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-400 font-mono text-xs font-bold">
-                  ZONE 3
-                </span>
-                <span className="text-xs font-mono text-slate-500">Arena & Pits</span>
+              <div className="mt-6 pt-4 border-t border-[#21262d]">
+                <Link
+                  href="/expo"
+                  className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#db61a2] hover:underline"
+                >
+                  <span>Enter Zone 3 in 3D</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
-              <h3 className="text-xl font-bold text-white">Robotics Arena & Drone Pit</h3>
-              <p className="mt-3 text-xs sm:text-sm text-slate-400 leading-relaxed">
-                High-octane action featuring autonomous obstacle-navigating rovers, maze-solvers,
-                and mechanical fighting robots battling for supremacy on the battle grid.
-              </p>
-              <ul className="mt-5 space-y-2 text-xs text-slate-300">
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-                  <span>Autonomous LiDAR & Ultrasound Rovers</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-                  <span>High-Torque Combat Battle-Bots</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-                  <span>Micro-Drone Precision Flight Circuit</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="mt-8 pt-4 border-t border-slate-800">
-              <Link
-                href="/expo"
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800/80 hover:bg-purple-500/20 text-xs font-bold text-purple-300 transition-all font-mono"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>View Zone 3 in 3D</span>
-              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── REACT BITS ELEMENT 4: <AeroShards /> INTERACTIVE MATERIALS LAB ─── */}
-      <section id="shards" className="py-16 px-4 sm:px-6 bg-[#060911] border-y border-slate-800/80">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-8">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-mono font-bold mb-3">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>INTERACTIVE LAB EXPERIENCE</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Future Materials & Spatial Simulation
+      {/* ─── GUARANTEED FAIR PLAY: ANTI-CHEAT VOTING ─── */}
+      <section id="voting" className="border-b border-[#30363d] py-12 bg-[#040711]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7">
+              <span className="text-xs font-mono text-[#3fb950] block mb-1">
+                {'// CRYPTOGRAPHIC INTEGRITY'}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-black text-white uppercase font-sans tracking-tight">
+                Anti-Cheat Verified Voting
               </h2>
-              <p className="mt-2 text-slate-400 text-sm max-w-xl">
-                Experience simulated refractive crystalline ribbons. Move your cursor to part the shards,
-                click to trigger sonic light ripples, and press-and-hold to gather the field.
+              <p className="mt-3 text-sm text-[#8b949e] font-mono leading-relaxed">
+                To safeguard the awards, our custom-engineered voting pipeline eliminates duplicate ballots
+                and ballot-stuffing using hardware-accelerated device fingerprinting and Cloud Firestore
+                atomic transactions.
               </p>
-            </div>
 
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400 bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
-              <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
-              <span>Interactive: Hover • Click • Hold</span>
-            </div>
-          </div>
-
-          {/* Interactive AeroShards Canvas with reliable automatic fallback */}
-          <div className="relative w-full h-[460px] rounded-3xl overflow-hidden border border-slate-800 bg-slate-950/90 shadow-2xl">
-            <AeroShards
-              shardColor="#6366f1"
-              accentColor="#a855f7"
-              placement="full"
-              material="glass"
-              markers="plus"
-              count={900}
-              depthOfField={0.65}
-              vignette={0.4}
-              mouseInteraction={true}
-              pulseOnClick={true}
-              holdToGather={true}
-              style={{ width: '100%', height: '100%' }}
-            />
-
-            {/* Overlay Caption on Bottom Left */}
-            <div className="absolute bottom-5 left-5 z-20 pointer-events-none bg-slate-950/85 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-800 text-xs text-slate-300">
-              <p className="font-bold text-white flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-purple-400" />
-                <span>Molecular Physics & Aerodynamics Pavilion</span>
-              </p>
-              <p className="text-[11px] text-slate-400 mt-0.5 font-sans">
-                Interactive spatial computing showcase by Class 11-12 Physics & Chemistry Scholars.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── LIVE ANTI-CHEAT VOTING FAIR PLAY ─── */}
-      <section id="voting" className="py-16 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono font-bold mb-4">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>GUARANTEED FAIR PLAY</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Anti-Cheat, Real-Time Community Voting
-            </h2>
-            <p className="mt-4 text-slate-300 leading-relaxed">
-              Every vote matters. To ensure that the best projects win honestly, our custom-engineered
-              voting infrastructure combines client-side browser fingerprinting with Cloud Firestore
-              atomic transactions.
-            </p>
-
-            <div className="mt-8 space-y-4">
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                  <ShieldCheck className="w-4 h-4" />
+              <div className="mt-6 space-y-3 font-mono text-xs">
+                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded flex items-center justify-between">
+                  <span className="text-white">Multi-Factor Hardware Fingerprint</span>
+                  <span className="text-[#3fb950] font-bold">[ ACTIVE ]</span>
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Browser Fingerprinting</h4>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Combines WebGL GPU renderer, screen depth, and audio contexts to prevent ballot-stuffing
-                    across incognito or duplicate windows.
-                  </p>
+                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded flex items-center justify-between">
+                  <span className="text-white">Weighted Ballots: Faculty (3x) • Community (1x)</span>
+                  <span className="text-[#58a6ff] font-bold">[ VERIFIED ]</span>
                 </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                  <Trophy className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Weighted Stakeholder System</h4>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Verified teachers and visiting judges carry a 3x weighted ballot while general students
-                    and visitors contribute a 1x community vote.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
-                  <Radio className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Live Leaderboard Synchronization</h4>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Votes are streamed in real time to the live leaderboard in the virtual hall without
-                    requiring page reloads.
-                  </p>
+                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded flex items-center justify-between">
+                  <span className="text-white">Live Leaderboard Real-Time Streaming</span>
+                  <span className="text-[#d2a8ff] font-bold">[ SYNCED ]</span>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Voting Interactive Guide Card */}
-          <div className="p-8 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-44 h-44 rounded-full bg-emerald-500/10 blur-3xl" />
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Vote className="w-4 h-4 text-emerald-400" />
-              <span>How To Cast Your Vote</span>
-            </h3>
-            <p className="text-xs text-slate-400 mt-1">
-              Follow these simple steps when attending in-person or viewing online:
-            </p>
+            <div className="lg:col-span-5 p-6 border border-[#30363d] bg-[#0d1117] rounded-md font-mono">
+              <span className="text-xs text-[#8b949e] block mb-3">{'// HOW TO CAST BALLOT'}</span>
+              <ol className="space-y-3 text-xs text-[#c9d1d9]">
+                <li className="flex items-start gap-2">
+                  <span className="text-[#3fb950] font-bold">01.</span>
+                  <span>Enter the 3D floor plan and select any booth.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#3fb950] font-bold">02.</span>
+                  <span>Review the pitch deck, schematics, and live demo video.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#3fb950] font-bold">03.</span>
+                  <span>Click &quot;Cast Vote&quot; (authenticated via Google OAuth).</span>
+                </li>
+              </ol>
 
-            <div className="mt-6 space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="w-6 h-6 rounded-full bg-slate-800 text-slate-300 font-mono text-xs font-bold flex items-center justify-center">
-                  1
-                </span>
-                <span className="text-xs text-slate-300">
-                  Enter the <strong className="text-white">3D Virtual Floor Plan</strong> or tap a booth.
-                </span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="w-6 h-6 rounded-full bg-slate-800 text-slate-300 font-mono text-xs font-bold flex items-center justify-center">
-                  2
-                </span>
-                <span className="text-xs text-slate-300">
-                  Review the project’s pitch, abstract, photo gallery, and demo video.
-                </span>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="w-6 h-6 rounded-full bg-slate-800 text-slate-300 font-mono text-xs font-bold flex items-center justify-center">
-                  3
-                </span>
-                <span className="text-xs text-slate-300">
-                  Sign in with Google and click <strong className="text-amber-400">Cast Vote</strong>.
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-slate-800 flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-[11px] font-mono text-slate-400">Ready to cast your ballot?</span>
-                <span className="text-xs font-bold text-white">Voting is Open Now</span>
-              </div>
               <Link
                 href="/expo"
-                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold shadow-md shadow-amber-500/20 transition-all flex items-center gap-1.5 font-mono"
+                className="mt-6 w-full flex items-center justify-center gap-2 py-3 bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-bold uppercase transition-colors"
               >
-                <span>Launch Voting</span>
+                <span>Go To Voting Portal</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -781,232 +618,167 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── EVENT SCHEDULE & TIMELINE ─── */}
-      <section id="schedule" className="py-16 px-4 sm:px-6 max-w-7xl mx-auto border-t border-slate-800/80">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono font-bold mb-3">
-            <Clock className="w-3.5 h-3.5" />
-            <span>EXHIBITION ITINERARY</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Event Schedule & Programme
+      {/* ─── ELEMENT 3: <BellToggle /> IN VIP PASS & ALERTS ─── */}
+      <section className="border-b border-[#30363d] py-14 bg-[#000000]">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <span className="text-xs font-mono text-[#3fb950] block mb-2">
+            {'// ELEMENT 03 // REAL-TIME ALERTS'}
+          </span>
+          <h2 className="text-2xl sm:text-4xl font-black text-white uppercase font-sans tracking-tight">
+            Live Round Notifications &amp; Digital Pass
           </h2>
-          <p className="mt-2 text-slate-400 text-sm">
-            Join us across two power-packed days of presentations, jury evaluations, and demonstrations.
+          <p className="mt-2 text-xs sm:text-sm text-[#8b949e] font-mono">
+            Toggle the notification bell below to enable audio chime alerts when round evaluations close.
           </p>
 
-          {/* Day 1 vs Day 2 Tabs */}
-          <div className="mt-6 inline-flex p-1 rounded-2xl bg-slate-900 border border-slate-800">
-            <button
-              onClick={() => setActiveTab('day1')}
-              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'day1'
-                  ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Day 1: Fri, Nov 14 (Jury & Heats)
-            </button>
-            <button
-              onClick={() => setActiveTab('day2')}
-              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === 'day2'
-                  ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Day 2: Sat, Nov 15 (Public & Awards)
-            </button>
-          </div>
-        </div>
-
-        {/* Schedule Timeline Content */}
-        <div className="max-w-3xl mx-auto space-y-4">
-          {activeTab === 'day1' ? (
-            <>
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-amber-400 font-mono text-xs font-bold shrink-0">
-                  09:00 AM
-                </span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Delegates Registration & Booth Setup</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Participating student teams arrive at the main auditorium and test electronics and sensors.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-amber-400 font-mono text-xs font-bold shrink-0">
-                  10:30 AM
-                </span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Grand Inauguration & Keynote Address</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Welcome address by Principal and Chief Guest from Indian Institute of Technology (IIT).
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-amber-400 font-mono text-xs font-bold shrink-0">
-                  11:45 AM
-                </span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Round 1: Technical Jury Evaluation</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Judges inspect codebases, circuit schematics, patentability, and scientific method.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-amber-400 font-mono text-xs font-bold shrink-0">
-                  02:30 PM
-                </span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Robotics Arena Qualifying Rounds</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Timed obstacle trials and line follower robot heats in Zone 3.
-                  </p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-amber-400 font-mono text-xs font-bold shrink-0">
-                  09:30 AM
-                </span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Public Exhibition & Community Voting Opens</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Doors open for parents, visiting schools, and tech enthusiasts. Live voting goes live.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-amber-400 font-mono text-xs font-bold shrink-0">
-                  01:00 PM
-                </span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Innovation Shark Tank: Finalist Pitches</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Top 6 student teams pitch their business plans and prototypes on the auditorium stage.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-amber-400 font-mono text-xs font-bold shrink-0">
-                  03:30 PM
-                </span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Ballots Close & Score Compilation</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Online and physical voting portals lock. Jury tallies final rankings.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-amber-400 font-mono text-xs font-bold shrink-0">
-                  04:15 PM
-                </span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Grand Awards & Felicitation Ceremony</h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Distribution of trophies, merit certificates, and incubation funding grants.
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* ─── REACT BITS ELEMENT 3: <BellToggle /> VIP PASS & ALERTS ─── */}
-      <section id="alerts" className="py-16 px-4 sm:px-6 bg-gradient-to-b from-[#070b14] via-[#0b1222] to-[#070b14] border-t border-slate-800/80">
-        <div className="max-w-3xl mx-auto text-center p-8 sm:p-12 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl">
-          <div className="flex justify-center mb-6">
+          {/* Element 3: <BellToggle /> in exact previous format */}
+          <div className="flex justify-center my-6">
             <BellToggle
-              pressed={bellOn}
-              onChange={(active) => setBellOn(active)}
-              count={bellOn ? 3 : 0}
+              offLabel="Notify me"
+              onLabel="You'll be notified"
+              color="#f5f5f5"
+              background="#27272a"
+              onColor="#18181b"
+              onBackground="#f5f5f5"
               size="md"
+              count={3}
+              onChange={(active: boolean) => console.log('active: ', active)}
             />
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            Get Real-Time Winner Announcements & Event Pass
-          </h2>
-          <p className="mt-3 text-slate-400 text-xs sm:text-sm max-w-lg mx-auto">
-            Toggle the notification bell above to enable audio and push notifications for results, or register
-            your email below for your free digital VIP entry pass.
-          </p>
-
-          <form onSubmit={handleSubscribe} className="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+          <form onSubmit={handleRegister} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto font-mono text-xs">
             <input
               type="email"
-              value={emailInput}
-              onChange={(e) => setEmailInput(e.target.value)}
-              placeholder="Enter your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="visitor@dpsi.in"
               required
-              className="flex-1 px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+              className="flex-1 px-4 py-3 bg-[#0d1117] border border-[#30363d] text-white placeholder-[#8b949e] focus:outline-none focus:border-[#58a6ff] rounded"
             />
             <button
               type="submit"
-              className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-amber-500/20 transition-all shrink-0 font-mono"
+              className="px-6 py-3 bg-[#238636] hover:bg-[#2ea043] text-white font-bold uppercase transition-colors rounded"
             >
-              Get Free Pass
+              Get Entry Pass
             </button>
           </form>
 
-          {subscribed && (
-            <p className="mt-4 text-xs font-mono text-emerald-400 animate-fade-in">
-              ✓ Registration confirmed! We sent your digital exhibition pass and live alerts access.
+          {registered && (
+            <p className="mt-3 text-xs font-mono text-[#3fb950]">
+              ✓ Entry pass registered! You will receive live round alerts.
             </p>
           )}
         </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
-      <footer className="py-12 px-4 sm:px-6 border-t border-slate-800/80 bg-slate-950 text-slate-400 text-xs">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* ─── GITHUB UNIVERSE ITINERARY TABLE ─── */}
+      <section id="schedule" className="py-12 border-b border-[#30363d]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8">
+          <div className="flex items-center justify-between pb-6 border-b border-[#30363d]">
+            <div>
+              <span className="text-xs font-mono text-[#3fb950] block mb-1">
+                {'// CONFERENCE TIMETABLE'}
+              </span>
+              <h2 className="text-3xl font-black text-white uppercase font-sans tracking-tight">
+                Two-Day Schedule
+              </h2>
+            </div>
+
+            <div className="flex items-center border border-[#30363d] bg-[#0d1117] rounded text-xs font-mono">
+              <button
+                onClick={() => setSelectedDay('day1')}
+                className={`px-3 py-1.5 transition-colors ${
+                  selectedDay === 'day1' ? 'bg-[#238636] text-white font-bold' : 'text-[#8b949e]'
+                }`}
+              >
+                Day 1 (Nov 14)
+              </button>
+              <button
+                onClick={() => setSelectedDay('day2')}
+                className={`px-3 py-1.5 transition-colors ${
+                  selectedDay === 'day2' ? 'bg-[#238636] text-white font-bold' : 'text-[#8b949e]'
+                }`}
+              >
+                Day 2 (Nov 15)
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6 divide-y divide-[#21262d] font-mono text-xs">
+            {selectedDay === 'day1' ? (
+              <>
+                <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[#3fb950] font-bold w-28 shrink-0">09:00 - 10:30</span>
+                  <span className="text-white font-bold flex-1">Student Booth Setup &amp; Electrical Safety Check</span>
+                  <span className="text-[#8b949e]">Main Auditorium</span>
+                </div>
+                <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[#3fb950] font-bold w-28 shrink-0">10:30 - 11:30</span>
+                  <span className="text-white font-bold flex-1">Opening Keynote: Next-Gen Autonomous AI</span>
+                  <span className="text-[#8b949e]">Stage A</span>
+                </div>
+                <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[#3fb950] font-bold w-28 shrink-0">11:30 - 14:00</span>
+                  <span className="text-white font-bold flex-1">Round 1: Faculty &amp; Jury Technical Scoring</span>
+                  <span className="text-[#8b949e]">Zones 1 &amp; 2</span>
+                </div>
+                <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[#3fb950] font-bold w-28 shrink-0">14:30 - 16:30</span>
+                  <span className="text-white font-bold flex-1">Robotics Combat &amp; Obstacle Course Qualifying Heats</span>
+                  <span className="text-[#8b949e]">Zone 3 Battle Pit</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[#3fb950] font-bold w-28 shrink-0">09:30 - 12:30</span>
+                  <span className="text-white font-bold flex-1">Public Exhibition &amp; Community Ballot Voting Opens</span>
+                  <span className="text-[#8b949e]">Full Floor</span>
+                </div>
+                <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[#3fb950] font-bold w-28 shrink-0">13:00 - 14:30</span>
+                  <span className="text-white font-bold flex-1">Student Shark Tank: Finalist Venture Pitches</span>
+                  <span className="text-[#8b949e]">Main Stage</span>
+                </div>
+                <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[#3fb950] font-bold w-28 shrink-0">15:30</span>
+                  <span className="text-[#f0883e] font-bold flex-1">Live Voting Closes • Final Firestore Tally</span>
+                  <span className="text-[#8b949e]">Online Portal</span>
+                </div>
+                <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-[#3fb950] font-bold w-28 shrink-0">16:00 - 17:00</span>
+                  <span className="text-white font-bold flex-1">Grand Awards Ceremony &amp; Incubation Grants</span>
+                  <span className="text-[#8b949e]">Auditorium</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── GITHUB UNIVERSE STYLE MINIMALIST FOOTER ─── */}
+      <footer className="py-10 bg-[#000000] text-[#8b949e] font-mono text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="h-8 px-2 py-1 rounded-lg bg-white flex items-center justify-center">
+            <div className="h-6 px-1.5 py-0.5 rounded bg-white flex items-center justify-center">
               <img src="/dps_shield.png" alt="DPS Indirapuram" className="h-full w-auto object-contain" />
             </div>
-            <div>
-              <p className="font-bold text-white">Delhi Public School Indirapuram</p>
-              <p className="text-[11px] text-slate-500">
-                Ahinsa Khand-II, Indirapuram, Ghaziabad, Uttar Pradesh 201014
-              </p>
-            </div>
+            <span>© 2026 Delhi Public School Indirapuram.</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6 text-slate-400 font-medium">
-            <Link href="/expo" className="hover:text-amber-400 transition-colors">
-              3D Floor Plan
+          <div className="flex items-center gap-4 text-[11px]">
+            <Link href="/expo" className="text-white hover:underline">
+              [ 3D Floor Plan ]
             </Link>
-            <a href="#about" className="hover:text-amber-400 transition-colors">
-              Overview
+            <a href="#projects" className="hover:text-white transition-colors">
+              [ 35 Inventions ]
             </a>
-            <a href="#projects" className="hover:text-amber-400 transition-colors">
-              Projects
+            <a href="#voting" className="hover:text-white transition-colors">
+              [ Fair-Play Voting ]
             </a>
-            <a href="#zones" className="hover:text-amber-400 transition-colors">
-              3 Arenas
+            <a href="#schedule" className="hover:text-white transition-colors">
+              [ Itinerary ]
             </a>
-            <a href="#voting" className="hover:text-amber-400 transition-colors">
-              Fair-Play Rules
-            </a>
-          </div>
-
-          <div className="text-slate-500 text-center md:text-right">
-            <p>© 2026 Delhi Public School Indirapuram.</p>
-            <p className="text-[10px] mt-0.5">Designed with React Bits Components.</p>
           </div>
         </div>
       </footer>

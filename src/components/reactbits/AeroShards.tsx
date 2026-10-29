@@ -1058,20 +1058,28 @@ export default function AeroShards({
 
     const startCanvasFallback = () => {
       if (disposed) return;
-      const ctx = canvas.getContext('2d');
+      let drawCanvas = canvas;
+      let ctx = drawCanvas.getContext('2d');
+      if (!ctx) {
+        drawCanvas = document.createElement('canvas');
+        drawCanvas.className = CANVAS;
+        container.innerHTML = '';
+        container.appendChild(drawCanvas);
+        ctx = drawCanvas.getContext('2d');
+      }
       if (!ctx) return;
 
       let width = container.clientWidth || 800;
       let height = container.clientHeight || 500;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
+      drawCanvas.width = Math.round(width * dpr);
+      drawCanvas.height = Math.round(height * dpr);
 
       const resizeFallback = () => {
         width = container.clientWidth || 800;
         height = container.clientHeight || 500;
-        canvas.width = Math.round(width * dpr);
-        canvas.height = Math.round(height * dpr);
+        drawCanvas.width = Math.round(width * dpr);
+        drawCanvas.height = Math.round(height * dpr);
       };
       window.addEventListener('resize', resizeFallback);
       cleanups.push(() => window.removeEventListener('resize', resizeFallback));
@@ -1443,7 +1451,7 @@ export default function AeroShards({
       let pathKey = '';
 
       const state = {
-        visible: false,
+        visible: true,
         clock: 0,
         last: 0,
         travel: new Float64Array(LEVELS),
@@ -2325,8 +2333,17 @@ export default function AeroShards({
         document.documentElement.removeEventListener('pointerleave', onLeave);
       });
 
+      const onScroll = () => {
+        const rect = container.getBoundingClientRect();
+        state.visible = rect.top < window.innerHeight && rect.bottom > 0;
+        if (state.visible) state.quiet = 0;
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      cleanups.push(() => window.removeEventListener('scroll', onScroll));
+
       const visibility = new IntersectionObserver(entries => {
         state.visible = entries.some(entry => entry.isIntersecting);
+        if (state.visible) state.quiet = 0;
       });
       visibility.observe(container);
       cleanups.push(() => visibility.disconnect());

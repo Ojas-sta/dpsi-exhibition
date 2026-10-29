@@ -45,7 +45,7 @@ export default function RootLayout({
       lang="en"
       className={`${outfit.variable} ${spaceGrotesk.variable} h-full dark antialiased`}
     >
-      <body className="h-full w-full overflow-hidden bg-[#070b14] text-[#f1f5f9] font-sans select-none touch-manipulation">
+      <body className="min-h-full w-full overflow-x-hidden bg-[#000000] text-[#f1f5f9] font-sans selection:bg-[#2ea043] selection:text-black">
         {children}
       </body>
     </html>

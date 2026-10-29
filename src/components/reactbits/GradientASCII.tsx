@@ -520,7 +520,54 @@ export default function GradientASCII({
       depth: false,
       stencil: false
     });
-    if (!container || !canvas || !gl) return undefined;
+    if (!container || !canvas) return undefined;
+    if (!gl) {
+      // 2D Canvas ASCII animation fallback when WebGL2 context is unavailable
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return undefined;
+      let raf2d = 0;
+      const width = container.clientWidth || 800;
+      const height = container.clientHeight || 600;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      const chars = settingsRef.current.characters || ' =+xX0S8#@';
+      const cellSize = settingsRef.current.cellSize || 18;
+      const cols = Math.ceil(width / cellSize);
+      const rows = Math.ceil(height / cellSize);
+      const startTime = performance.now();
+
+      const tick2D = (now: number) => {
+        const t = (now - startTime) * 0.001;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.fillStyle = '#050811';
+        ctx.fillRect(0, 0, width, height);
+        ctx.font = `600 ${cellSize * 0.75}px ${settingsRef.current.fontFamily || 'monospace'}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = c * cellSize + cellSize / 2;
+            const y = r * cellSize + cellSize / 2;
+            const normX = c / cols;
+            const normY = r / rows;
+            const wave = Math.sin(normX * 4 + t * 0.8) * Math.cos(normY * 3 - t * 0.6);
+            const dist = Math.hypot(normX - 0.5, normY - 0.7);
+            const brightness = Math.max(0, Math.min(1, 1 - dist * 1.5 + wave * 0.25));
+            if (brightness > 0.1) {
+              const charIdx = Math.floor(brightness * (chars.length - 1));
+              const char = chars[charIdx] || ' ';
+              ctx.fillStyle = brightness > 0.6 ? '#38bdf8' : brightness > 0.35 ? '#1e3fd8' : '#1e293b';
+              ctx.fillText(char, x, y);
+            }
+          }
+        }
+        raf2d = requestAnimationFrame(tick2D);
+      };
+      raf2d = requestAnimationFrame(tick2D);
+      return () => cancelAnimationFrame(raf2d);
+    }
 
     const field = link(gl, FIELD);
     const halo = link(gl, HALO);
@@ -564,7 +611,7 @@ export default function GradientASCII({
     let paletteKey = '';
     let time = 0;
     let glyphTime = 0;
-    let introClock = settingsRef.current.intro && !reduce ? 0 : 1;
+    let introClock = 1;
     let frameSeed = 0;
     let grainClock = 0;
     let raf = 0;
@@ -830,6 +877,16 @@ export default function GradientASCII({
       }
     });
     intersection.observe(container);
+    const onScroll = () => {
+      const rect = container.getBoundingClientRect();
+      visible = rect.top < window.innerHeight && rect.bottom > 0;
+      if (visible) {
+        last = 0;
+        wake();
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     window.addEventListener('pointerdown', onPointerDown, { passive: true });
     document.addEventListener('visibilitychange', onVisibility);
@@ -842,17 +899,21 @@ export default function GradientASCII({
       wakeRef.current = null;
       resizeObserver.disconnect();
       intersection.disconnect();
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('visibilitychange', onVisibility);
-      [fieldTarget, haloA, haloB].forEach(target => {
-        target.textures.forEach(texture => gl.deleteTexture(texture));
-        gl.deleteFramebuffer(target.framebuffer);
-      });
-      if (atlas) gl.deleteTexture(atlas.texture);
-      gl.deleteVertexArray(vao);
-      [field, halo, blur, composite].forEach(item => gl.deleteProgram(item.program));
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      try {
+        [fieldTarget, haloA, haloB].forEach(target => {
+          target.textures.forEach(texture => gl.deleteTexture(texture));
+          gl.deleteFramebuffer(target.framebuffer);
+        });
+        if (atlas) gl.deleteTexture(atlas.texture);
+        gl.deleteVertexArray(vao);
+        [field, halo, blur, composite].forEach(item => gl.deleteProgram(item.program));
+      } catch {
+        // ignore cleanup errors if context already lost
+      }
     };
   }, []);
 
