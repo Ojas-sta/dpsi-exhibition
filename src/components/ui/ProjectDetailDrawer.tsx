@@ -370,6 +370,11 @@ export default function ProjectDetailDrawer() {
                 </button>
               )}
             </div>
+
+            {/* Small Drawer Footer Credit */}
+            <p className="text-center text-[10px] font-mono text-slate-500/70 pt-2 pb-1">
+              Co-Engineered by Ojas Singh dpsi&apos;&apos;30
+            </p>
           </motion.aside>
         </>
       )}

@@ -202,6 +202,7 @@ export default function LiveLeaderboard() {
           {/* Footer */}
           <div className="p-3 bg-[#07090e] border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 px-4 sm:px-5 pb-safe">
             <span className="font-mono text-[11px]">{sortedProjects.length} Competing Projects</span>
+            <span className="hidden sm:inline text-[10px] font-mono text-slate-500/70">Co-Engineered by Ojas Singh dpsi&apos;&apos;30</span>
             <div className="flex items-center gap-1 text-amber-400 font-semibold text-[11px]">
               <Flame className="w-3.5 h-3.5" />
               <span>Verified Standings</span>

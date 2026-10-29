@@ -1,6 +1,7 @@
 'use client';
 
 import { useExhibitionStore, NavZoneId } from '@/store/useExhibitionStore';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 import { signOutFromFirebase } from '@/lib/firebase';
 import {
   Trophy,
@@ -172,6 +173,9 @@ export default function TopNavHUD() {
               <span className="hidden xl:inline">2D</span>
             </button>
           </div>
+
+          {/* Light / Dark Mode Toggle */}
+          <ThemeToggle variant="hud" />
 
           {/* Live Leaderboard Button */}
           <button

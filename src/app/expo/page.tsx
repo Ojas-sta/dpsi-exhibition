@@ -139,6 +139,11 @@ export default function ExpoFloorPlanPage() {
       <AuthModal />
       <SearchModal />
       <MobileNavMenu />
+
+      {/* Small Bottom Credit */}
+      <div className="fixed bottom-2 right-4 z-20 pointer-events-none text-[10px] font-mono text-slate-500/70">
+        Co-Engineered by Ojas Singh dpsi&apos;&apos;30
+      </div>
     </main>
   );
 }

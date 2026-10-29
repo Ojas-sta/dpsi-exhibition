@@ -37,6 +37,7 @@ export const metadata: Metadata = {
 
 import AmbientBackground from '@/components/ui/AmbientBackground';
 import CustomCursor from '@/components/ui/CustomCursor';
+import ThemeInitializer from '@/components/ui/ThemeInitializer';
 
 export default function RootLayout({
   children,
@@ -47,8 +48,30 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${outfit.variable} ${spaceGrotesk.variable} dark antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-screen w-full bg-[#000000] text-[#f1f5f9] font-sans selection:bg-[#2ea043] selection:text-black relative">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const t = localStorage.getItem('dpsi-expo-theme');
+                if (t === 'light') {
+                  document.documentElement.classList.add('light');
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.classList.remove('light');
+                  document.documentElement.setAttribute('data-theme', 'dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] font-sans selection:bg-[#2ea043] selection:text-black relative transition-colors duration-300">
+        <ThemeInitializer />
         {/* [ ELEMENT 04 ] :: REFRACTIVE GLASS AERO-SHARDS SIMULATION in the background of all pages */}
         <AmbientBackground />
 

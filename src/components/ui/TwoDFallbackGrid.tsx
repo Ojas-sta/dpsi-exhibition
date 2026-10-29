@@ -183,6 +183,11 @@ export default function TwoDFallbackGrid() {
             );
           })}
         </div>
+
+        {/* Small Bottom Credit */}
+        <div className="text-center py-8 text-xs font-mono text-slate-500/70 border-t border-slate-800/60 mt-8">
+          Co-Engineered by Ojas Singh dpsi&apos;&apos;30
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useThemeStore } from '@/store/useThemeStore';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -40,6 +42,8 @@ export default function LandingPage() {
   const [selectedDay, setSelectedDay] = useState<'day1' | 'day2'>('day1');
   const [email, setEmail] = useState('');
   const [registered, setRegistered] = useState(false);
+  const theme = useThemeStore((state) => state.theme);
+  const isLight = theme === 'light';
 
   const filteredProjects = SEED_PROJECTS.filter((p) => {
     if (selectedZone === 'all') return true;
@@ -130,11 +134,12 @@ export default function LandingPage() {
             </a>
           </nav>
 
-          {/* Right Action: Launch 3D Hall */}
+          {/* Right Action: Launch 3D Hall & Theme Toggle */}
           <div className="ml-auto flex items-stretch">
+            <ThemeToggle variant="header" />
             <Link
               href="/expo"
-              className="flex items-center gap-2 px-5 bg-[#238636] hover:bg-[#2ea043] text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors"
+              className="flex items-center gap-2 px-4 sm:px-5 bg-[#238636] hover:bg-[#2ea043] text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors shrink-0"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Enter 3D Hall ↗</span>
@@ -304,27 +309,50 @@ export default function LandingPage() {
             }}
           >
             <GradientASCII
-              colors={['#1e3fd8', '#f6f8ff', '#a5d8ff', '#38bdf8']}
+              colors={
+                isLight
+                  ? ['#1d4ed8', '#60a5fa', '#93c5fd', '#3b82f6']
+                  : ['#1e3fd8', '#f6f8ff', '#a5d8ff', '#38bdf8']
+              }
               shape="horizon"
               characters=" =+xX0S8#@"
               cellSize={18}
               density={0.8}
               softness={0.7}
               gradientOpacity={0.85}
+              lightMode={isLight}
             />
 
-            {/* Seamless Bottom Gradient dissolve into black */}
-            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent via-[#000000]/60 to-[#000000] pointer-events-none z-10" />
+            {/* Seamless Bottom Gradient dissolve into black or light surface */}
+            <div
+              className={`absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent pointer-events-none z-10 transition-colors duration-300 ${
+                isLight ? 'via-slate-50/70 to-slate-50' : 'via-[#000000]/60 to-[#000000]'
+              }`}
+            />
 
             {/* GitHub Universe Terminal Overlay in Center */}
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
-              <span className="px-3 py-1 rounded bg-black/80 border border-[#30363d] font-mono text-xs text-[#38bdf8] mb-4">
+              <span
+                className={`px-3 py-1 rounded font-mono text-xs mb-4 border transition-colors ${
+                  isLight
+                    ? 'bg-white/90 border-slate-300 text-blue-700 shadow-sm'
+                    : 'bg-black/80 border-[#30363d] text-[#38bdf8]'
+                }`}
+              >
                 {'STAGE_A // COMPUTATIONAL ASCII CANVAS'}
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight text-white max-w-2xl drop-shadow-md">
+              <h2
+                className={`text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight max-w-2xl drop-shadow-md transition-colors ${
+                  isLight ? 'text-slate-950' : 'text-white'
+                }`}
+              >
                 Where Young Visionaries Shape Tomorrow
               </h2>
-              <p className="mt-3 text-xs sm:text-sm font-mono text-slate-300 max-w-lg">
+              <p
+                className={`mt-3 text-xs sm:text-sm font-mono max-w-lg transition-colors ${
+                  isLight ? 'text-slate-800 font-semibold' : 'text-slate-300'
+                }`}
+              >
                 Move your cursor to warp the ASCII matrix field. Real-time dual-pass fragment shader
                 computing character density.
               </p>
@@ -745,6 +773,12 @@ export default function LandingPage() {
               [ Itinerary ]
             </a>
           </div>
+        </div>
+
+        {/* Small Bottom Credit */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-5 pt-4 border-t border-[#21262d] flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#8b949e]">
+          <span>Annual Technology &amp; Innovation Summit 2026</span>
+          <span className="font-mono">Co-Engineered by Ojas Singh dpsi&apos;&apos;30</span>
         </div>
       </footer>
     </div>

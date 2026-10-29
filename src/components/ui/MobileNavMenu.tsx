@@ -1,6 +1,7 @@
 'use client';
 
 import { useExhibitionStore, NavZoneId } from '@/store/useExhibitionStore';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 import { signOutFromFirebase } from '@/lib/firebase';
 import {
   X,
@@ -283,6 +284,16 @@ export default function MobileNavMenu() {
               <span>Sign In to Vote (Google / Email)</span>
             </button>
           )}
+
+          {/* Light / Dark Mode Toggle */}
+          <div className="pt-2">
+            <ThemeToggle variant="inline" />
+          </div>
+
+          {/* Small Bottom Credit */}
+          <p className="text-center pt-3 text-[10px] font-mono text-slate-500/80">
+            Co-Engineered by Ojas Singh dpsi&apos;&apos;30
+          </p>
         </div>
       </div>
     </div>

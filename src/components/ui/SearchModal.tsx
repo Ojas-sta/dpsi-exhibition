@@ -214,6 +214,7 @@ export default function SearchModal() {
             <span>↑↓ Navigate</span>
             <span>↵ Jump to Booth in 3D</span>
           </div>
+          <span className="hidden sm:inline text-[10px] text-slate-500/70">Co-Engineered by Ojas Singh dpsi&apos;&apos;30</span>
           <span>35 Innovation Projects</span>
         </div>
       </div>
