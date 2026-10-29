@@ -12,7 +12,7 @@ export default function CustomCursor() {
       <BlobCursor
         material="chrome"
         color="#3B82F6"
-        size={140}
+        size={64}
         hideCursor={true}
       />
     </div>
