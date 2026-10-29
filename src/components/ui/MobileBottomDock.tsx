@@ -1,7 +1,6 @@
 'use client';
 
-import { useExhibitionStore } from '@/store/useExhibitionStore';
-import { ZoneType } from '@/types';
+import { useExhibitionStore, NavZoneId } from '@/store/useExhibitionStore';
 import { signOutFromFirebase } from '@/lib/firebase';
 import {
   Trophy,
@@ -20,34 +19,37 @@ export default function MobileBottomDock() {
   const isLeaderboardOpen = useExhibitionStore((state) => state.isLeaderboardOpen);
   const setLeaderboardOpen = useExhibitionStore((state) => state.setLeaderboardOpen);
   const setAuthModalOpen = useExhibitionStore((state) => state.setAuthModalOpen);
-  const setSearchModalOpen = useExhibitionStore((state) => state.setSearchModalOpen);
+  const setSearchOpen = useExhibitionStore((state) => state.setSearchOpen);
   const isDrawerOpen = useExhibitionStore((state) => state.isDrawerOpen);
   const user = useExhibitionStore((state) => state.user);
   const setUser = useExhibitionStore((state) => state.setUser);
 
-  const zones: { id: 'overview' | ZoneType; label: string; short: string }[] = [
-    { id: 'overview', label: 'All', short: 'All' },
-    { id: 'zone-1', label: 'ST', short: 'ST' },
-    { id: 'zone-2', label: 'P/D/B', short: 'P·D·B' },
-    { id: 'zone-3', label: 'Robo', short: 'Robo' },
+  const zones: { id: NavZoneId; short: string; title: string }[] = [
+    { id: 'overview', short: 'All', title: 'Milky Way Overview' },
+    { id: 'zone-1', short: 'ST', title: 'Show & Tell' },
+    { id: 'physical', short: 'P', title: 'Physical' },
+    { id: 'digital', short: 'D', title: 'Digital' },
+    { id: 'business', short: 'B', title: 'Business' },
+    { id: 'zone-3', short: 'Robo', title: 'Robotics' },
   ];
 
   if (isDrawerOpen) return null;
 
   return (
     <div className="md:hidden fixed bottom-3 inset-x-3 z-[100] pointer-events-auto pb-safe">
-      <div className="flex items-center justify-between p-1.5 rounded-2xl bg-[#090d16]/95 backdrop-blur-xl border border-slate-800 shadow-2xl shadow-black">
+      <div className="flex items-center justify-between p-1.5 rounded-2xl bg-[#070b14]/95 backdrop-blur-2xl border border-slate-700/60 shadow-2xl shadow-black">
         
         {/* Quick Zone Navigation in 3D Mode */}
         {viewMode === '3d' ? (
-          <div className="flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-0.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
             {zones.map((zone) => {
               const isActive = activeZone === zone.id;
               return (
                 <button
                   key={zone.id}
                   onClick={() => setActiveZone(zone.id)}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+                  title={zone.title}
+                  className={`px-2 py-1.5 rounded-lg text-[11px] font-mono font-bold transition-all ${
                     isActive
                       ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
                       : 'text-slate-400 hover:text-white'
@@ -61,38 +63,38 @@ export default function MobileBottomDock() {
         ) : (
           <div className="px-3 py-1.5 text-xs font-mono font-bold text-amber-400 flex items-center gap-1.5">
             <LayoutGrid className="w-3.5 h-3.5" />
-            <span>2D BENTO DIRECTORY</span>
+            <span>2D DIRECTORY</span>
           </div>
         )}
 
-        {/* Action Controls: Search, 2D/3D toggle, Leaderboard, Auth */}
-        <div className="flex items-center gap-1.5">
-          {/* Quick Search Button */}
+        {/* Action Controls: 2D/3D toggle, Leaderboard, Auth */}
+        <div className="flex items-center gap-1">
+          {/* Quick Search */}
           <button
-            onClick={() => setSearchModalOpen(true)}
-            className="p-2.5 rounded-xl text-xs font-bold border bg-slate-900 text-slate-300 border-slate-800 hover:text-white transition-all"
+            onClick={() => setSearchOpen(true)}
+            className="p-2 rounded-xl text-slate-300 hover:text-white bg-slate-900 border border-slate-800"
             title="Search Projects"
           >
-            <Search className="w-4 h-4 text-amber-400" />
+            <Search className="w-3.5 h-3.5 text-amber-400" />
           </button>
 
           {/* 3D / 2D Toggle */}
           <button
             onClick={() => setViewMode(viewMode === '3d' ? '2d' : '3d')}
-            className={`p-2.5 rounded-xl text-xs font-bold border transition-all ${
+            className={`p-2 rounded-xl text-xs font-bold border transition-all ${
               viewMode === '2d'
                 ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
                 : 'bg-slate-900 text-slate-300 border-slate-800'
             }`}
             title="Toggle View Mode"
           >
-            {viewMode === '3d' ? <LayoutGrid className="w-4 h-4 text-slate-300" /> : <Box className="w-4 h-4 text-amber-400" />}
+            {viewMode === '3d' ? <LayoutGrid className="w-3.5 h-3.5 text-slate-300" /> : <Box className="w-3.5 h-3.5 text-amber-400" />}
           </button>
 
           {/* Leaderboard Button */}
           <button
             onClick={() => setLeaderboardOpen(!isLeaderboardOpen)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 text-slate-950 text-xs font-black shadow-md shadow-amber-500/20 active:scale-95 transition-all font-mono"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500 text-slate-950 text-xs font-black shadow-md shadow-amber-500/20 active:scale-95 transition-all font-mono"
           >
             <Trophy className="w-3.5 h-3.5" />
             <span>Ranks</span>
@@ -102,7 +104,7 @@ export default function MobileBottomDock() {
           {user ? (
             <div className="flex items-center gap-1">
               <div
-                className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-xs"
+                className="w-7 h-7 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold text-[10px]"
                 title={user.name}
               >
                 {user.name.charAt(0)}
@@ -111,13 +113,12 @@ export default function MobileBottomDock() {
                 onClick={async () => {
                   try {
                     await signOutFromFirebase();
-                  } catch (e) {
-                    console.warn('Mobile sign-out notice:', e);
-                  } finally {
                     setUser(null);
+                  } catch (e) {
+                    console.error(e);
                   }
                 }}
-                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-400 border border-slate-800 transition-colors"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-rose-400"
                 title="Sign out"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -126,10 +127,10 @@ export default function MobileBottomDock() {
           ) : (
             <button
               onClick={() => setAuthModalOpen(true)}
-              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 font-bold text-xs shadow-md active:scale-95 transition-all"
-              title="Sign in to Vote"
+              className="p-1.5 px-2 rounded-xl bg-slate-800 border border-slate-700 text-amber-400 font-bold text-[10px] flex items-center gap-1"
             >
-              <User className="w-4 h-4" />
+              <User className="w-3 h-3" />
+              <span>Login</span>
             </button>
           )}
         </div>

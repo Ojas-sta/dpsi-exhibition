@@ -98,6 +98,7 @@ export default function BoothMesh({ project }: BoothMeshProps) {
     <group
       ref={meshGroupRef}
       position={[project.position_x, project.position_y, project.position_z]}
+      rotation={[0, project.rotation_y || 0, 0]}
       onClick={handleClick}
       onPointerDown={isMobile ? handleClick : undefined}
       onPointerOver={(e) => {

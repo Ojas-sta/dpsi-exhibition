@@ -1,6 +1,6 @@
 'use client';
 
-import { MeshReflectorMaterial, ContactShadows, Environment, Float, Text } from '@react-three/drei';
+import { Environment, Float, Text } from '@react-three/drei';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
 
 export default function FloorAndEnvironment() {
@@ -8,102 +8,100 @@ export default function FloorAndEnvironment() {
 
   return (
     <>
-      {/* Studio HDRI Environment */}
+      {/* Studio Lighting Environment */}
       <Environment preset="city" />
 
-      {/* Balanced Soft Ambient & Directional Lighting */}
-      <ambientLight intensity={0.65} color="#e2e8f0" />
+      {/* 
+        Balanced Studio Directional Light 
+        CRITICAL: shadow-bias must be POSITIVE (0.0004) to prevent shadow acne zebra stripes
+      */}
+      <ambientLight intensity={0.75} color="#f8fafc" />
       <directionalLight
-        position={[25, 45, 25]}
+        position={[30, 50, 30]}
         intensity={1.2}
-        color="#fffaf0"
+        color="#ffffff"
         castShadow={!isMobile}
         shadow-mapSize={isMobile ? [512, 512] : [2048, 2048]}
         shadow-camera-left={-60}
         shadow-camera-right={60}
         shadow-camera-top={50}
         shadow-camera-bottom={-50}
+        shadow-bias={0.0004} // Fixes all shadow acne & floor moire
       />
 
-      {/* Soft Fill Light from opposite quadrant */}
       <directionalLight
-        position={[-25, 30, -30]}
-        intensity={0.5}
+        position={[-30, 35, -30]}
+        intensity={0.4}
         color="#94a3b8"
       />
 
       {/* ========================================================= */}
-      {/* 1. FLOOR PLAN BASES (Matching Blueprint)                  */}
+      {/* 1. SOLID ARCHITECTURAL FLOOR SLABS (Zero Z-Fighting)      */}
       {/* ========================================================= */}
       
-      {/* Main Exhibition Hall Floor (Obsidian Slate Satin) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-1, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[46, 42]} />
-        <MeshReflectorMaterial
-          blur={[300, 100]}
-          resolution={isMobile ? 512 : 1024}
-          mirror={0.35}
-          mixBlur={0.8}
-          mixStrength={1.2}
-          roughness={0.28}
-          depthScale={1.2}
-          minDepthThreshold={0.4}
-          maxDepthThreshold={1.4}
-          color="#0f1422"
-          metalness={0.3}
+      {/* 
+        Main Exhibition Hall Floor 
+        Solid box: top at y=0.0, height=0.8, bottom at y=-0.8
+        Guaranteed zero coplanar collision, zero raster lines
+      */}
+      <mesh position={[-1, -0.4, 0]} receiveShadow>
+        <boxGeometry args={[46, 0.8, 42]} />
+        <meshStandardMaterial
+          color="#0f172a"
+          roughness={0.48}
+          metalness={0.2}
         />
       </mesh>
 
-      {/* Top Hall Floor (Robotics Arena Room) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-1, -0.01, -36]} receiveShadow>
-        <planeGeometry args={[46, 24]} />
-        <MeshReflectorMaterial
-          blur={[300, 100]}
-          resolution={isMobile ? 512 : 1024}
-          mirror={0.35}
-          mixBlur={0.8}
-          mixStrength={1.2}
-          roughness={0.28}
-          depthScale={1.2}
-          minDepthThreshold={0.4}
-          maxDepthThreshold={1.4}
-          color="#0b101c"
-          metalness={0.3}
+      {/* Main Hall Outer Base Accent (placed strictly BELOW at y=-0.82) */}
+      <mesh position={[-1, -0.82, 0]}>
+        <boxGeometry args={[46.6, 0.08, 42.6]} />
+        <meshStandardMaterial color="#0284c7" emissive="#0284c7" emissiveIntensity={0.6} />
+      </mesh>
+
+      {/* 
+        Top Arena Floor (Robotics Arenas)
+        Solid box: top at y=0.0, height=0.8, bottom at y=-0.8
+      */}
+      <mesh position={[-1, -0.4, -36]} receiveShadow>
+        <boxGeometry args={[46, 0.8, 24]} />
+        <meshStandardMaterial
+          color="#0b1120"
+          roughness={0.48}
+          metalness={0.2}
         />
       </mesh>
 
-      {/* Left Angled Pavilion Floor (Show & Tell) */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0.22]} // 12-degree angle matching blueprint
-        position={[-36, -0.008, -6]}
-        receiveShadow
-      >
-        <planeGeometry args={[20, 10]} />
-        <meshStandardMaterial color="#1a1528" roughness={0.35} metalness={0.4} />
+      {/* Top Arena Outer Base Accent (placed strictly BELOW at y=-0.82) */}
+      <mesh position={[-1, -0.82, -36]}>
+        <boxGeometry args={[46.6, 0.08, 24.6]} />
+        <meshStandardMaterial color="#f59e0b" emissive="#d97706" emissiveIntensity={0.6} />
       </mesh>
 
-      {/* Subtle Corridor Boundary Lines (Zero Glare, Clean Architectural Insets) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[-1, 0.002, 0]}>
-        <ringGeometry args={[0, 0, 0]} />
-      </mesh>
-
-      {/* Soft Contact Shadows across floor */}
-      {!isMobile && (
-        <ContactShadows
-          position={[0, 0.005, 0]}
-          opacity={0.6}
-          scale={90}
-          blur={1.8}
-          far={15}
-          resolution={1024}
-          color="#000000"
-        />
-      )}
+      {/* 
+        Left Angled Pavilion (Show & Tell)
+        Solid box: top at y=0.0, height=0.8, bottom at y=-0.8
+        Corrected: 26 length along X, 14 width along Z, rotated by -0.3208 rad (-18.38 deg)
+      */}
+      <group position={[-36, 0, -6]} rotation={[0, -0.3208, 0]}>
+        <mesh position={[0, -0.4, 0]} receiveShadow>
+          <boxGeometry args={[26, 0.8, 14]} />
+          <meshStandardMaterial
+            color="#141124"
+            roughness={0.48}
+            metalness={0.2}
+          />
+        </mesh>
+        {/* Base Accent strictly BELOW at y=-0.82 */}
+        <mesh position={[0, -0.82, 0]}>
+          <boxGeometry args={[26.5, 0.08, 14.5]} />
+          <meshStandardMaterial color="#9333ea" emissive="#7e22ce" emissiveIntensity={0.6} />
+        </mesh>
+      </group>
 
       {/* ========================================================= */}
-      {/* 2. BLUEPRINT CORRIDOR PARTITION WALLS (Thick Black Lines) */}
+      {/* 2. BLUEPRINT CORRIDOR PARTITION WALLS                     */}
       {/* ========================================================= */}
-      {/* Outer Hall Boundary Walls */}
       {/* North Wall between Main Hall and Top Arena Room */}
       <mesh position={[-1, 1.2, -21]}>
         <boxGeometry args={[46, 2.4, 0.3]} />
@@ -140,14 +138,12 @@ export default function FloorAndEnvironment() {
       </group>
 
       {/* Internal Serpentine Partition Walls (From Blueprint) */}
-      {/* Partition 1 (Above Physical P01-P04 aisle divider) */}
       <group position={[0, 0.7, 0]}>
         {/* Horizontal divider above P07-P10 */}
         <mesh position={[7.5, 0, -11.5]}>
           <boxGeometry args={[21, 1.4, 0.15]} />
           <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.2} transparent opacity={0.85} />
         </mesh>
-        {/* Vertical turn near P04/P07 */}
         <mesh position={[18, 0, -9.25]}>
           <boxGeometry args={[0.15, 1.4, 4.5]} />
           <meshStandardMaterial color="#334155" metalness={0.8} roughness={0.2} transparent opacity={0.85} />
@@ -170,7 +166,7 @@ export default function FloorAndEnvironment() {
         </mesh>
       </group>
 
-      {/* Entrance Help Desks & School Banners (from blueprint left side) */}
+      {/* Entrance Help Desks */}
       <group position={[-21, 0, 0]}>
         {[-14, -6, 2, 10].map((z, i) => (
           <group key={i} position={[0, 0.45, z]}>
@@ -198,34 +194,34 @@ export default function FloorAndEnvironment() {
         </mesh>
       </group>
 
-      {/* Main Overhead Architectural Header in Top Room */}
-      <Float speed={1.2} rotationIntensity={0.02} floatIntensity={0.15}>
-        <group position={[-1, 14, -48]}>
-          <mesh position={[0, 0, -0.2]}>
-            <boxGeometry args={[44, 3.8, 0.4]} />
-            <meshStandardMaterial color="#0b101c" metalness={0.9} roughness={0.2} />
+      {/* Architectural Entrance Portal Banner across North Wall */}
+      <Float speed={1.0} rotationIntensity={0.01} floatIntensity={0.1}>
+        <group position={[-1, 7.5, -21]}>
+          <mesh position={[0, 0, -0.15]}>
+            <boxGeometry args={[32, 2.6, 0.25]} />
+            <meshStandardMaterial color="#090d16" metalness={0.85} roughness={0.25} />
           </mesh>
-          <mesh position={[0, 0, -0.1]}>
-            <boxGeometry args={[44.4, 4.2, 0.1]} />
-            <meshStandardMaterial color="#f59e0b" emissive="#d97706" emissiveIntensity={0.8} />
+          <mesh position={[0, 0, -0.05]}>
+            <boxGeometry args={[32.3, 2.8, 0.08]} />
+            <meshStandardMaterial color="#f59e0b" emissive="#d97706" emissiveIntensity={0.7} />
           </mesh>
           <Text
-            position={[0, 0.6, 0.1]}
-            fontSize={1.35}
+            position={[0, 0.4, 0.1]}
+            fontSize={0.95}
             color="#ffffff"
             anchorX="center"
             anchorY="middle"
-            letterSpacing={0.09}
+            letterSpacing={0.08}
           >
             DPS INDIRAPURAM TECH & INNOVATION EXHIBITION
           </Text>
           <Text
-            position={[0, -0.8, 0.1]}
-            fontSize={0.65}
+            position={[0, -0.5, 0.1]}
+            fontSize={0.48}
             color="#fbbf24"
             anchorX="center"
             anchorY="middle"
-            letterSpacing={0.18}
+            letterSpacing={0.15}
           >
             ★ OFFICIAL FLOOR PLAN: PHYSICAL • DIGITAL • BUSINESS • ROBOTICS ★
           </Text>

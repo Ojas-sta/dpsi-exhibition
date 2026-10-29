@@ -10,9 +10,9 @@ export default function Zone1ShowAndTell() {
 
   return (
     <group position={[0, 0, 0]}>
-      {/* Overhead Angled Pavilion Signage */}
-      <Float speed={1.2} rotationIntensity={0.02} floatIntensity={0.15}>
-        <group position={[-36, 8, -6]} rotation={[0, 0.22, 0]}>
+      {/* Overhead Angled Pavilion Signage (aligned with -0.3208 rad pavilion angle) */}
+      <Float speed={1.0} rotationIntensity={0.01} floatIntensity={0.1}>
+        <group position={[-36, 6.5, -6]} rotation={[0, -0.3208, 0]}>
           <mesh position={[0, 0, -0.1]}>
             <boxGeometry args={[18, 2.2, 0.2]} />
             <meshStandardMaterial color="#0f1422" metalness={0.8} roughness={0.2} />

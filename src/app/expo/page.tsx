@@ -13,6 +13,8 @@ import LiveLeaderboard from '@/components/ui/LiveLeaderboard';
 import TwoDFallbackGrid from '@/components/ui/TwoDFallbackGrid';
 import AuthModal from '@/components/ui/AuthModal';
 import SearchModal from '@/components/ui/SearchModal';
+import MobileNavMenu from '@/components/ui/MobileNavMenu';
+import CameraControlsWidget from '@/components/ui/CameraControlsWidget';
 import { MousePointerClick, Move, ZoomIn, ArrowLeft } from 'lucide-react';
 
 const ExhibitionCanvas = dynamic(
@@ -128,11 +130,15 @@ export default function ExpoFloorPlanPage() {
       {/* Mobile Floating Action Dock */}
       <MobileBottomDock />
 
+      {/* Floating 3D Navigation Controls Widget */}
+      <CameraControlsWidget />
+
       {/* Slide-out Drawers & Modals */}
       <ProjectDetailDrawer />
       <LiveLeaderboard />
       <AuthModal />
       <SearchModal />
+      <MobileNavMenu />
     </main>
   );
 }

@@ -1,253 +1,222 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
-import { CategoryType, Project } from '@/types';
-import {
-  Search,
-  X,
-  MapPin,
-  Users,
-  ArrowRight,
-  Sparkles,
-  Command,
-  ThumbsUp,
-} from 'lucide-react';
-
-const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  Physical: { bg: 'bg-amber-500/15', text: 'text-amber-300', border: 'border-amber-500/30' },
-  Digital: { bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-sky-500/30' },
-  Business: { bg: 'bg-emerald-500/15', text: 'text-emerald-300', border: 'border-emerald-500/30' },
-  'Show & Tell': { bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-purple-500/30' },
-  'Robo Race': { bg: 'bg-rose-500/15', text: 'text-rose-300', border: 'border-rose-500/30' },
-  'Robo Soccer': { bg: 'bg-teal-500/15', text: 'text-teal-300', border: 'border-teal-500/30' },
-};
-
-const FILTER_PILLS: { label: string; value: CategoryType | 'All' }[] = [
-  { label: 'All', value: 'All' },
-  { label: 'Physical (P)', value: 'Physical' },
-  { label: 'Digital (D)', value: 'Digital' },
-  { label: 'Business (B)', value: 'Business' },
-  { label: 'Show & Tell', value: 'Show & Tell' },
-  { label: 'Robo Race', value: 'Robo Race' },
-  { label: 'Robo Soccer', value: 'Robo Soccer' },
-];
+import { Project } from '@/types';
+import { Search, X, MapPin, Users, Sparkles, ArrowRight } from 'lucide-react';
 
 export default function SearchModal() {
-  const isSearchModalOpen = useExhibitionStore((state) => state.isSearchModalOpen);
-  const setSearchModalOpen = useExhibitionStore((state) => state.setSearchModalOpen);
+  const isSearchOpen = useExhibitionStore((state) => state.isSearchOpen);
+  const setSearchOpen = useExhibitionStore((state) => state.setSearchOpen);
   const projects = useExhibitionStore((state) => state.projects);
   const selectProject = useExhibitionStore((state) => state.selectProject);
-  const votedProjectIds = useExhibitionStore((state) => state.votedProjectIds);
+  const setViewMode = useExhibitionStore((state) => state.setViewMode);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType | 'All'>('All');
+  const [query, setQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = useCallback(() => {
-    setSearchQuery('');
-    setSelectedCategory('All');
-    setSearchModalOpen(false);
-  }, [setSearchModalOpen]);
+    setQuery('');
+    setSearchOpen(false);
+  }, [setSearchOpen]);
 
-  // Focus input automatically on open
-  useEffect(() => {
-    if (isSearchModalOpen) {
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [isSearchModalOpen]);
-
-  // Global keyboard shortcut listener: Cmd+K / Ctrl+K & Escape
+  // Keyboard shortcut listener (Cmd+K / Ctrl+K / slash)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setSearchModalOpen(!isSearchModalOpen);
-      } else if (e.key === 'Escape' && isSearchModalOpen) {
+        setSearchOpen(!isSearchOpen);
+      } else if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+        e.preventDefault();
+        setSearchOpen(true);
+      } else if (e.key === 'Escape' && isSearchOpen) {
         handleClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSearchModalOpen, setSearchModalOpen, handleClose]);
+  }, [isSearchOpen, setSearchOpen, handleClose]);
 
+  // Auto focus input on modal open
+  useEffect(() => {
+    if (isSearchOpen) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+        setSelectedIndex(0);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isSearchOpen]);
+
+  // Filter projects by title, booth code, student name, category, or description
   const filteredProjects = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    return projects.filter((project) => {
-      const matchesCategory =
-        selectedCategory === 'All' || project.category === selectedCategory;
-
-      if (!matchesCategory) return false;
-      if (!q) return true;
-
-      return (
-        project.title.toLowerCase().includes(q) ||
-        project.booth_code.toLowerCase().includes(q) ||
-        project.description.toLowerCase().includes(q) ||
-        project.members.some((m) => m.toLowerCase().includes(q)) ||
-        (project.tech_stack && project.tech_stack.some((t) => t.toLowerCase().includes(q))) ||
-        project.category.toLowerCase().includes(q)
-      );
+    if (!query.trim()) {
+      return projects.slice(0, 10);
+    }
+    const q = query.toLowerCase().trim();
+    return projects.filter((p) => {
+      const matchTitle = p.title.toLowerCase().includes(q);
+      const matchCode = p.booth_code.toLowerCase().includes(q);
+      const matchCategory = p.category.toLowerCase().includes(q);
+      const matchDesc = p.description.toLowerCase().includes(q);
+      const matchStudents = p.members.some((m) => m.toLowerCase().includes(q));
+      return matchTitle || matchCode || matchCategory || matchDesc || matchStudents;
     });
-  }, [projects, searchQuery, selectedCategory]);
+  }, [projects, query]);
 
-  const handleSelectProject = (project: Project) => {
-    handleClose();
-    selectProject(project);
+  // Arrow key navigation through search results
+  const handleKeyNavigation = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % Math.max(1, filteredProjects.length));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex((prev) =>
+        prev === 0 ? Math.max(0, filteredProjects.length - 1) : prev - 1
+      );
+    } else if (e.key === 'Enter' && filteredProjects[selectedIndex]) {
+      e.preventDefault();
+      handleSelect(filteredProjects[selectedIndex]);
+    }
   };
 
-  if (!isSearchModalOpen) return null;
+  const handleSelect = (project: Project) => {
+    setViewMode('3d');
+    selectProject(project);
+    handleClose();
+  };
+
+  if (!isSearchOpen) return null;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[10000] flex items-start justify-center p-3 sm:p-6 md:p-10 pt-16 sm:pt-20 bg-black/80 backdrop-blur-md">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: -16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96, y: -16 }}
-          transition={{ duration: 0.18, ease: 'easeOut' }}
-          className="relative w-full max-w-2xl bg-[#090e1a] border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/90 flex flex-col max-h-[85vh] overflow-hidden"
-        >
-          {/* Header & Search Bar */}
-          <div className="p-3.5 sm:p-4 border-b border-slate-800 bg-slate-900/60 flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-                <Search className="w-4 h-4 text-amber-400" />
-              </div>
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search projects, booth codes (e.g. P01), students..."
-                className="w-full bg-transparent text-sm sm:text-base font-medium text-white placeholder-slate-400 outline-none"
-              />
-              <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded bg-slate-800/80 border border-slate-700 text-[10px] font-mono text-slate-400 shrink-0">
-                <Command className="w-3 h-3" />
-                <span>K</span>
-              </div>
-              <button
-                onClick={handleClose}
-                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
-                title="Close (Esc)"
-              >
-                <X className="w-5 h-5" />
-              </button>
+    <div className="fixed inset-0 z-[120] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+      {/* Backdrop tap to close */}
+      <div
+        className="fixed inset-0"
+        onClick={handleClose}
+        aria-hidden="true"
+      />
+
+      {/* Search Palette Container */}
+      <div className="relative w-full max-w-2xl bg-[#090e1a]/95 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/90 overflow-hidden flex flex-col max-h-[82vh]">
+        {/* Input Bar */}
+        <div className="relative flex items-center px-4 py-3.5 border-b border-slate-800/80 gap-3">
+          <Search className="w-5 h-5 text-amber-400 shrink-0" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelectedIndex(0);
+            }}
+            onKeyDown={handleKeyNavigation}
+            placeholder="Search booths, student names, project codes (e.g. P04, Aarav)..."
+            className="w-full bg-transparent text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none"
+          />
+          {query ? (
+            <button
+              onClick={() => setQuery('')}
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          ) : (
+            <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-400 bg-slate-800/80 rounded border border-slate-700">
+              ESC
+            </kbd>
+          )}
+        </div>
+
+        {/* Results List */}
+        <div className="overflow-y-auto divide-y divide-slate-800/50 p-2 space-y-1">
+          {filteredProjects.length === 0 ? (
+            <div className="py-12 text-center text-slate-500">
+              <Sparkles className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-60" />
+              <p className="text-sm font-medium">No exhibition projects matched &quot;{query}&quot;</p>
+              <p className="text-xs text-slate-600 mt-1">Try searching by student name, code (P01-P12, D01-D12), or topic</p>
             </div>
+          ) : (
+            filteredProjects.map((project, idx) => {
+              const isSelected = idx === selectedIndex;
+              const isPhysical = project.category === 'Physical';
+              const isDigital = project.category === 'Digital';
+              const isBusiness = project.category === 'Business';
+              const isShowAndTell = project.category === 'Show & Tell';
 
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-              {FILTER_PILLS.map((pill) => {
-                const isActive = selectedCategory === pill.value;
-                return (
-                  <button
-                    key={pill.value}
-                    onClick={() => setSelectedCategory(pill.value)}
-                    className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-all ${
-                      isActive
-                        ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                        : 'bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-800'
-                    }`}
-                  >
-                    {pill.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+              return (
+                <div
+                  key={project.id}
+                  onClick={() => handleSelect(project)}
+                  onMouseEnter={() => setSelectedIndex(idx)}
+                  className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${
+                    isSelected
+                      ? 'bg-amber-500/15 border border-amber-500/40 text-white'
+                      : 'hover:bg-slate-800/50 text-slate-300'
+                  }`}
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    {/* Booth Code Badge */}
+                    <span
+                      className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-mono font-bold border ${
+                        isPhysical
+                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          : isDigital
+                          ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+                          : isBusiness
+                          ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                          : isShowAndTell
+                          ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+                          : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                      }`}
+                    >
+                      {project.booth_code}
+                    </span>
 
-          {/* Results List */}
-          <div className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-1.5 divide-y divide-slate-800/40">
-            {filteredProjects.length === 0 ? (
-              <div className="py-12 px-4 text-center space-y-2">
-                <Sparkles className="w-8 h-8 text-slate-600 mx-auto" />
-                <p className="text-sm font-semibold text-slate-300">No exhibition projects found</p>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Try searching for another booth code, student name, or category filter.
-                </p>
-              </div>
-            ) : (
-              filteredProjects.map((project) => {
-                const colors = CATEGORY_COLORS[project.category] || CATEGORY_COLORS['Digital'];
-                const hasVoted = votedProjectIds.includes(project.id);
-
-                return (
-                  <div
-                    key={project.id}
-                    onClick={() => handleSelectProject(project)}
-                    className="group relative flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-slate-800/70 border border-transparent hover:border-slate-700 cursor-pointer transition-all pt-2.5"
-                  >
-                    <div className="flex items-start gap-3 min-w-0">
-                      {/* Booth Badge */}
-                      <div
-                        className={`w-11 h-11 rounded-xl flex flex-col items-center justify-center font-mono font-black shrink-0 border ${colors.bg} ${colors.text} ${colors.border}`}
-                      >
-                        <span className="text-[12px]">{project.booth_code}</span>
-                      </div>
-
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors truncate">
-                            {project.title}
-                          </h4>
-                          <span
-                            className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${colors.bg} ${colors.text} ${colors.border}`}
-                          >
-                            {project.category}
-                          </span>
-                          {hasVoted && (
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1">
-                              <ThumbsUp className="w-2.5 h-2.5" /> Voted
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Members */}
-                        <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                          <Users className="w-3 h-3 text-slate-500 shrink-0" />
-                          <span className="truncate">{project.members.join(', ')}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right Action: Zone & Fly-To */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="text-right hidden sm:block">
-                        <span className="text-[10px] font-mono text-slate-500 uppercase flex items-center gap-1 justify-end">
-                          <MapPin className="w-2.5 h-2.5" />
-                          {project.zone.replace('-', ' ')}
-                        </span>
-                        <span className="text-xs font-mono font-semibold text-amber-400">
-                          {project.vote_count} votes
+                    {/* Details */}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-white truncate">
+                          {project.title}
+                        </h4>
+                        <span className="hidden sm:inline-block text-[10px] text-slate-400 font-mono">
+                          • {project.category}
                         </span>
                       </div>
-                      <div className="w-8 h-8 rounded-lg bg-slate-800 group-hover:bg-amber-500 group-hover:text-slate-950 flex items-center justify-center text-slate-400 transition-all">
-                        <ArrowRight className="w-4 h-4" />
-                      </div>
+                      
+                      {/* Student members */}
+                      <p className="text-xs text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
+                        <Users className="w-3 h-3 text-slate-500 shrink-0" />
+                        <span>{project.members.join(', ')}</span>
+                      </p>
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
 
-          {/* Footer Stats & Hints */}
-          <div className="px-4 py-2.5 bg-slate-950 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-            <span>
-              Showing <strong className="text-white">{filteredProjects.length}</strong> of{' '}
-              {projects.length} exhibition projects
-            </span>
-            <span className="hidden sm:inline font-mono text-[11px] text-slate-500">
-              Click to jump to 3D booth • [ESC] to exit
-            </span>
+                  {/* Fly-to indicator */}
+                  <div className="flex items-center gap-2 shrink-0 pl-3">
+                    <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-amber-400" />
+                      <span>{project.vote_count} votes</span>
+                    </span>
+                    <ArrowRight className={`w-4 h-4 transition-transform ${isSelected ? 'text-amber-400 translate-x-0.5' : 'text-slate-600'}`} />
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Footer shortcuts */}
+        <div className="px-4 py-2.5 bg-slate-950/80 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-500">
+          <div className="flex items-center gap-3">
+            <span>↑↓ Navigate</span>
+            <span>↵ Jump to Booth in 3D</span>
           </div>
-        </motion.div>
+          <span>35 Innovation Projects</span>
+        </div>
       </div>
-    </AnimatePresence>
+    </div>
   );
 }
