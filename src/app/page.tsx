@@ -31,10 +31,6 @@ const BellToggle = dynamic(() => import('@/components/reactbits/BellToggle'), {
   ssr: false,
 });
 
-const AeroShards = dynamic(() => import('@/components/reactbits/AeroShards'), {
-  ssr: false,
-});
-
 const TextLoop = dynamic(() => import('@/components/reactbits/TextLoop'), {
   ssr: false,
 });
@@ -60,7 +56,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] text-[#f0f6fc] font-sans selection:bg-[#2ea043] selection:text-black overflow-x-clip">
+    <div className="min-h-screen bg-transparent text-[#f0f6fc] font-sans selection:bg-[#2ea043] selection:text-black overflow-x-clip">
       {/* ─── GITHUB UNIVERSE TOP ANNOUNCEMENT TICKER ─── */}
       <div className="w-full bg-[#0d1117] border-b border-[#21262d] px-4 py-2 flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
@@ -121,22 +117,16 @@ export default function LandingPage() {
               {'[ 03 // 3 ARENAS ]'}
             </a>
             <a
-              href="#materials"
-              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
-            >
-              {'[ 04 // LABS ]'}
-            </a>
-            <a
               href="#voting"
               className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
             >
-              {'[ 05 // ANTI-CHEAT BALLOT ]'}
+              {'[ 04 // ANTI-CHEAT BALLOT ]'}
             </a>
             <a
               href="#schedule"
               className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
             >
-              {'[ 06 // ITINERARY ]'}
+              {'[ 05 // ITINERARY ]'}
             </a>
           </nav>
 
@@ -301,25 +291,33 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── ELEMENT 1: <GradientASCII /> IN EXACT PREVIOUS FORMAT ─── */}
-      <section className="border-b border-[#30363d] bg-[#000000]">
+      {/* ─── ELEMENT 1: <GradientASCII /> SEAMLESS HORIZON (BAR REMOVED) ─── */}
+      <section className="relative bg-[#000000] overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="px-4 py-2 border-b border-[#21262d] flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
-            <span>{'[ ELEMENT 01 ] :: WEBGL2 GRADIENT ASCII SHADER HORIZON'}</span>
-            <span className="text-[#38bdf8]">INTERACTIVE POINTER WAVE</span>
-          </div>
-
-          <div style={{ width: '100%', height: '600px', position: 'relative' }}>
+          <div
+            style={{
+              width: '100%',
+              height: '600px',
+              position: 'relative',
+              maskImage: 'linear-gradient(to bottom, black 0%, black 65%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 65%, transparent 100%)'
+            }}
+          >
             <GradientASCII
               colors={['#1e3fd8', '#f6f8ff', '#a5d8ff', '#38bdf8']}
               shape="horizon"
               characters=" =+xX0S8#@"
               cellSize={18}
               density={0.8}
+              softness={0.7}
+              gradientOpacity={0.85}
             />
 
+            {/* Seamless Bottom Gradient dissolve into black */}
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent via-[#000000]/60 to-[#000000] pointer-events-none z-10" />
+
             {/* GitHub Universe Terminal Overlay in Center */}
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
               <span className="px-3 py-1 rounded bg-black/80 border border-[#30363d] font-mono text-xs text-[#38bdf8] mb-4">
                 {'STAGE_A // COMPUTATIONAL ASCII CANVAS'}
               </span>
@@ -335,8 +333,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── GITHUB UNIVERSE STYLE 35 INVENTIONS DIRECTORY ─── */}
-      <section id="projects" className="border-b border-[#30363d] py-12">
+      {/* ─── GITHUB UNIVERSE STYLE 35 INVENTIONS DIRECTORY (DIRECTLY UNDER ASCII HORIZON) ─── */}
+      <section id="projects" className="border-b border-[#30363d] pt-6 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#30363d]">
             <div>
@@ -431,39 +429,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── ELEMENT 4: <AeroShards /> IN EXACT PREVIOUS FORMAT ─── */}
-      <section id="materials" className="border-b border-[#30363d] bg-[#000000]">
-        <div className="max-w-7xl mx-auto">
-          <div className="px-4 py-2 border-b border-[#21262d] flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
-            <span>{'[ ELEMENT 04 ] :: REFRACTIVE GLASS AERO-SHARDS SIMULATION'}</span>
-            <span className="text-[#a855f7]">{'PHYSICS LAB // HOVER • CLICK • HOLD'}</span>
-          </div>
-
-          <div style={{ width: '100%', height: '600px', position: 'relative' }}>
-            <AeroShards
-              shardColor="#896ABD"
-              accentColor="#A855F7"
-              placement="full"
-              material="glass"
-              markers="plus"
-              count={1300}
-              depthOfField={0.75}
-              vignette={0.3}
-              mouseInteraction
-              pulseOnClick
-              holdToGather
-            />
-
-            {/* Technical HUD Overlay on Bottom Right */}
-            <div className="absolute bottom-6 right-6 z-20 pointer-events-none p-4 rounded bg-black/85 border border-[#30363d] font-mono text-xs text-[#c9d1d9]">
-              <span className="text-[#a855f7] font-bold block">{'// FUTURE MATERIALS & SPATIAL COMPUTING'}</span>
-              <span className="text-[11px] text-[#8b949e] mt-1 block">
-                Class 11-12 Molecular Physics &amp; Crystal Lattice Demo
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ─── THE THREE EXHIBITION ARENAS (GITHUB UNIVERSE BENTO) ─── */}
       <section id="arenas" className="border-b border-[#30363d] py-12">
