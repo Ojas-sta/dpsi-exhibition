@@ -10,8 +10,6 @@ import {
   LogOut,
   Search,
   Menu,
-  Sparkles,
-  Compass,
 } from 'lucide-react';
 
 export default function TopNavHUD() {
@@ -39,7 +37,7 @@ export default function TopNavHUD() {
 
   return (
     <header className="fixed top-2 inset-x-2 sm:top-3 sm:inset-x-4 md:inset-x-6 z-[100] pointer-events-auto pt-safe">
-      <div className="mx-auto w-full max-w-[1580px] flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-2xl bg-[#070b14]/88 backdrop-blur-2xl border border-slate-700/60 shadow-2xl shadow-black/90">
+      <div className="mx-auto w-full max-w-[1580px] flex items-center justify-between gap-1.5 sm:gap-2.5 p-1.5 sm:p-2 md:p-2.5 rounded-2xl bg-[#070b14]/92 backdrop-blur-2xl border border-slate-700/60 shadow-2xl shadow-black/90 overflow-hidden">
         
         {/* Left: Brand & DPS Indirapuram Identity */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -48,7 +46,7 @@ export default function TopNavHUD() {
               setViewMode('3d');
               setActiveZone('overview');
             }}
-            className="h-9 px-2 sm:px-2.5 py-1 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 border border-slate-200 hover:opacity-95 transition-all"
+            className="h-8 sm:h-9 px-2 sm:px-2.5 py-1 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 border border-slate-200 hover:opacity-95 transition-all"
             title="DPS Indirapuram Tech Expo"
           >
             {/* Mobile: crisp compact shield */}
@@ -61,7 +59,7 @@ export default function TopNavHUD() {
             <img
               src="/dps_indirapuram_logo.png"
               alt="DPS Indirapuram"
-              className="h-full w-auto max-w-[125px] sm:max-w-[160px] md:max-w-[175px] object-contain hidden sm:block"
+              className="h-full w-auto max-w-[110px] sm:max-w-[145px] md:max-w-[165px] object-contain hidden sm:block"
             />
           </button>
 
@@ -83,44 +81,45 @@ export default function TopNavHUD() {
           </div>
         </div>
 
-        {/* Center: Search & Zone Jump Navigation (Desktop & Large screens) */}
-        <div className="hidden lg:flex items-center gap-2">
+        {/* Center: Search & Zone Navigation (Desktop & Large Screens) */}
+        <div className="hidden lg:flex items-center gap-2 min-w-0 flex-1 justify-center px-1">
           {/* Global Search Bar */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="h-9 flex items-center gap-2 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800/90 hover:border-slate-700 text-xs text-slate-400 hover:text-slate-200 transition-all shadow-inner group"
+            className="h-8 sm:h-9 flex items-center gap-2 px-2.5 sm:px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 text-xs text-slate-400 hover:text-slate-200 transition-all shadow-inner group shrink-0"
+            title="Search Projects (⌘K)"
           >
             <Search className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
-            <span className="hidden xl:inline">Search 35 booths & students...</span>
-            <span className="inline xl:hidden">Search...</span>
-            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 ml-1">
+            <span className="hidden 2xl:inline">Search 35 booths & students...</span>
+            <span className="hidden xl:inline 2xl:hidden">Search...</span>
+            <kbd className="hidden xl:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 ml-1">
               ⌘K
             </kbd>
           </button>
 
           {/* Zone Quick Navigation Jumpers in 3D Mode */}
           {viewMode === '3d' && (
-            <nav className="flex items-center gap-1 p-1 bg-slate-900/90 rounded-xl border border-slate-800/90 h-10 shadow-inner">
+            <nav className="flex items-center gap-1 p-1 bg-slate-900/90 rounded-xl border border-slate-800/90 h-8 sm:h-9 shadow-inner overflow-x-auto no-scrollbar max-w-full">
               {zones.map((zone) => {
                 const isActive = activeZone === zone.id;
                 return (
                   <button
                     key={zone.id}
                     onClick={() => setActiveZone(zone.id)}
-                    className={`h-8 flex items-center gap-1.5 px-2.5 xl:px-3 rounded-lg text-xs font-semibold transition-all duration-200 whitespace-nowrap ${
+                    className={`h-6 sm:h-7 flex items-center gap-1 px-2 xl:px-2.5 rounded-lg text-xs font-semibold transition-all duration-200 whitespace-nowrap shrink-0 ${
                       isActive
                         ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
                         : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                     }`}
                   >
                     <span
-                      className={`w-1.5 h-1.5 rounded-full ${
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                         isActive ? 'bg-slate-950' : 'bg-slate-500'
                       }`}
                     />
                     <span>{zone.label}</span>
                     <span
-                      className={`text-[9px] font-mono px-1.5 py-0.2 rounded ${
+                      className={`text-[9px] font-mono px-1 py-0.2 rounded hidden 2xl:inline-block ${
                         isActive
                           ? 'bg-amber-600 text-white font-bold'
                           : 'bg-slate-800 text-slate-400'
@@ -135,61 +134,64 @@ export default function TopNavHUD() {
           )}
         </div>
 
-        {/* Right: Controls (3D/2D, Leaderboard, Auth, Mobile Menu Trigger) */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Mobile Search Icon Button */}
+        {/* Right: Controls & Login (ALWAYS ANCHORED, NEVER CUT OFF) */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
+          {/* Mobile/Tablet Search Button */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="lg:hidden w-9 h-9 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all"
+            className="lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all"
             title="Search Projects"
           >
-            <Search className="w-4 h-4 text-amber-400" />
+            <Search className="w-3.5 h-3.5 text-amber-400" />
           </button>
 
           {/* 3D vs 2D Toggle */}
-          <div className="hidden sm:flex items-center p-0.5 rounded-xl bg-slate-900/90 border border-slate-800/90 h-10 shadow-inner">
+          <div className="hidden sm:flex items-center p-0.5 rounded-xl bg-slate-900/90 border border-slate-800/90 h-8 sm:h-9 shadow-inner shrink-0">
             <button
               onClick={() => setViewMode('3d')}
-              className={`h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
+              className={`h-7 sm:h-8 flex items-center gap-1.5 px-2 sm:px-2.5 rounded-lg text-xs font-semibold transition-all ${
                 viewMode === '3d'
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
+              title="Switch to 3D Floor Plan"
             >
               <Box className="w-3.5 h-3.5" />
-              <span>3D Plan</span>
+              <span className="hidden xl:inline">3D</span>
             </button>
             <button
               onClick={() => setViewMode('2d')}
-              className={`h-8 flex items-center gap-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
+              className={`h-7 sm:h-8 flex items-center gap-1.5 px-2 sm:px-2.5 rounded-lg text-xs font-semibold transition-all ${
                 viewMode === '2d'
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
+              title="Switch to 2D Directory Grid"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>2D Grid</span>
+              <span className="hidden xl:inline">2D</span>
             </button>
           </div>
 
           {/* Live Leaderboard Button */}
           <button
             onClick={() => setLeaderboardOpen(!isLeaderboardOpen)}
-            className="flex items-center gap-2 h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold shadow-sm transition-all"
+            className="flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold shadow-sm transition-all whitespace-nowrap shrink-0"
+            title="Live Rankings Leaderboard"
           >
-            <Trophy className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Leaderboard</span>
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+            <Trophy className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="hidden md:inline">Leaderboard</span>
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
           </button>
 
-          {/* User Sign-In / Account (Desktop) */}
+          {/* User Sign-In / Account (Always visible and cleanly aligned) */}
           {user ? (
-            <div className="hidden sm:flex items-center gap-2 pl-1 sm:pl-2 border-l border-slate-800">
-              <div className="flex items-center gap-2 h-10 px-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
-                <div className="w-6 h-6 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-[10px]">
-                  {user.name.charAt(0)}
+            <div className="flex items-center gap-1 pl-1 sm:pl-1.5 border-l border-slate-800 shrink-0">
+              <div className="flex items-center gap-1.5 h-8 sm:h-9 px-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 max-w-[130px] sm:max-w-[160px]">
+                <div className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-[10px] shrink-0">
+                  {user.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="max-w-[70px] sm:max-w-[110px] truncate font-semibold text-white text-xs">
+                <span className="truncate font-semibold text-white text-xs">
                   {user.name}
                 </span>
                 <button
@@ -201,7 +203,7 @@ export default function TopNavHUD() {
                       console.warn('Sign out notice:', e);
                     }
                   }}
-                  className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-all ml-1"
+                  className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-all ml-0.5 shrink-0"
                   title="Sign Out"
                 >
                   <LogOut className="w-3 h-3" />
@@ -211,17 +213,19 @@ export default function TopNavHUD() {
           ) : (
             <button
               onClick={() => setAuthModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 h-10 px-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 transition-all"
+              className="flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 active:scale-95 text-slate-950 text-xs font-extrabold shadow-md shadow-amber-500/20 transition-all whitespace-nowrap shrink-0"
+              title="Sign in with Google or Visitor Pass"
             >
-              <User className="w-3.5 h-3.5" />
-              <span>Sign In to Vote</span>
+              <User className="w-3.5 h-3.5 shrink-0" />
+              <span>Sign In</span>
+              <span className="hidden sm:inline">to Vote</span>
             </button>
           )}
 
-          {/* Mobile Full-Screen Menu Toggle (Mobile 5 block feature) */}
+          {/* Mobile Full-Screen Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white flex items-center justify-center active:scale-95 transition-all shadow-md"
+            className="lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white flex items-center justify-center active:scale-95 transition-all shadow-md shrink-0"
             aria-label="Toggle Navigation Menu"
           >
             <Menu className="w-4 h-4 text-amber-400" />
