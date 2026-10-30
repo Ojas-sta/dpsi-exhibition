@@ -9,15 +9,25 @@ export default function CameraControlsWidget() {
   const zoomOut = useExhibitionStore((state) => state.zoomOut);
   const resetToOverview = useExhibitionStore((state) => state.resetToOverview);
   const isDrawerOpen = useExhibitionStore((state) => state.isDrawerOpen);
+  const theme = useExhibitionStore((state) => state.theme);
+  const isLight = theme === 'light';
 
   if (viewMode !== '3d' || isDrawerOpen) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-center gap-1.5 p-1.5 rounded-2xl bg-[#090e1a]/85 backdrop-blur-xl border border-slate-700/60 shadow-2xl shadow-black/80 pointer-events-auto">
+    <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-center gap-1.5 p-1.5 rounded-2xl backdrop-blur-xl border transition-colors duration-300 shadow-2xl pointer-events-auto ${
+      isLight
+        ? 'bg-white/90 border-slate-200 shadow-slate-300/40 text-slate-800'
+        : 'bg-[#090e1a]/85 border-slate-700/60 shadow-black/80 text-white'
+    }`}>
       {/* Zoom In Button */}
       <button
         onClick={zoomIn}
-        className="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700/90 text-slate-300 hover:text-white flex items-center justify-center transition-all active:scale-90"
+        className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90 ${
+          isLight
+            ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-950'
+            : 'bg-slate-800/80 hover:bg-slate-700/90 text-slate-300 hover:text-white'
+        }`}
         title="Zoom In"
         aria-label="Zoom In"
       >
@@ -27,19 +37,27 @@ export default function CameraControlsWidget() {
       {/* Zoom Out Button */}
       <button
         onClick={zoomOut}
-        className="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700/90 text-slate-300 hover:text-white flex items-center justify-center transition-all active:scale-90"
-        title="Zoom Out to Milky Way"
+        className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90 ${
+          isLight
+            ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-950'
+            : 'bg-slate-800/80 hover:bg-slate-700/90 text-slate-300 hover:text-white'
+        }`}
+        title="Zoom Out to Overview"
         aria-label="Zoom Out"
       >
         <ZoomOut className="w-4 h-4" />
       </button>
 
-      <div className="w-5 h-px bg-slate-700/60 my-0.5" />
+      <div className={`w-5 h-px my-0.5 ${isLight ? 'bg-slate-200' : 'bg-slate-700/60'}`} />
 
       {/* Reset Overview Camera */}
       <button
         onClick={resetToOverview}
-        className="w-9 h-9 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 flex items-center justify-center transition-all active:scale-90"
+        className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all active:scale-90 ${
+          isLight
+            ? 'bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/40 text-amber-800'
+            : 'bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/30 text-amber-300'
+        }`}
         title="Reset to Full Floor Overview"
         aria-label="Reset Overview"
       >

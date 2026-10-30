@@ -8,8 +8,11 @@ import {
   ArrowUpRight,
   Sparkles,
   Vote,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { SEED_PROJECTS } from '@/data/seedProjects';
+import { useExhibitionStore } from '@/store/useExhibitionStore';
 
 // React Bits Components loaded dynamically for SSR safety
 const GradientASCII = dynamic(() => import('@/components/reactbits/GradientASCII'), {
@@ -36,6 +39,8 @@ const TextLoop = dynamic(() => import('@/components/reactbits/TextLoop'), {
 });
 
 export default function LandingPage() {
+  const theme = useExhibitionStore((state) => state.theme);
+  const toggleTheme = useExhibitionStore((state) => state.toggleTheme);
   const [selectedZone, setSelectedZone] = useState<'all' | 'Physical' | 'Digital' | 'Business'>('all');
   const [selectedDay, setSelectedDay] = useState<'day1' | 'day2'>('day1');
   const [email, setEmail] = useState('');
@@ -130,11 +135,29 @@ export default function LandingPage() {
             </a>
           </nav>
 
-          {/* Right Action: Launch 3D Hall */}
+          {/* Right Action: Launch 3D Hall & Theme Toggle */}
           <div className="ml-auto flex items-stretch">
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-1.5 px-3.5 border-r border-[#30363d] hover:bg-[#161b22] text-amber-400 font-mono text-xs transition-colors"
+              title="Toggle Light / Dark Mode"
+            >
+              {theme === 'light' ? (
+                <>
+                  <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="hidden sm:inline font-bold">Light</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="hidden sm:inline font-bold">Dark</span>
+                </>
+              )}
+            </button>
+
             <Link
               href="/expo"
-              className="flex items-center gap-2 px-5 bg-[#238636] hover:bg-[#2ea043] text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors"
+              className="flex items-center gap-2 px-5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-mono font-black text-xs uppercase tracking-wider transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Enter 3D Hall ↗</span>
@@ -241,9 +264,10 @@ export default function LandingPage() {
               <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
                 <Link
                   href="/expo"
-                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[#238636] hover:bg-[#2ea043] text-white font-mono font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-[#238636]/20"
+                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-mono font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/25"
                 >
-                  <span>Launch 3D Hall Now</span>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Launch 3D Hall ({theme === 'light' ? 'Light Showroom' : 'Cosmic Dark'})</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <a

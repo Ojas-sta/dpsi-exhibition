@@ -36,9 +36,11 @@ function SceneSetup() {
 export default function ExhibitionCanvas() {
   const selectProject = useExhibitionStore((state) => state.selectProject);
   const isMobile = useExhibitionStore((state) => state.isMobile);
+  const theme = useExhibitionStore((state) => state.theme);
+  const isLight = theme === 'light';
 
   return (
-    <div className="relative isolate w-full h-[100dvh] select-none touch-none bg-[#060913]">
+    <div className={`relative isolate w-full h-[100dvh] select-none touch-none transition-colors duration-500 ${isLight ? 'bg-[#f1f5f9]' : 'bg-[#060913]'}`}>
       <Suspense fallback={<CanvasLoader />}>
         <Canvas
           shadows={!isMobile}

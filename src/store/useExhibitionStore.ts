@@ -11,6 +11,8 @@ export type NavZoneId =
   | 'digital'
   | 'business';
 
+export type ThemeMode = 'light' | 'dark';
+
 export const CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
   // Zoomed-out master view matching user screenshot: captures Show & Tell, Main Hall, Robotics, and overhead banner
   overview: {
@@ -89,6 +91,7 @@ export interface ExhibitionUser {
 
 interface ExhibitionState {
   // Navigation & 3D view
+  theme: ThemeMode;
   isMobile: boolean;
   activeZone: NavZoneId;
   selectedProject: Project | null;
@@ -109,6 +112,8 @@ interface ExhibitionState {
   deviceFingerprint: string | null;
 
   // Actions
+  setTheme: (theme: ThemeMode) => void;
+  toggleTheme: () => void;
   setIsMobile: (isMobile: boolean) => void;
   setActiveZone: (zone: NavZoneId) => void;
   selectProject: (project: Project | null) => void;
@@ -131,6 +136,7 @@ interface ExhibitionState {
 }
 
 export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
+  theme: 'light',
   isMobile: false,
   activeZone: 'overview',
   selectedProject: null,
@@ -198,6 +204,29 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
       isSearchOpen: false,
       isMobileMenuOpen: false,
     });
+  },
+
+  setTheme: (theme) => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('dpsi_expo_theme', theme);
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        }
+      } catch (e) {
+        console.warn('Storage error:', e);
+      }
+    }
+    set({ theme });
+  },
+
+  toggleTheme: () => {
+    const nextTheme: ThemeMode = get().theme === 'light' ? 'dark' : 'light';
+    get().setTheme(nextTheme);
   },
 
   setViewMode: (mode) => set({ viewMode: mode, isMobileMenuOpen: false }),

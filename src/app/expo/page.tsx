@@ -28,6 +28,8 @@ export default function ExpoFloorPlanPage() {
   const setIsMobile = useExhibitionStore((state) => state.setIsMobile);
   const setProjects = useExhibitionStore((state) => state.setProjects);
   const setUser = useExhibitionStore((state) => state.setUser);
+  const theme = useExhibitionStore((state) => state.theme);
+  const isLight = theme === 'light';
 
   useEffect(() => {
     const checkMobile = () => {
@@ -83,7 +85,9 @@ export default function ExpoFloorPlanPage() {
   }, [setIsMobile, setDeviceFingerprint, setProjects, setUser]);
 
   return (
-    <main className="relative w-screen h-[100dvh] overflow-hidden bg-[#070b14] font-sans">
+    <main className={`relative w-screen h-[100dvh] overflow-hidden font-sans transition-colors duration-300 ${
+      isLight ? 'bg-[#f1f5f9]' : 'bg-[#070b14]'
+    }`}>
       {/* Top HUD Navigation Bar */}
       <TopNavHUD />
 
@@ -91,9 +95,13 @@ export default function ExpoFloorPlanPage() {
       <div className="fixed top-20 left-4 sm:left-6 z-40 pointer-events-auto">
         <Link
           href="/"
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800/90 text-xs font-semibold shadow-xl backdrop-blur-md transition-all group"
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xl backdrop-blur-md transition-all group border ${
+            isLight
+              ? 'bg-white/90 hover:bg-slate-100 text-slate-700 hover:text-slate-950 border-slate-200'
+              : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800/90'
+          }`}
         >
-          <ArrowLeft className="w-3.5 h-3.5 text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
+          <ArrowLeft className="w-3.5 h-3.5 text-amber-500 group-hover:-translate-x-0.5 transition-transform" />
           <span>Event Info & Overview</span>
         </Link>
       </div>
@@ -104,19 +112,23 @@ export default function ExpoFloorPlanPage() {
           <ExhibitionCanvas />
 
           {/* Desktop Only: Bottom Left Camera Gesture Legend */}
-          <div className="hidden lg:flex fixed bottom-4 left-6 z-30 items-center gap-4 px-4 py-2.5 rounded-2xl bg-[#0b101c]/85 backdrop-blur-md border border-slate-800 text-[11px] text-slate-400 pointer-events-none shadow-xl font-mono">
+          <div className={`hidden lg:flex fixed bottom-4 left-6 z-30 items-center gap-4 px-4 py-2.5 rounded-2xl backdrop-blur-md border text-[11px] pointer-events-none shadow-xl font-mono transition-colors duration-300 ${
+            isLight
+              ? 'bg-white/85 border-slate-200 text-slate-600 shadow-slate-200/50'
+              : 'bg-[#0b101c]/85 border-slate-800 text-slate-400'
+          }`}>
             <div className="flex items-center gap-1.5">
-              <MousePointerClick className="w-3.5 h-3.5 text-amber-400" />
+              <MousePointerClick className="w-3.5 h-3.5 text-amber-500" />
               <span>Tap Booth</span>
             </div>
-            <div className="w-1 h-1 rounded-full bg-slate-700" />
+            <div className={`w-1 h-1 rounded-full ${isLight ? 'bg-slate-300' : 'bg-slate-700'}`} />
             <div className="flex items-center gap-1.5">
-              <Move className="w-3.5 h-3.5 text-slate-300" />
+              <Move className={`w-3.5 h-3.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`} />
               <span>Drag to Orbit</span>
             </div>
-            <div className="w-1 h-1 rounded-full bg-slate-700" />
+            <div className={`w-1 h-1 rounded-full ${isLight ? 'bg-slate-300' : 'bg-slate-700'}`} />
             <div className="flex items-center gap-1.5">
-              <ZoomIn className="w-3.5 h-3.5 text-slate-300" />
+              <ZoomIn className={`w-3.5 h-3.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`} />
               <span>Pinch / Scroll to Zoom</span>
             </div>
           </div>

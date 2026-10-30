@@ -47,6 +47,27 @@ function MilkyWaySphere({ isMobile }: { isMobile: boolean }) {
 
 export default function MilkyWaySky() {
   const isMobile = useExhibitionStore((state) => state.isMobile);
+  const theme = useExhibitionStore((state) => state.theme);
+  const isLight = theme === 'light';
+
+  if (isLight) {
+    return (
+      <group>
+        {/* Luminous Daytime Architectural Sky Dome */}
+        <mesh scale={[-1, 1, 1]}>
+          <sphereGeometry args={[950, 32, 24]} />
+          <meshBasicMaterial
+            color="#e0f2fe"
+            side={THREE.BackSide}
+            toneMapped={false}
+            fog={false}
+            depthWrite={false}
+          />
+        </mesh>
+        <ambientLight intensity={0.7} color="#ffffff" />
+      </group>
+    );
+  }
 
   return (
     <group>

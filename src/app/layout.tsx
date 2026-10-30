@@ -37,6 +37,7 @@ export const metadata: Metadata = {
 
 import AmbientBackground from '@/components/ui/AmbientBackground';
 import CustomCursor from '@/components/ui/CustomCursor';
+import ThemeSync from '@/components/ui/ThemeSync';
 
 export default function RootLayout({
   children,
@@ -46,10 +47,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} ${spaceGrotesk.variable} dark antialiased`}
+      className={`${outfit.variable} ${spaceGrotesk.variable} antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-screen w-full bg-[#000000] text-[#f1f5f9] font-sans selection:bg-[#2ea043] selection:text-black relative">
-        {/* [ ELEMENT 04 ] :: REFRACTIVE GLASS AERO-SHARDS SIMULATION in the background of all pages */}
+      <body className="min-h-screen w-full bg-[#f8fafc] dark:bg-[#000000] text-slate-900 dark:text-[#f1f5f9] font-sans selection:bg-amber-500 selection:text-black relative transition-colors duration-300">
+        <ThemeSync />
+
+        {/* [ ELEMENT 04 ] :: REFRACTIVE GLASS AERO-SHARDS SIMULATION in the background of landing page */}
         <AmbientBackground />
 
         {/* Dynamic BlobCursor liquid chrome pointer element that renders behind text */}

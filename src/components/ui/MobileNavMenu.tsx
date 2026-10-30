@@ -17,9 +17,13 @@ import {
   TrendingUp,
   Bot,
   Sparkles,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export default function MobileNavMenu() {
+  const theme = useExhibitionStore((state) => state.theme);
+  const setTheme = useExhibitionStore((state) => state.setTheme);
   const isMobileMenuOpen = useExhibitionStore((state) => state.isMobileMenuOpen);
   const setMobileMenuOpen = useExhibitionStore((state) => state.setMobileMenuOpen);
   const activeZone = useExhibitionStore((state) => state.activeZone);
@@ -168,6 +172,32 @@ export default function MobileNavMenu() {
           >
             <LayoutGrid className="w-4 h-4" />
             <span>2D Bento Grid</span>
+          </button>
+        </div>
+
+        {/* Theme Mode Switching Pill */}
+        <div className="p-1 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center gap-1 shadow-inner">
+          <button
+            onClick={() => setTheme('light')}
+            className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+              theme === 'light'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Sun className="w-4 h-4 text-amber-300" />
+            <span>Light Showroom</span>
+          </button>
+          <button
+            onClick={() => setTheme('dark')}
+            className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+              theme === 'dark'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Moon className="w-4 h-4 text-amber-300" />
+            <span>Cosmic Dark</span>
           </button>
         </div>
 
