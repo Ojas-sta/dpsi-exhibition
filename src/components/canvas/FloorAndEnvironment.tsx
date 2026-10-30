@@ -10,18 +10,18 @@ export default function FloorAndEnvironment() {
 
   return (
     <>
-      {/* Studio Lighting Environment */}
-      <Environment preset={isLight ? "dawn" : "city"} />
+      {/* Studio Lighting Environment (Low intensity in light mode to prevent washout) */}
+      <Environment preset={isLight ? "studio" : "city"} environmentIntensity={isLight ? 0.2 : 0.7} />
 
       {/* 
         Balanced Studio Directional Light 
         Positive shadow-bias prevents shadow acne & floor moiré lines
       */}
-      <ambientLight intensity={isLight ? 1.1 : 0.75} color={isLight ? "#ffffff" : "#f8fafc"} />
+      <ambientLight intensity={isLight ? 0.45 : 0.75} color={isLight ? "#94a3b8" : "#f8fafc"} />
       <directionalLight
         position={[30, 50, 30]}
-        intensity={isLight ? 1.5 : 1.2}
-        color={isLight ? "#ffffff" : "#ffffff"}
+        intensity={isLight ? 0.65 : 1.2}
+        color={isLight ? "#f8fafc" : "#ffffff"}
         castShadow={!isMobile}
         shadow-mapSize={isMobile ? [512, 512] : [2048, 2048]}
         shadow-camera-left={-60}
@@ -33,8 +33,8 @@ export default function FloorAndEnvironment() {
 
       <directionalLight
         position={[-30, 35, -30]}
-        intensity={isLight ? 0.7 : 0.4}
-        color={isLight ? "#e0f2fe" : "#94a3b8"}
+        intensity={isLight ? 0.25 : 0.4}
+        color={isLight ? "#94a3b8" : "#94a3b8"}
       />
 
       {/* ========================================================= */}
@@ -48,9 +48,9 @@ export default function FloorAndEnvironment() {
       <mesh position={[-1, -0.4, 0]} receiveShadow>
         <boxGeometry args={[46, 0.8, 42]} />
         <meshStandardMaterial
-          color={isLight ? "#f8fafc" : "#0f172a"}
-          roughness={isLight ? 0.38 : 0.48}
-          metalness={isLight ? 0.12 : 0.2}
+          color={isLight ? "#8fa0b2" : "#0f172a"}
+          roughness={isLight ? 0.82 : 0.48}
+          metalness={isLight ? 0.05 : 0.2}
         />
       </mesh>
 
@@ -71,9 +71,9 @@ export default function FloorAndEnvironment() {
       <mesh position={[-1, -0.4, -22.5]} receiveShadow>
         <boxGeometry args={[32, 0.8, 5]} />
         <meshStandardMaterial
-          color={isLight ? "#f1f5f9" : "#0d1424"}
-          roughness={isLight ? 0.38 : 0.48}
-          metalness={isLight ? 0.12 : 0.2}
+          color={isLight ? "#8899ab" : "#0d1424"}
+          roughness={isLight ? 0.82 : 0.48}
+          metalness={isLight ? 0.05 : 0.2}
         />
       </mesh>
 
@@ -94,9 +94,9 @@ export default function FloorAndEnvironment() {
       <mesh position={[-1, -0.4, -36]} receiveShadow>
         <boxGeometry args={[46, 0.8, 24]} />
         <meshStandardMaterial
-          color={isLight ? "#f1f5f9" : "#0b1120"}
-          roughness={isLight ? 0.38 : 0.48}
-          metalness={isLight ? 0.12 : 0.2}
+          color={isLight ? "#8293a5" : "#0b1120"}
+          roughness={isLight ? 0.82 : 0.48}
+          metalness={isLight ? 0.05 : 0.2}
         />
       </mesh>
 
@@ -117,9 +117,9 @@ export default function FloorAndEnvironment() {
       <mesh position={[-28, -0.4, -6]} receiveShadow>
         <boxGeometry args={[14, 0.8, 8]} />
         <meshStandardMaterial
-          color={isLight ? "#f8fafc" : "#0f172a"}
-          roughness={isLight ? 0.38 : 0.48}
-          metalness={isLight ? 0.12 : 0.2}
+          color={isLight ? "#8fa0b2" : "#0f172a"}
+          roughness={isLight ? 0.82 : 0.48}
+          metalness={isLight ? 0.05 : 0.2}
         />
       </mesh>
 
@@ -141,9 +141,9 @@ export default function FloorAndEnvironment() {
         <mesh position={[0, -0.4, 0]} receiveShadow>
           <boxGeometry args={[26, 0.8, 14]} />
           <meshStandardMaterial
-            color={isLight ? "#faf5ff" : "#141124"}
-            roughness={isLight ? 0.38 : 0.48}
-            metalness={isLight ? 0.12 : 0.2}
+            color={isLight ? "#8d94a8" : "#141124"}
+            roughness={isLight ? 0.82 : 0.48}
+            metalness={isLight ? 0.05 : 0.2}
           />
         </mesh>
         {/* Base Accent */}
@@ -169,27 +169,27 @@ export default function FloorAndEnvironment() {
       <mesh position={[-17.5, 1.2, -21]}>
         <boxGeometry args={[13, 2.4, 0.3]} />
         <meshStandardMaterial
-          color={isLight ? "#cbd5e1" : "#1e293b"}
-          metalness={isLight ? 0.3 : 0.7}
-          roughness={isLight ? 0.4 : 0.3}
+          color={isLight ? "#526070" : "#1e293b"}
+          metalness={isLight ? 0.2 : 0.7}
+          roughness={isLight ? 0.6 : 0.3}
         />
       </mesh>
       {/* North Wall Right */}
       <mesh position={[15.5, 1.2, -21]}>
         <boxGeometry args={[13, 2.4, 0.3]} />
         <meshStandardMaterial
-          color={isLight ? "#cbd5e1" : "#1e293b"}
-          metalness={isLight ? 0.3 : 0.7}
-          roughness={isLight ? 0.4 : 0.3}
+          color={isLight ? "#526070" : "#1e293b"}
+          metalness={isLight ? 0.2 : 0.7}
+          roughness={isLight ? 0.6 : 0.3}
         />
       </mesh>
       {/* North Portal Overhead Header Lintel */}
       <mesh position={[-1, 3.2, -21]}>
         <boxGeometry args={[20, 1.6, 0.4]} />
         <meshStandardMaterial
-          color={isLight ? "#94a3b8" : "#0f172a"}
-          metalness={isLight ? 0.4 : 0.8}
-          roughness={0.25}
+          color={isLight ? "#3f4c5b" : "#0f172a"}
+          metalness={isLight ? 0.3 : 0.8}
+          roughness={0.4}
         />
       </mesh>
 
@@ -197,9 +197,9 @@ export default function FloorAndEnvironment() {
       <mesh position={[-1, 1.2, 21]}>
         <boxGeometry args={[46, 2.4, 0.3]} />
         <meshStandardMaterial
-          color={isLight ? "#cbd5e1" : "#1e293b"}
-          metalness={isLight ? 0.3 : 0.7}
-          roughness={isLight ? 0.4 : 0.3}
+          color={isLight ? "#526070" : "#1e293b"}
+          metalness={isLight ? 0.2 : 0.7}
+          roughness={isLight ? 0.6 : 0.3}
         />
       </mesh>
 
@@ -207,9 +207,9 @@ export default function FloorAndEnvironment() {
       <mesh position={[22, 1.2, 0]}>
         <boxGeometry args={[0.3, 2.4, 42]} />
         <meshStandardMaterial
-          color={isLight ? "#cbd5e1" : "#1e293b"}
-          metalness={isLight ? 0.3 : 0.7}
-          roughness={isLight ? 0.4 : 0.3}
+          color={isLight ? "#526070" : "#1e293b"}
+          metalness={isLight ? 0.2 : 0.7}
+          roughness={isLight ? 0.6 : 0.3}
         />
       </mesh>
 
@@ -218,33 +218,33 @@ export default function FloorAndEnvironment() {
         <mesh position={[0, 1.2, -18]}>
           <boxGeometry args={[0.3, 2.4, 6]} />
           <meshStandardMaterial
-            color={isLight ? "#cbd5e1" : "#1e293b"}
-            metalness={isLight ? 0.3 : 0.7}
-            roughness={isLight ? 0.4 : 0.3}
+            color={isLight ? "#526070" : "#1e293b"}
+            metalness={isLight ? 0.2 : 0.7}
+            roughness={isLight ? 0.6 : 0.3}
           />
         </mesh>
         <mesh position={[0, 1.2, -7]}>
           <boxGeometry args={[0.3, 2.4, 8]} />
           <meshStandardMaterial
-            color={isLight ? "#cbd5e1" : "#1e293b"}
-            metalness={isLight ? 0.3 : 0.7}
-            roughness={isLight ? 0.4 : 0.3}
+            color={isLight ? "#526070" : "#1e293b"}
+            metalness={isLight ? 0.2 : 0.7}
+            roughness={isLight ? 0.6 : 0.3}
           />
         </mesh>
         <mesh position={[0, 1.2, 5]}>
           <boxGeometry args={[0.3, 2.4, 8]} />
           <meshStandardMaterial
-            color={isLight ? "#cbd5e1" : "#1e293b"}
-            metalness={isLight ? 0.3 : 0.7}
-            roughness={isLight ? 0.4 : 0.3}
+            color={isLight ? "#526070" : "#1e293b"}
+            metalness={isLight ? 0.2 : 0.7}
+            roughness={isLight ? 0.6 : 0.3}
           />
         </mesh>
         <mesh position={[0, 1.2, 17]}>
           <boxGeometry args={[0.3, 2.4, 8]} />
           <meshStandardMaterial
-            color={isLight ? "#cbd5e1" : "#1e293b"}
-            metalness={isLight ? 0.3 : 0.7}
-            roughness={isLight ? 0.4 : 0.3}
+            color={isLight ? "#526070" : "#1e293b"}
+            metalness={isLight ? 0.2 : 0.7}
+            roughness={isLight ? 0.6 : 0.3}
           />
         </mesh>
       </group>
@@ -342,7 +342,7 @@ export default function FloorAndEnvironment() {
             <mesh position={[0, 0, -0.15]}>
               <boxGeometry args={[24, 2.2, 0.25]} />
               <meshStandardMaterial
-                color={isLight ? "#ffffff" : "#090d16"}
+                color={isLight ? "#cbd5e1" : "#090d16"}
                 metalness={isLight ? 0.2 : 0.85}
                 roughness={isLight ? 0.3 : 0.25}
               />

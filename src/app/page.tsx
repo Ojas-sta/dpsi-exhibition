@@ -348,7 +348,7 @@ export default function LandingPage() {
 
               <div className="mt-8 grid grid-cols-2 gap-3 font-mono text-xs">
                 <div className={`p-3 border rounded transition-colors ${
-                  isLight ? 'border-slate-200/90 bg-white/70 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
+                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
                 }`}>
                   <span className="text-[#3fb950] font-bold block">[ 12 BOOTHS ]</span>
                   <span className={`mt-1 block ${isLight ? 'text-slate-800 font-semibold' : 'text-white'}`}>
@@ -356,7 +356,7 @@ export default function LandingPage() {
                   </span>
                 </div>
                 <div className={`p-3 border rounded transition-colors ${
-                  isLight ? 'border-slate-200/90 bg-white/70 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
+                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
                 }`}>
                   <span className="text-[#58a6ff] font-bold block">[ 12 BOOTHS ]</span>
                   <span className={`mt-1 block ${isLight ? 'text-slate-800 font-semibold' : 'text-white'}`}>
@@ -364,7 +364,7 @@ export default function LandingPage() {
                   </span>
                 </div>
                 <div className={`p-3 border rounded transition-colors ${
-                  isLight ? 'border-slate-200/90 bg-white/70 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
+                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
                 }`}>
                   <span className="text-[#d2a8ff] font-bold block">[ 07 BOOTHS ]</span>
                   <span className={`mt-1 block ${isLight ? 'text-slate-800 font-semibold' : 'text-white'}`}>
@@ -372,7 +372,7 @@ export default function LandingPage() {
                   </span>
                 </div>
                 <div className={`p-3 border rounded transition-colors ${
-                  isLight ? 'border-slate-200/90 bg-white/70 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
+                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
                 }`}>
                   <span className="text-[#f0883e] font-bold block">[ 04 HEATS ]</span>
                   <span className={`mt-1 block ${isLight ? 'text-slate-800 font-semibold' : 'text-white'}`}>
@@ -420,7 +420,7 @@ export default function LandingPage() {
                   href="#projects"
                   className={`w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-4 border font-mono font-bold text-xs uppercase tracking-wider transition-all ${
                     isLight
-                      ? 'bg-white/80 hover:bg-white border-slate-300/90 text-slate-900 shadow-xs'
+                      ? 'bg-[#eef2f6]/95 hover:bg-[#e2e8f0] border-slate-300 text-slate-900 shadow-xs'
                       : 'bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-white'
                   }`}
                 >
@@ -549,7 +549,7 @@ export default function LandingPage() {
 
             {/* Filter Cells */}
             <div className={`flex items-center border rounded text-xs font-mono p-0.5 ${
-              isLight ? 'border-slate-300/80 bg-white/70 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
+              isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
             }`}>
               {(['all', 'Physical', 'Digital', 'Business'] as const).map((z) => (
                 <button
@@ -585,7 +585,7 @@ export default function LandingPage() {
                 }}
                 className={`p-5 border rounded-xl transition-all flex flex-col justify-between group cursor-pointer hover:-translate-y-1 ${
                   isLight
-                    ? 'border-slate-200/90 bg-white/75 backdrop-blur-md shadow-xs hover:shadow-xl hover:border-blue-400 hover:bg-white/95'
+                    ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs hover:shadow-md hover:border-blue-400 hover:bg-[#e2e8f0]'
                     : 'border-[#30363d] bg-[#0d1117] hover:border-[#58a6ff] hover:shadow-xl hover:bg-[#161b22]/90'
                 }`}
               >
@@ -676,7 +676,7 @@ export default function LandingPage() {
               href="/expo"
               className={`inline-flex items-center gap-2 px-6 py-3 border font-mono text-xs font-bold uppercase transition-colors rounded ${
                 isLight
-                  ? 'bg-white/80 hover:bg-white border-slate-300/90 text-slate-900 shadow-xs'
+                  ? 'bg-[#eef2f6]/95 hover:bg-[#e2e8f0] border-slate-300 text-slate-900 shadow-xs'
                   : 'bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-white'
               }`}
             >
@@ -707,7 +707,7 @@ export default function LandingPage() {
             {/* Arena 1 */}
             <div className={`p-6 border rounded-lg flex flex-col justify-between ${
               isLight
-                ? 'border-slate-200/90 bg-white/75 backdrop-blur-md shadow-xs hover:bg-white/95'
+                ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs hover:bg-[#e2e8f0]'
                 : 'border-[#30363d] bg-[#0d1117]'
             }`}>
               <div>
@@ -740,7 +740,7 @@ export default function LandingPage() {
             {/* Arena 2 */}
             <div className={`p-6 border rounded-lg flex flex-col justify-between ${
               isLight
-                ? 'border-slate-200/90 bg-white/75 backdrop-blur-md shadow-xs hover:bg-white/95'
+                ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs hover:bg-[#e2e8f0]'
                 : 'border-[#30363d] bg-[#0d1117]'
             }`}>
               <div>
@@ -771,7 +771,7 @@ export default function LandingPage() {
             {/* Arena 3 */}
             <div className={`p-6 border rounded-lg flex flex-col justify-between ${
               isLight
-                ? 'border-slate-200/90 bg-white/75 backdrop-blur-md shadow-xs hover:bg-white/95'
+                ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs hover:bg-[#e2e8f0]'
                 : 'border-[#30363d] bg-[#0d1117]'
             }`}>
               <div>
@@ -827,19 +827,19 @@ export default function LandingPage() {
 
               <div className="mt-6 space-y-3 font-mono text-xs">
                 <div className={`p-3 border rounded flex items-center justify-between ${
-                  isLight ? 'border-slate-200/90 bg-white/70 backdrop-blur-md text-slate-900 shadow-xs' : 'border-[#21262d] bg-[#0d1117] text-white'
+                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md text-slate-900 shadow-xs' : 'border-[#21262d] bg-[#0d1117] text-white'
                 }`}>
                   <span className="font-semibold">Multi-Factor Hardware Fingerprint</span>
                   <span className="text-[#3fb950] font-bold">[ ACTIVE ]</span>
                 </div>
                 <div className={`p-3 border rounded flex items-center justify-between ${
-                  isLight ? 'border-slate-200/90 bg-white/70 backdrop-blur-md text-slate-900 shadow-xs' : 'border-[#21262d] bg-[#0d1117] text-white'
+                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md text-slate-900 shadow-xs' : 'border-[#21262d] bg-[#0d1117] text-white'
                 }`}>
                   <span className="font-semibold">Weighted Ballots: Faculty (3x) • Community (1x)</span>
                   <span className="text-[#58a6ff] font-bold">[ VERIFIED ]</span>
                 </div>
                 <div className={`p-3 border rounded flex items-center justify-between ${
-                  isLight ? 'border-slate-200/90 bg-white/70 backdrop-blur-md text-slate-900 shadow-xs' : 'border-[#21262d] bg-[#0d1117] text-white'
+                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md text-slate-900 shadow-xs' : 'border-[#21262d] bg-[#0d1117] text-white'
                 }`}>
                   <span className="font-semibold">Live Leaderboard Real-Time Streaming</span>
                   <span className="text-[#d2a8ff] font-bold">[ SYNCED ]</span>
@@ -848,7 +848,7 @@ export default function LandingPage() {
             </div>
 
             <div className={`lg:col-span-5 p-6 border rounded-md font-mono ${
-              isLight ? 'border-slate-200/90 bg-white/70 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
+              isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
             }`}>
               <span className={`text-xs block mb-3 font-bold ${isLight ? 'text-slate-600' : 'text-[#8b949e]'}`}>
                 {'// HOW TO CAST BALLOT'}
@@ -921,7 +921,7 @@ export default function LandingPage() {
               required
               className={`flex-1 px-4 py-3 border rounded focus:outline-none focus:border-blue-500 ${
                 isLight
-                  ? 'bg-white/80 border-slate-300/90 text-slate-900 placeholder-slate-400 shadow-xs'
+                  ? 'bg-[#eef2f6]/95 border-slate-300 text-slate-900 placeholder-slate-500 shadow-xs'
                   : 'bg-[#0d1117] border-[#30363d] text-white placeholder-[#8b949e]'
               }`}
             />
@@ -961,7 +961,7 @@ export default function LandingPage() {
             </div>
 
             <div className={`flex items-center border rounded text-xs font-mono p-0.5 ${
-              isLight ? 'border-slate-300/80 bg-white/70 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
+              isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
             }`}>
               <button
                 onClick={() => setSelectedDay('day1')}

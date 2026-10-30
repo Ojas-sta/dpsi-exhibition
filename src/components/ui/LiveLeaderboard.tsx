@@ -49,7 +49,7 @@ export default function LiveLeaderboard() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-3xl max-h-[90vh] rounded-3xl bg-white/95 dark:bg-[#090d16] border border-slate-300/80 dark:border-slate-800 shadow-2xl flex flex-col text-slate-800 dark:text-slate-100 overflow-hidden"
+          className="relative w-full max-w-3xl max-h-[90vh] rounded-3xl bg-[#f8fafc]/98 dark:bg-[#090d16] border border-slate-300/80 dark:border-slate-800 shadow-2xl flex flex-col text-slate-800 dark:text-slate-100 overflow-hidden"
         >
           {/* Header */}
           <div className="p-4 sm:p-5 border-b border-slate-200/90 dark:border-slate-800 bg-gradient-to-r from-amber-100/70 dark:from-amber-500/15 via-white/50 dark:via-[#0b101c] to-amber-100/50 dark:to-amber-500/10 flex items-center justify-between">

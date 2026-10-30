@@ -100,7 +100,7 @@ export default function SearchModal() {
       />
 
       {/* Search Palette Container */}
-      <div className="relative w-full max-w-2xl bg-white/95 dark:bg-[#090e1a]/95 border border-slate-300/90 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[82vh] backdrop-blur-2xl">
+      <div className="relative w-full max-w-2xl bg-[#f8fafc]/98 dark:bg-[#090e1a]/95 border border-slate-300/90 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[82vh] backdrop-blur-2xl">
         {/* Input Bar */}
         <div className="relative flex items-center px-4 py-3.5 border-b border-slate-200/90 dark:border-slate-800/80 gap-3">
           <Search className="w-5 h-5 text-amber-500 dark:text-amber-400 shrink-0" />

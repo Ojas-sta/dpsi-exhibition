@@ -129,11 +129,11 @@ export default function BoothMesh({ project }: BoothMeshProps) {
         <meshStandardMaterial
           color={
             isSelected
-              ? (isLight ? '#94a3b8' : '#334155')
-              : (isLight ? '#cbd5e1' : '#0f172a')
+              ? (isLight ? '#475569' : '#334155')
+              : (isLight ? '#64748b' : '#0f172a')
           }
-          metalness={isLight ? 0.3 : 0.7}
-          roughness={isLight ? 0.4 : 0.3}
+          metalness={isLight ? 0.2 : 0.7}
+          roughness={isLight ? 0.5 : 0.3}
         />
       </mesh>
 
@@ -151,9 +151,9 @@ export default function BoothMesh({ project }: BoothMeshProps) {
       <mesh position={[0, 0.55, 0]} castShadow receiveShadow>
         <boxGeometry args={[1.8, 0.75, 0.8]} />
         <meshStandardMaterial
-          color={isLight ? '#f1f5f9' : '#1e293b'}
-          metalness={isLight ? 0.2 : 0.5}
-          roughness={isLight ? 0.35 : 0.25}
+          color={isLight ? '#cbd5e1' : '#1e293b'}
+          metalness={isLight ? 0.15 : 0.5}
+          roughness={isLight ? 0.5 : 0.25}
         />
       </mesh>
 

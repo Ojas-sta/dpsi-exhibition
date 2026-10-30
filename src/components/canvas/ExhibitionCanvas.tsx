@@ -35,7 +35,7 @@ function SceneSetup() {
   const theme = useExhibitionStore((state) => state.theme);
   const isLight = theme === 'light';
   return (
-    <color attach="background" args={[isLight ? '#dfe6ee' : '#060913']} />
+    <color attach="background" args={[isLight ? '#748596' : '#060913']} />
   );
 }
 
@@ -46,7 +46,7 @@ export default function ExhibitionCanvas() {
   const isLight = theme === 'light';
 
   return (
-    <div className={`relative isolate w-full h-[100dvh] select-none touch-none transition-colors duration-500 ${isLight ? 'bg-[#dfe6ee]' : 'bg-[#060913]'}`}>
+    <div className={`relative isolate w-full h-[100dvh] select-none touch-none transition-colors duration-500 ${isLight ? 'bg-[#748596]' : 'bg-[#060913]'}`}>
       <Suspense fallback={<CanvasLoader />}>
         <Canvas
           shadows={!isMobile}
@@ -83,15 +83,15 @@ export default function ExhibitionCanvas() {
           <Zone2InnovationHub />
           <Zone3RoboticsArena />
 
-          {/* Clean Post Processing (Subtle Bloom Only on Emissive LEDs) */}
+          {/* Clean Post Processing (Subtle Bloom Only on Emissive LEDs, never on light floor) */}
           <EffectComposer multisampling={isMobile ? 0 : 4}>
             <Bloom
-              luminanceThreshold={isLight ? 0.9 : 1.2}
+              luminanceThreshold={1.3}
               mipmapBlur
-              intensity={isLight ? 0.15 : 0.22}
+              intensity={isLight ? 0.08 : 0.22}
               radius={0.3}
             />
-            <Vignette eskil={false} offset={0.06} darkness={isLight ? 0.05 : 0.28} />
+            <Vignette eskil={false} offset={0.06} darkness={isLight ? 0.12 : 0.28} />
           </EffectComposer>
         </Canvas>
       </Suspense>

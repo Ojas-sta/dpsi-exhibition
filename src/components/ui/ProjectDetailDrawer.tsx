@@ -166,7 +166,7 @@ export default function ProjectDetailDrawer() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
             transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-            className="relative z-10 w-full max-w-2xl max-h-[88vh] rounded-2xl sm:rounded-3xl border border-slate-300/80 dark:border-slate-800 bg-white/95 dark:bg-[#0c1220]/95 backdrop-blur-2xl shadow-2xl flex flex-col text-slate-800 dark:text-slate-100 overflow-hidden my-auto"
+            className="relative z-10 w-full max-w-2xl max-h-[88vh] rounded-2xl sm:rounded-3xl border border-slate-300/80 dark:border-slate-800 bg-[#f8fafc]/98 dark:bg-[#0c1220]/95 backdrop-blur-2xl shadow-2xl flex flex-col text-slate-800 dark:text-slate-100 overflow-hidden my-auto"
           >
             {/* Header */}
             <div

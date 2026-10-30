@@ -108,7 +108,7 @@ export default function AuthModal() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="relative w-full max-w-md rounded-3xl bg-white/95 dark:bg-[#0c1220]/95 border border-slate-300/80 dark:border-slate-800 shadow-2xl p-6 sm:p-7 text-slate-800 dark:text-slate-100 overflow-hidden"
+          className="relative w-full max-w-md rounded-3xl bg-[#f8fafc]/98 dark:bg-[#0c1220]/95 border border-slate-300/80 dark:border-slate-800 shadow-2xl p-6 sm:p-7 text-slate-800 dark:text-slate-100 overflow-hidden"
         >
           {/* Subtle Ambient Radial Highlight */}
           <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
