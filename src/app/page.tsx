@@ -62,9 +62,12 @@ export default function LandingPage() {
   };
 
   return (
-    <div className={`min-h-screen bg-transparent transition-colors duration-300 font-sans selection:bg-[#2ea043] selection:text-black overflow-x-clip ${
-      isLight ? 'text-slate-900' : 'text-[#f0f6fc]'
-    }`}>
+    <div
+      suppressHydrationWarning
+      className={`min-h-screen bg-transparent transition-colors duration-300 font-sans selection:bg-[#2ea043] selection:text-black overflow-x-clip ${
+        isLight ? 'text-slate-900' : 'text-[#f0f6fc]'
+      }`}
+    >
       {/* ─── GITHUB UNIVERSE TOP ANNOUNCEMENT TICKER ─── */}
       <div className={`w-full border-b px-4 py-2 flex items-center justify-between text-[11px] font-mono transition-colors duration-300 ${
         isLight
