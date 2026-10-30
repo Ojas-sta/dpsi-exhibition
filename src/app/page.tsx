@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
@@ -13,6 +13,10 @@ import {
 } from 'lucide-react';
 import { SEED_PROJECTS } from '@/data/seedProjects';
 import { useExhibitionStore } from '@/store/useExhibitionStore';
+import ProjectDetailDrawer from '@/components/ui/ProjectDetailDrawer';
+import AuthModal from '@/components/ui/AuthModal';
+import { subscribeToProjects, onFirebaseAuthStateChange } from '@/lib/firebase';
+import { getDeviceFingerprint } from '@/lib/fingerprint';
 
 // React Bits Components loaded dynamically for SSR safety
 const GradientASCII = dynamic(() => import('@/components/reactbits/GradientASCII'), {
@@ -42,12 +46,48 @@ export default function LandingPage() {
   const theme = useExhibitionStore((state) => state.theme);
   const toggleTheme = useExhibitionStore((state) => state.toggleTheme);
   const isLight = theme === 'light';
+  const selectProject = useExhibitionStore((state) => state.selectProject);
+  const storeProjects = useExhibitionStore((state) => state.projects);
+  const setProjects = useExhibitionStore((state) => state.setProjects);
+  const setUser = useExhibitionStore((state) => state.setUser);
+  const setDeviceFingerprint = useExhibitionStore((state) => state.setDeviceFingerprint);
+
   const [selectedZone, setSelectedZone] = useState<'all' | 'Physical' | 'Digital' | 'Business'>('all');
   const [selectedDay, setSelectedDay] = useState<'day1' | 'day2'>('day1');
   const [email, setEmail] = useState('');
   const [registered, setRegistered] = useState(false);
 
-  const filteredProjects = SEED_PROJECTS.filter((p) => {
+  useEffect(() => {
+    getDeviceFingerprint().then((fp) => {
+      setDeviceFingerprint(fp);
+    });
+
+    const unsubAuth = onFirebaseAuthStateChange((firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          id: firebaseUser.uid,
+          email: firebaseUser.email || 'user@dpsi.in',
+          name: firebaseUser.displayName || 'Visitor',
+        });
+      } else {
+        setUser(null);
+      }
+    });
+
+    const unsubProjects = subscribeToProjects((liveProjects) => {
+      if (liveProjects && liveProjects.length > 0) {
+        setProjects(liveProjects);
+      }
+    });
+
+    return () => {
+      unsubAuth();
+      unsubProjects();
+    };
+  }, [setDeviceFingerprint, setUser, setProjects]);
+
+  const allProjects = storeProjects.length > 0 ? storeProjects : SEED_PROJECTS;
+  const filteredProjects = allProjects.filter((p) => {
     if (selectedZone === 'all') return true;
     return p.category === selectedZone;
   });
@@ -534,21 +574,39 @@ export default function LandingPage() {
             {filteredProjects.map((p) => (
               <div
                 key={p.id}
-                className={`p-5 border rounded-lg transition-all flex flex-col justify-between group ${
+                role="button"
+                tabIndex={0}
+                onClick={() => selectProject(p)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectProject(p);
+                  }
+                }}
+                className={`p-5 border rounded-xl transition-all flex flex-col justify-between group cursor-pointer hover:-translate-y-1 ${
                   isLight
-                    ? 'border-slate-200/90 bg-white/75 backdrop-blur-md shadow-xs hover:shadow-md hover:border-blue-400 hover:bg-white/95'
-                    : 'border-[#30363d] bg-[#0d1117] hover:border-[#58a6ff]'
+                    ? 'border-slate-200/90 bg-white/75 backdrop-blur-md shadow-xs hover:shadow-xl hover:border-blue-400 hover:bg-white/95'
+                    : 'border-[#30363d] bg-[#0d1117] hover:border-[#58a6ff] hover:shadow-xl hover:bg-[#161b22]/90'
                 }`}
               >
                 <div>
-                  <div className="flex items-center justify-between font-mono text-xs mb-2">
-                    <span className={`px-2 py-0.5 rounded font-bold border ${
-                      isLight
-                        ? 'bg-amber-50/80 border-amber-200 text-amber-700'
-                        : 'bg-[#161b22] border-[#30363d] text-[#f0883e]'
-                    }`}>
-                      {p.booth_code}
-                    </span>
+                  <div className="flex items-center justify-between font-mono text-xs mb-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`px-2 py-0.5 rounded font-bold border ${
+                        isLight
+                          ? 'bg-amber-50/80 border-amber-200 text-amber-700'
+                          : 'bg-[#161b22] border-[#30363d] text-[#f0883e]'
+                      }`}>
+                        {p.booth_code}
+                      </span>
+                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
+                        isLight
+                          ? 'bg-slate-100 border-slate-200 text-slate-600'
+                          : 'bg-slate-800/80 border-slate-700 text-slate-400'
+                      }`}>
+                        {p.category}
+                      </span>
+                    </div>
                     <span className="text-[#3fb950] font-bold flex items-center gap-1 font-mono">
                       <Vote className="w-3.5 h-3.5" />
                       <span>{p.vote_count} votes</span>
@@ -585,18 +643,29 @@ export default function LandingPage() {
                 <div className={`mt-6 pt-3 border-t flex items-center justify-between text-xs font-mono ${
                   isLight ? 'border-slate-100/90' : 'border-[#21262d]'
                 }`}>
-                  <span className={`truncate max-w-[170px] ${isLight ? 'text-slate-500' : 'text-[#8b949e]'}`}>
+                  <span className={`truncate max-w-[140px] ${isLight ? 'text-slate-500' : 'text-[#8b949e]'}`}>
                     {p.members?.join(', ')}
                   </span>
-                  <Link
-                    href="/expo"
-                    className={`flex items-center gap-1 font-bold group-hover:translate-x-0.5 transition-transform ${
-                      isLight ? 'text-blue-600 hover:text-blue-700' : 'text-[#58a6ff] hover:text-[#79c0ff]'
-                    }`}
-                  >
-                    <span>View in 3D</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-[11px] font-bold flex items-center gap-0.5 transition-colors ${
+                      isLight
+                        ? 'text-slate-500 group-hover:text-blue-600'
+                        : 'text-slate-400 group-hover:text-[#58a6ff]'
+                    }`}>
+                      <span>Expand</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </span>
+                    <Link
+                      href="/expo"
+                      onClick={(e) => e.stopPropagation()}
+                      className={`flex items-center gap-1 font-bold transition-transform hover:scale-105 ${
+                        isLight ? 'text-blue-600 hover:text-blue-700' : 'text-[#58a6ff] hover:text-[#79c0ff]'
+                      }`}
+                    >
+                      <span>3D</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}
@@ -1021,6 +1090,10 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Centered Modals for Project Expansion and Anti-Cheat Voting */}
+      <ProjectDetailDrawer />
+      <AuthModal />
     </div>
   );
 }

@@ -40,7 +40,6 @@ export default function AuthModal() {
         });
         setAuthModalOpen(false);
       } else {
-        // Returned null because popup was blocked and signInWithRedirect was automatically initiated
         setAuthError('Popup blocked by browser. Redirecting you to Google Sign-In...');
       }
     } catch (err: unknown) {
@@ -103,13 +102,13 @@ export default function AuthModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xl">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 dark:bg-black/80 backdrop-blur-md">
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 8 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="relative w-full max-w-md rounded-3xl bg-[#0c1220]/95 border border-slate-800 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_40px_rgba(245,158,11,0.06)] p-6 sm:p-7 text-slate-100 overflow-hidden"
+          className="relative w-full max-w-md rounded-3xl bg-white/95 dark:bg-[#0c1220]/95 border border-slate-300/80 dark:border-slate-800 shadow-2xl p-6 sm:p-7 text-slate-800 dark:text-slate-100 overflow-hidden"
         >
           {/* Subtle Ambient Radial Highlight */}
           <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
@@ -121,7 +120,7 @@ export default function AuthModal() {
               setAuthError(null);
               setAuthModalOpen(false);
             }}
-            className="absolute top-5 right-5 p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition-all"
+            className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/80 dark:hover:bg-slate-800 border border-slate-300/80 dark:border-slate-800 text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white transition-all"
             aria-label="Close dialog"
           >
             <X className="w-4 h-4" />
@@ -129,7 +128,8 @@ export default function AuthModal() {
 
           {/* School Brand & Header Alignment */}
           <div className="flex items-center gap-3.5 mb-5 pr-8">
-            <div className="w-12 h-12 rounded-2xl bg-white p-1.5 shadow-lg shadow-black/40 flex items-center justify-center shrink-0 border border-slate-200">
+            <div className="w-12 h-12 rounded-2xl bg-white p-1.5 shadow-md flex items-center justify-center shrink-0 border border-slate-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/dps_shield.png"
                 alt="DPS Indirapuram Emblem"
@@ -138,34 +138,34 @@ export default function AuthModal() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400 font-mono">
+                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-mono">
                   DPS Indirapuram
                 </span>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                   Official Expo
                 </span>
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-white tracking-tight mt-0.5">
+              <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
                 Voter Verification
               </h2>
             </div>
           </div>
 
           {/* Trust & Transparency Feature Ribbon */}
-          <div className="mb-5 p-3 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2 text-slate-300">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="text-[11px] text-slate-300 font-sans">
+          <div className="mb-5 p-3 rounded-2xl bg-slate-100 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="text-[11px] font-sans">
                 1 verified vote per booth • Real-time live tally
               </span>
             </div>
-            <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 shrink-0">
+            <span className="text-[10px] font-mono font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 shrink-0">
               Anti-Tamper
             </span>
           </div>
 
           {/* Segmented Tab Control (Google OAuth vs Visitor Pass) */}
-          <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-900/90 border border-slate-800 mb-5">
+          <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 mb-5">
             <button
               type="button"
               onClick={() => {
@@ -175,7 +175,7 @@ export default function AuthModal() {
               className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'google'
                   ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <span>Google Account</span>
@@ -189,7 +189,7 @@ export default function AuthModal() {
               className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'guest'
                   ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <span>Visitor Pass</span>
@@ -201,13 +201,13 @@ export default function AuthModal() {
             <motion.div
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col gap-2 text-xs text-rose-300"
+              className="mb-4 p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 flex flex-col gap-2 text-xs text-rose-700 dark:text-rose-300"
             >
               <div className="flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-rose-200">Sign-in Notice</p>
-                  <p className="text-[11px] mt-0.5 text-rose-300/90 leading-relaxed">
+                  <p className="font-bold text-rose-800 dark:text-rose-200">Sign-in Notice</p>
+                  <p className="text-[11px] mt-0.5 text-rose-700/90 dark:text-rose-300/90 leading-relaxed">
                     {authError}
                   </p>
                 </div>
@@ -217,7 +217,7 @@ export default function AuthModal() {
                 <button
                   type="button"
                   onClick={() => signInWithGoogleRedirect()}
-                  className="self-start mt-1 flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 underline decoration-amber-400/50"
+                  className="self-start mt-1 flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 hover:underline"
                 >
                   <span>Continue with direct page redirect</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -234,14 +234,14 @@ export default function AuthModal() {
               transition={{ duration: 0.15 }}
               className="space-y-4"
             >
-              <p className="text-xs text-slate-400 leading-relaxed font-sans">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-sans">
                 Sign in with your Google account for instantaneous voting verification across all exhibition zones.
               </p>
 
               <button
                 onClick={handleGoogleSignIn}
                 disabled={loading}
-                className="w-full min-h-[48px] flex items-center justify-center gap-3 py-3 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs sm:text-sm shadow-xl shadow-black/30 transition-all active:scale-[0.98] disabled:opacity-50"
+                className="w-full min-h-[48px] flex items-center justify-center gap-3 py-3 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs sm:text-sm border border-slate-300/80 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
               >
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                   <path
@@ -269,7 +269,7 @@ export default function AuthModal() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('guest')}
-                  className="text-amber-400 font-bold hover:underline"
+                  className="text-amber-600 dark:text-amber-400 font-bold hover:underline"
                 >
                   Use instant Visitor Pass →
                 </button>
@@ -287,34 +287,34 @@ export default function AuthModal() {
               className="space-y-3.5 font-sans"
             >
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1.5">
-                  Attendee or Judge Name <span className="text-amber-400">*</span>
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Attendee or Judge Name <span className="text-amber-500">*</span>
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <User className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     required
                     placeholder="Enter your name"
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-xs sm:text-sm text-white placeholder-slate-500 outline-none transition-all shadow-inner"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300/80 dark:border-slate-700/80 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all shadow-inner"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1.5">
+                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   Email Address <span className="text-slate-500 text-[10px]">(Optional)</span>
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Mail className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="email"
                     placeholder="name@example.com"
                     value={guestEmail}
                     onChange={(e) => setGuestEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-xs sm:text-sm text-white placeholder-slate-500 outline-none transition-all shadow-inner"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300/80 dark:border-slate-700/80 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all shadow-inner"
                   />
                 </div>
               </div>
