@@ -18,6 +18,8 @@ import {
   Lock,
   ArrowUpRight,
   Maximize2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { CategoryType } from '@/types';
 
@@ -61,6 +63,8 @@ export default function ProjectDetailDrawer() {
   const selectedProject = useExhibitionStore((state) => state.selectedProject);
   const isDrawerOpen = useExhibitionStore((state) => state.isDrawerOpen);
   const selectProject = useExhibitionStore((state) => state.selectProject);
+  const selectNextProject = useExhibitionStore((state) => state.selectNextProject);
+  const selectPrevProject = useExhibitionStore((state) => state.selectPrevProject);
   const votedProjectIds = useExhibitionStore((state) => state.votedProjectIds);
   const markProjectVoted = useExhibitionStore((state) => state.markProjectVoted);
   const incrementProjectVote = useExhibitionStore((state) => state.incrementProjectVote);
@@ -184,6 +188,27 @@ export default function ProjectDetailDrawer() {
               </div>
 
               <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={selectPrevProject}
+                    title="Previous Booth"
+                    aria-label="Previous Booth"
+                    className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-900/80 dark:hover:bg-slate-800 dark:text-slate-300 border border-slate-300/80 dark:border-slate-700/60 transition-colors flex items-center gap-0.5 active:scale-95"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Prev</span>
+                  </button>
+                  <button
+                    onClick={selectNextProject}
+                    title="Next Booth"
+                    aria-label="Next Booth"
+                    className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-xs font-mono font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-900/80 dark:hover:bg-slate-800 dark:text-slate-300 border border-slate-300/80 dark:border-slate-700/60 transition-colors flex items-center gap-0.5 active:scale-95"
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
                 <Link
                   href="/expo"
                   onClick={() => selectProject(null)}
@@ -196,7 +221,7 @@ export default function ProjectDetailDrawer() {
                 <button
                   onClick={() => selectProject(null)}
                   aria-label="Close project modal"
-                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-950 dark:bg-slate-900/80 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors border border-slate-300/80 dark:border-slate-700/60"
+                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-950 dark:bg-slate-900/80 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors border border-slate-300/80 dark:border-slate-700/60 active:scale-95"
                 >
                   <X className="w-4 h-4" />
                 </button>

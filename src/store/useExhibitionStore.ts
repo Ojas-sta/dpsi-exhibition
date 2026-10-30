@@ -117,6 +117,8 @@ interface ExhibitionState {
   setIsMobile: (isMobile: boolean) => void;
   setActiveZone: (zone: NavZoneId) => void;
   selectProject: (project: Project | null) => void;
+  selectNextProject: () => void;
+  selectPrevProject: () => void;
   setViewMode: (mode: '3d' | '2d') => void;
   setLeaderboardOpen: (open: boolean) => void;
   setDrawerOpen: (open: boolean) => void;
@@ -182,16 +184,20 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
     }
 
     const isMobile = get().isMobile;
-    // Offset camera slightly so the 3D booth is framed cleanly in the visible viewport
+    const rotY = project.rotation_y || 0;
+    // Dynamic trigonometry camera placement: always positions camera directly in front of the outward-facing counter desk!
+    const camDist = isMobile ? 6.5 : 5.4;
+    const camHeight = isMobile ? 3.6 : 2.8;
+
     const boothCamera: CameraViewConfig = {
       position: [
-        project.position_x + (isMobile ? 0 : 1.3),
-        project.position_y + (isMobile ? 5.2 : 3.4),
-        project.position_z + (isMobile ? 8.5 : 6.2),
+        project.position_x + Math.sin(rotY) * camDist,
+        project.position_y + camHeight,
+        project.position_z + Math.cos(rotY) * camDist,
       ],
       target: [
-        project.position_x + (isMobile ? 0 : 1.3),
-        project.position_y + (isMobile ? 0.6 : 1.1),
+        project.position_x,
+        project.position_y + (isMobile ? 0.7 : 0.9),
         project.position_z,
       ],
     };
@@ -204,6 +210,30 @@ export const useExhibitionStore = create<ExhibitionState>((set, get) => ({
       isSearchOpen: false,
       isMobileMenuOpen: false,
     });
+  },
+
+  selectNextProject: () => {
+    const { projects, selectedProject } = get();
+    if (!projects || projects.length === 0) return;
+    if (!selectedProject) {
+      get().selectProject(projects[0]);
+      return;
+    }
+    const currentIndex = projects.findIndex((p) => p.id === selectedProject.id);
+    const nextIndex = (currentIndex + 1) % projects.length;
+    get().selectProject(projects[nextIndex]);
+  },
+
+  selectPrevProject: () => {
+    const { projects, selectedProject } = get();
+    if (!projects || projects.length === 0) return;
+    if (!selectedProject) {
+      get().selectProject(projects[projects.length - 1]);
+      return;
+    }
+    const currentIndex = projects.findIndex((p) => p.id === selectedProject.id);
+    const prevIndex = (currentIndex - 1 + projects.length) % projects.length;
+    get().selectProject(projects[prevIndex]);
   },
 
   setTheme: (theme) => {

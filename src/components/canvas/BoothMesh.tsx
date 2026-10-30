@@ -102,7 +102,6 @@ export default function BoothMesh({ project }: BoothMeshProps) {
       position={[project.position_x, project.position_y, project.position_z]}
       rotation={[0, project.rotation_y || 0, 0]}
       onClick={handleClick}
-      onPointerDown={isMobile ? handleClick : undefined}
       onPointerOver={(e) => {
         if (!isMobile) {
           e.stopPropagation();
@@ -117,10 +116,10 @@ export default function BoothMesh({ project }: BoothMeshProps) {
         }
       }}
     >
-      {/* Invisible Touch Hit-box */}
-      <mesh position={[0, 1.2, 0]} visible={false}>
+      {/* Raycastable Touch & Click Hit-box (transparent, but active in BVH/raycaster) */}
+      <mesh position={[0, 1.2, 0]}>
         <cylinderGeometry args={[2.0, 2.0, 3.0, 16]} />
-        <meshBasicMaterial transparent opacity={0} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
       {/* 1. Base Platform */}

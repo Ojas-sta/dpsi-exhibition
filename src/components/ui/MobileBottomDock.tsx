@@ -9,6 +9,8 @@ import {
   User,
   LogOut,
   Search,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 export default function MobileBottomDock() {
@@ -25,6 +27,9 @@ export default function MobileBottomDock() {
   const isLight = theme === 'light';
   const user = useExhibitionStore((state) => state.user);
   const setUser = useExhibitionStore((state) => state.setUser);
+  const selectedProject = useExhibitionStore((state) => state.selectedProject);
+  const selectNextProject = useExhibitionStore((state) => state.selectNextProject);
+  const selectPrevProject = useExhibitionStore((state) => state.selectPrevProject);
 
   const zones: { id: NavZoneId; short: string; title: string }[] = [
     { id: 'overview', short: 'All', title: isLight ? 'Overview' : 'Milky Way Overview' },
@@ -38,8 +43,42 @@ export default function MobileBottomDock() {
   if (isDrawerOpen) return null;
 
   return (
-    <div className="md:hidden fixed bottom-3 inset-x-3 z-[100] pointer-events-auto pb-safe">
-      <div className={`flex items-center justify-between p-1.5 rounded-2xl backdrop-blur-2xl border transition-colors duration-300 shadow-2xl ${
+    <div className="md:hidden fixed bottom-3 inset-x-3 z-[100] pointer-events-auto pb-safe flex flex-col gap-1.5 items-center">
+      {/* Quick Booth Stepper Pill for 3D navigation on mobile */}
+      {viewMode === '3d' && (
+        <div className={`flex items-center justify-between gap-1 px-3 py-1 rounded-full backdrop-blur-xl border text-[11px] font-mono shadow-md transition-all ${
+          isLight
+            ? 'bg-white/95 border-slate-200 text-slate-800 shadow-slate-300/40'
+            : 'bg-[#0b101c]/90 border-slate-700/60 text-white shadow-black/80'
+        }`}>
+          <button
+            onClick={selectPrevProject}
+            className="flex items-center gap-0.5 px-2 py-0.5 rounded hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold active:scale-95"
+            aria-label="Previous Booth"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>Prev</span>
+          </button>
+          
+          <button
+            onClick={selectNextProject}
+            className="px-2 py-0.5 text-slate-600 dark:text-slate-300 hover:text-amber-500 font-semibold truncate max-w-[170px]"
+          >
+            {selectedProject ? `Booth ${selectedProject.booth_code}` : '✦ Tour 35 Booths'}
+          </button>
+
+          <button
+            onClick={selectNextProject}
+            className="flex items-center gap-0.5 px-2 py-0.5 rounded hover:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold active:scale-95"
+            aria-label="Next Booth"
+          >
+            <span>Next</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      <div className={`w-full flex items-center justify-between p-1.5 rounded-2xl backdrop-blur-2xl border transition-colors duration-300 shadow-2xl ${
         isLight
           ? 'bg-white/95 border-slate-200/90 shadow-slate-300/50 text-slate-900'
           : 'bg-[#070b14]/95 border-slate-700/60 shadow-black text-white'
