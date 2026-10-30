@@ -386,7 +386,7 @@ export default function LandingPage() {
       </section>
 
       {/* ─── ELEMENT 1: <GradientASCII /> ─── */}
-      <section className={`relative overflow-hidden ${isLight ? 'bg-slate-950' : 'bg-[#000000]'}`}>
+      <section className={`relative overflow-hidden transition-colors duration-300 ${isLight ? 'bg-transparent' : 'bg-[#000000]'}`}>
         <div className="max-w-7xl mx-auto">
           <div
             style={{
@@ -398,31 +398,44 @@ export default function LandingPage() {
             }}
           >
             <GradientASCII
-              colors={['#1e3fd8', '#f6f8ff', '#a5d8ff', '#38bdf8']}
+              colors={
+                isLight
+                  ? ['#1d4ed8', '#3b82f6', '#60a5fa', '#93c5fd']
+                  : ['#1e3fd8', '#f6f8ff', '#a5d8ff', '#38bdf8']
+              }
               shape="horizon"
               characters=" =+xX0S8#@"
               cellSize={18}
               density={0.8}
               softness={0.7}
               gradientOpacity={0.85}
+              lightMode={isLight}
             />
 
             {/* Seamless Bottom Gradient dissolve into background */}
             <div className={`absolute inset-x-0 bottom-0 h-48 pointer-events-none z-10 bg-gradient-to-b ${
               isLight
-                ? 'from-transparent via-slate-950/60 to-slate-950'
+                ? 'from-transparent via-[#f6f8fa]/60 to-[#f6f8fa]'
                 : 'from-transparent via-[#000000]/60 to-[#000000]'
             }`} />
 
             {/* GitHub Universe Terminal Overlay in Center */}
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
-              <span className="px-3 py-1 rounded bg-black/80 border border-slate-700 font-mono text-xs text-[#38bdf8] mb-4">
+              <span className={`px-3 py-1 rounded font-mono text-xs mb-4 backdrop-blur-sm ${
+                isLight
+                  ? 'bg-white/80 border border-slate-300/80 text-blue-700 shadow-xs'
+                  : 'bg-black/80 border border-slate-700 text-[#38bdf8]'
+              }`}>
                 {'STAGE_A // COMPUTATIONAL ASCII CANVAS'}
               </span>
-              <h2 className="text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight text-white max-w-2xl drop-shadow-md">
+              <h2 className={`text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight max-w-2xl ${
+                isLight ? 'text-slate-900 drop-shadow-xs' : 'text-white drop-shadow-md'
+              }`}>
                 Where Young Visionaries Shape Tomorrow
               </h2>
-              <p className="mt-3 text-xs sm:text-sm font-mono text-slate-300 max-w-lg">
+              <p className={`mt-3 text-xs sm:text-sm font-mono max-w-lg ${
+                isLight ? 'text-slate-600' : 'text-slate-300'
+              }`}>
                 Move your cursor to warp the ASCII matrix field. Real-time dual-pass fragment shader
                 computing character density.
               </p>
