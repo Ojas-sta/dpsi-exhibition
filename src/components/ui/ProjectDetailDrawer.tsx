@@ -155,7 +155,7 @@ export default function ProjectDetailDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => selectProject(null)}
-            className="fixed inset-0 bg-slate-950/60 dark:bg-black/80 backdrop-blur-md transition-all"
+            className="fixed inset-0 bg-slate-900/40 dark:bg-black/80 backdrop-blur-md transition-all"
           />
 
           {/* Centered Modal Card */}

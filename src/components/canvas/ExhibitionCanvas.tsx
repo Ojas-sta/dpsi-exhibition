@@ -13,16 +13,20 @@ import { useExhibitionStore } from '@/store/useExhibitionStore';
 import { Loader2 } from 'lucide-react';
 
 function CanvasLoader() {
+  const theme = useExhibitionStore((state) => state.theme);
+  const isLight = theme === 'light';
   return (
-    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#070b14]/90 backdrop-blur-md">
+    <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center backdrop-blur-md transition-colors ${
+      isLight ? 'bg-slate-100/90 text-slate-800' : 'bg-[#070b14]/90 text-slate-100'
+    }`}>
       <div className="relative flex items-center justify-center">
-        <div className="w-14 h-14 rounded-full border-2 border-amber-500/20 border-t-amber-400 animate-spin" />
-        <Loader2 className="w-5 h-5 text-amber-400 animate-pulse absolute" />
+        <div className="w-14 h-14 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
+        <Loader2 className="w-5 h-5 text-amber-500 animate-pulse absolute" />
       </div>
-      <p className="mt-4 text-xs font-mono tracking-widest text-amber-300 uppercase">
+      <p className="mt-4 text-xs font-mono tracking-widest text-amber-600 dark:text-amber-300 uppercase font-bold">
         Rendering Clean Floor Plan...
       </p>
-      <p className="text-[11px] text-slate-400 mt-1 font-sans">DPS Indirapuram Tech & Innovation</p>
+      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-sans">DPS Indirapuram Tech & Innovation</p>
     </div>
   );
 }
