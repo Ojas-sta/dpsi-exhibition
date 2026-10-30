@@ -1,0 +1,3502 @@
+diff --git a/issue-1-light-mode.patch b/issue-1-light-mode.patch
+new file mode 100644
+index 0000000..e69de29
+diff --git a/package-lock.json b/package-lock.json
+index aaab2c3..40edc41 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -2663,7 +2663,6 @@
+       "version": "19.3.0",
+       "resolved": "https://registry.npmjs.org/@types/react/-/react-19.3.0.tgz",
+       "integrity": "sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==",
+-      "dev": true,
+       "license": "MIT",
+       "dependencies": {
+         "csstype": "^3.2.2"
+@@ -4050,7 +4049,6 @@
+       "version": "3.2.3",
+       "resolved": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
+       "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
+-      "dev": true,
+       "license": "MIT"
+     },
+     "node_modules/damerau-levenshtein": {
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 2334ff5..9b0284e 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -1,17 +1,25 @@
+ @import "tailwindcss";
+ 
++@custom-variant dark (&:where(.dark, .dark *));
++
+ :root {
+-  --background: #070b14;
+-  --foreground: #f1f5f9;
++  --background: #dfe3e8;
++  --foreground: #1e293b;
+   --font-sans: var(--font-outfit), system-ui, -apple-system, sans-serif;
+   --font-mono: var(--font-space-grotesk), monospace;
+ }
+ 
++html.dark {
++  --background: #070b14;
++  --foreground: #f1f5f9;
++}
++
+ html, body {
+   background-color: var(--background);
+   color: var(--foreground);
+   font-family: var(--font-sans);
+   -webkit-tap-highlight-color: transparent;
++  transition: background-color 0.3s ease, color 0.3s ease;
+ }
+ 
+ .font-mono {
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 114123f..2849cf3 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -50,7 +50,7 @@ export default function RootLayout({
+       className={`${outfit.variable} ${spaceGrotesk.variable} antialiased`}
+       suppressHydrationWarning
+     >
+-      <body className="min-h-screen w-full bg-[#f8fafc] dark:bg-[#000000] text-slate-900 dark:text-[#f1f5f9] font-sans selection:bg-amber-500 selection:text-black relative transition-colors duration-300">
++      <body className="min-h-screen w-full bg-[#dfe3e8] dark:bg-[#000000] text-[#1e293b] dark:text-[#f1f5f9] font-sans selection:bg-amber-500 selection:text-black relative transition-colors duration-300" suppressHydrationWarning>
+         <ThemeSync />
+ 
+         {/* [ ELEMENT 04 ] :: REFRACTIVE GLASS AERO-SHARDS SIMULATION in the background of landing page */}
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 04306ab..2ceee70 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -1,6 +1,6 @@
+ 'use client';
+ 
+-import React, { useState } from 'react';
++import React, { useState, useEffect } from 'react';
+ import dynamic from 'next/dynamic';
+ import Link from 'next/link';
+ import {
+@@ -13,6 +13,10 @@ import {
+ } from 'lucide-react';
+ import { SEED_PROJECTS } from '@/data/seedProjects';
+ import { useExhibitionStore } from '@/store/useExhibitionStore';
++import ProjectDetailDrawer from '@/components/ui/ProjectDetailDrawer';
++import AuthModal from '@/components/ui/AuthModal';
++import { subscribeToProjects, onFirebaseAuthStateChange } from '@/lib/firebase';
++import { getDeviceFingerprint } from '@/lib/fingerprint';
+ 
+ // React Bits Components loaded dynamically for SSR safety
+ const GradientASCII = dynamic(() => import('@/components/reactbits/GradientASCII'), {
+@@ -41,12 +45,49 @@ const TextLoop = dynamic(() => import('@/components/reactbits/TextLoop'), {
+ export default function LandingPage() {
+   const theme = useExhibitionStore((state) => state.theme);
+   const toggleTheme = useExhibitionStore((state) => state.toggleTheme);
++  const isLight = theme === 'light';
++  const selectProject = useExhibitionStore((state) => state.selectProject);
++  const storeProjects = useExhibitionStore((state) => state.projects);
++  const setProjects = useExhibitionStore((state) => state.setProjects);
++  const setUser = useExhibitionStore((state) => state.setUser);
++  const setDeviceFingerprint = useExhibitionStore((state) => state.setDeviceFingerprint);
++
+   const [selectedZone, setSelectedZone] = useState<'all' | 'Physical' | 'Digital' | 'Business'>('all');
+   const [selectedDay, setSelectedDay] = useState<'day1' | 'day2'>('day1');
+   const [email, setEmail] = useState('');
+   const [registered, setRegistered] = useState(false);
+ 
+-  const filteredProjects = SEED_PROJECTS.filter((p) => {
++  useEffect(() => {
++    getDeviceFingerprint().then((fp) => {
++      setDeviceFingerprint(fp);
++    });
++
++    const unsubAuth = onFirebaseAuthStateChange((firebaseUser) => {
++      if (firebaseUser) {
++        setUser({
++          id: firebaseUser.uid,
++          email: firebaseUser.email || 'user@dpsi.in',
++          name: firebaseUser.displayName || 'Visitor',
++        });
++      } else {
++        setUser(null);
++      }
++    });
++
++    const unsubProjects = subscribeToProjects((liveProjects) => {
++      if (liveProjects && liveProjects.length > 0) {
++        setProjects(liveProjects);
++      }
++    });
++
++    return () => {
++      unsubAuth();
++      unsubProjects();
++    };
++  }, [setDeviceFingerprint, setUser, setProjects]);
++
++  const allProjects = storeProjects.length > 0 ? storeProjects : SEED_PROJECTS;
++  const filteredProjects = allProjects.filter((p) => {
+     if (selectedZone === 'all') return true;
+     return p.category === selectedZone;
+   });
+@@ -61,18 +102,33 @@ export default function LandingPage() {
+   };
+ 
+   return (
+-    <div className="min-h-screen bg-transparent text-[#f0f6fc] font-sans selection:bg-[#2ea043] selection:text-black overflow-x-clip">
++    <div
++      suppressHydrationWarning
++      className={`min-h-screen bg-transparent transition-colors duration-300 font-sans selection:bg-[#2ea043] selection:text-black overflow-x-clip ${
++        isLight ? 'text-slate-900' : 'text-[#f0f6fc]'
++      }`}
++    >
+       {/* ─── GITHUB UNIVERSE TOP ANNOUNCEMENT TICKER ─── */}
+-      <div className="w-full bg-[#0d1117] border-b border-[#21262d] px-4 py-2 flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
++      <div className={`w-full border-b px-4 py-2 flex items-center justify-between text-[11px] font-mono transition-colors duration-300 ${
++        isLight
++          ? 'bg-[#dfe3e8]/90 border-slate-300/80 backdrop-blur-md text-slate-700'
++          : 'bg-[#0d1117] border-[#21262d] text-[#8b949e]'
++      }`}>
+         <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+           <div className="flex items-center gap-2">
+             <span className="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse" />
+-            <span className="text-[#f0f6fc] font-bold">ANNUAL TECH &amp; INNOVATION SUMMIT 2026</span>
+-            <span className="hidden sm:inline text-[#8b949e]">{'// NOVEMBER 14–15 • MAIN AUDITORIUM'}</span>
++            <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-[#f0f6fc]'}`}>
++              ANNUAL TECH &amp; INNOVATION SUMMIT 2026
++            </span>
++            <span className={`hidden sm:inline ${isLight ? 'text-slate-500' : 'text-[#8b949e]'}`}>
++              {'// NOVEMBER 14–15 • MAIN AUDITORIUM'}
++            </span>
+           </div>
+           <Link
+             href="/expo"
+-            className="flex items-center gap-1 text-[#58a6ff] hover:text-[#79c0ff] font-semibold hover:underline"
++            className={`flex items-center gap-1 font-semibold hover:underline ${
++              isLight ? 'text-blue-600 hover:text-blue-700' : 'text-[#58a6ff] hover:text-[#79c0ff]'
++            }`}
+           >
+             <span>Launch 3D Exhibition</span>
+             <ArrowUpRight className="w-3.5 h-3.5" />
+@@ -81,21 +137,33 @@ export default function LandingPage() {
+       </div>
+ 
+       {/* ─── GITHUB UNIVERSE GRID NAVBAR ─── */}
+-      <header className="sticky top-0 z-50 w-full bg-[#000000]/95 backdrop-blur-md border-b border-[#30363d]">
++      <header className={`sticky top-0 z-50 w-full backdrop-blur-md border-b transition-colors duration-300 ${
++        isLight
++          ? 'bg-[#dfe3e8]/90 border-slate-300/80 shadow-xs'
++          : 'bg-[#000000]/95 border-[#30363d]'
++      }`}>
+         <div className="max-w-7xl mx-auto flex items-stretch h-14">
+           {/* Brand Cell */}
+           <Link
+             href="/"
+-            className="flex items-center gap-3 px-4 border-r border-[#30363d] hover:bg-[#161b22] transition-colors shrink-0"
++            className={`flex items-center gap-3 px-4 border-r transition-colors shrink-0 ${
++              isLight
++                ? 'border-slate-200/80 hover:bg-slate-200/50'
++                : 'border-[#30363d] hover:bg-[#161b22]'
++            }`}
+           >
+-            <div className="h-8 px-2 py-0.5 rounded bg-white flex items-center justify-center">
++            <div className="h-8 px-2 py-0.5 rounded bg-white flex items-center justify-center border border-slate-200 shadow-xs">
+               <img src="/dps_shield.png" alt="DPS Indirapuram" className="h-full w-auto object-contain" />
+             </div>
+             <div className="hidden md:flex flex-col">
+-              <span className="text-[12px] font-black tracking-tight text-white uppercase font-mono">
++              <span className={`text-[12px] font-black tracking-tight uppercase font-mono ${
++                isLight ? 'text-slate-800' : 'text-white'
++              }`}>
+                 DPSI EXPO &apos;26
+               </span>
+-              <span className="text-[9px] font-mono text-[#8b949e] tracking-widest">
++              <span className={`text-[9px] font-mono tracking-widest ${
++                isLight ? 'text-slate-500' : 'text-[#8b949e]'
++              }`}>
+                 INDIRAPURAM
+               </span>
+             </div>
+@@ -103,48 +171,41 @@ export default function LandingPage() {
+ 
+           {/* Navigation Cells */}
+           <nav className="hidden lg:flex items-stretch text-xs font-mono">
+-            <a
+-              href="#stage"
+-              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+-            >
+-              {'[ 01 // STAGE ]'}
+-            </a>
+-            <a
+-              href="#projects"
+-              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+-            >
+-              {'[ 02 // 35 INVENTIONS ]'}
+-            </a>
+-            <a
+-              href="#arenas"
+-              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+-            >
+-              {'[ 03 // 3 ARENAS ]'}
+-            </a>
+-            <a
+-              href="#voting"
+-              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+-            >
+-              {'[ 04 // ANTI-CHEAT BALLOT ]'}
+-            </a>
+-            <a
+-              href="#schedule"
+-              className="flex items-center px-4 border-r border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22] transition-colors"
+-            >
+-              {'[ 05 // ITINERARY ]'}
+-            </a>
++            {[
++              { href: '#stage', label: '[ 01 // STAGE ]' },
++              { href: '#projects', label: '[ 02 // 35 INVENTIONS ]' },
++              { href: '#arenas', label: '[ 03 // 3 ARENAS ]' },
++              { href: '#voting', label: '[ 04 // ANTI-CHEAT BALLOT ]' },
++              { href: '#schedule', label: '[ 05 // ITINERARY ]' },
++            ].map((item) => (
++              <a
++                key={item.href}
++                href={item.href}
++                className={`flex items-center px-4 border-r transition-colors ${
++                  isLight
++                    ? 'border-slate-200/80 text-slate-700 hover:text-slate-900 hover:bg-slate-200/50'
++                    : 'border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22]'
++                }`}
++              >
++                {item.label}
++              </a>
++            ))}
+           </nav>
+ 
+           {/* Right Action: Launch 3D Hall & Theme Toggle */}
+           <div className="ml-auto flex items-stretch">
+             <button
+               onClick={toggleTheme}
+-              className="flex items-center gap-1.5 px-3.5 border-r border-[#30363d] hover:bg-[#161b22] text-amber-400 font-mono text-xs transition-colors"
++              className={`flex items-center gap-1.5 px-3.5 border-r font-mono text-xs transition-colors ${
++                isLight
++                  ? 'border-slate-200/80 hover:bg-slate-200/50 text-amber-600'
++                  : 'border-[#30363d] hover:bg-[#161b22] text-amber-400'
++              }`}
+               title="Toggle Light / Dark Mode"
+             >
+-              {theme === 'light' ? (
++              {isLight ? (
+                 <>
+-                  <Sun className="w-4 h-4 text-amber-400 shrink-0" />
++                  <Sun className="w-4 h-4 text-amber-600 shrink-0" />
+                   <span className="hidden sm:inline font-bold">Light</span>
+                 </>
+               ) : (
+@@ -167,95 +228,180 @@ export default function LandingPage() {
+       </header>
+ 
+       {/* ─── GITHUB UNIVERSE STYLE HERO SECTION ─── */}
+-      <section className="border-b border-[#30363d]">
++      <section className={`border-b transition-colors duration-300 ${
++        isLight ? 'border-slate-200/80 bg-transparent' : 'border-[#30363d] bg-transparent'
++      }`}>
+         <div className="max-w-7xl mx-auto">
+           {/* Giant UNIVERSE-Style Headline */}
+-          <div className="px-4 sm:px-8 pt-10 pb-6 border-b border-[#30363d]">
+-            <div className="flex items-center justify-between font-mono text-xs text-[#8b949e] mb-3">
++          <div className={`px-4 sm:px-8 pt-10 pb-6 border-b ${
++            isLight ? 'border-slate-200/80' : 'border-[#30363d]'
++          }`}>
++            <div className={`flex items-center justify-between font-mono text-xs mb-3 ${
++              isLight ? 'text-slate-500' : 'text-[#8b949e]'
++            }`}>
+               <span className="flex items-center gap-2 text-[#3fb950]">
+                 <span>november 14–15_2026{"}"}</span>
+                 <span className="inline-block w-2.5 h-2.5 bg-[#3fb950]" />
+               </span>
+-              <span className="hidden sm:inline text-[#8b949e]">
++              <span className="hidden sm:inline">
+                 in-person &amp; 3d-hall % |35-booths
+               </span>
+             </div>
+ 
+             {/* Massive Conference Title with Neon Block Accent */}
+             <div className="flex items-start justify-between gap-4">
+-              <h1 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter text-white uppercase font-sans leading-none">
++              <h1 className={`text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter uppercase font-sans leading-none ${
++                isLight ? 'text-slate-800' : 'text-white'
++              }`}>
+                 EXPO&apos;26<span className="inline-block w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#2ea043] ml-2 -mb-1 align-baseline" /><span className="inline-block w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#db61a2] -mb-1 align-baseline" />
+               </h1>
+             </div>
+           </div>
+ 
+-          {/* Element 2: <TechText /> in exact previous format */}
+-          <div id="stage" className="border-b border-[#30363d] bg-[#050811]/40">
+-            <div className="px-4 py-2 border-b border-[#21262d] flex items-center justify-between text-[11px] font-mono text-[#8b949e]">
+-              <span>{'[ ELEMENT 02 ] :: INTERACTIVE PHYSICS WORDMARK'}</span>
+-              <span className="text-[#58a6ff]">CURSOR INTERACTION ENABLED</span>
++          {/* Element 2: <TechText /> */}
++          <div id="stage" className={`relative border-b transition-colors overflow-hidden ${
++            isLight
++              ? 'border-slate-200/80 bg-white/30 backdrop-blur-[2px]'
++              : 'border-[#30363d] bg-[#050811]/40'
++          }`}>
++            {/* Engineering Blueprint Background Grid */}
++            <div
++              className={`absolute inset-0 pointer-events-none ${
++                isLight
++                  ? 'bg-[linear-gradient(to_right,#0f172a08_1px,transparent_1px),linear-gradient(to_bottom,#0f172a08_1px,transparent_1px)] bg-[size:32px_32px]'
++                  : 'bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:32px_32px]'
++              }`}
++            />
++
++            {/* Technical Sub-Header with Telemetry */}
++            <div className={`relative z-10 px-4 py-2 border-b flex items-center justify-between text-[11px] font-mono ${
++              isLight ? 'border-slate-200/80 text-slate-600' : 'border-[#21262d] text-[#8b949e]'
++            }`}>
++              <div className="flex items-center gap-2">
++                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
++                <span>{'[ ELEMENT 02 ] :: INTERACTIVE PHYSICS WORDMARK'}</span>
++              </div>
++              <span className="hidden md:inline text-[10px] text-slate-400 font-mono tracking-widest">
++                COORDINATES: 28.6479° N, 77.3764° E // AUDITORIUM MAIN
++              </span>
++              <span className={isLight ? 'text-blue-600 font-semibold' : 'text-[#58a6ff]'}>
++                SPRING DYNAMICS ACTIVE
++              </span>
+             </div>
+-            <div style={{ width: '100%', height: '300px', position: 'relative' }}>
++
++            {/* Canvas Container with Balanced Proportions */}
++            <div className="relative z-10" style={{ width: '100%', height: '190px' }}>
++              {/* Corner Blueprint Crosshairs */}
++              <span className="absolute top-2 left-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
++              <span className="absolute top-2 right-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
++              <span className="absolute bottom-2 left-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
++              <span className="absolute bottom-2 right-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
++
+               <TechText
+                 text="DPSI TECH EXPO"
+-                color="#2a75d3"
++                color={isLight ? '#1d4ed8' : '#38bdf8'}
++                accentColor={isLight ? '#3b82f6' : '#60a5fa'}
+                 fontFamily='"Space Grotesk", sans-serif'
+-                fontSize={56}
++                fontSize={78}
+                 fontWeight={800}
+                 letterSpacing={0}
++                guides={true}
++                specks={16}
++                reach={180}
++                bounce={0.4}
+               />
+             </div>
++
++            {/* Blueprint Micro-instruction Footer */}
++            <div className={`relative z-10 px-4 py-1.5 border-t flex items-center justify-between text-[10px] font-mono ${
++              isLight ? 'border-slate-200/60 bg-slate-100/50 text-slate-500' : 'border-[#21262d] bg-[#0d1117]/50 text-[#8b949e]'
++            }`}>
++              <span>{'// INTERACTION GUIDE: DRAG CHARACTERS • HOVER TO DISASSEMBLE VECTORS'}</span>
++              <span className="hidden sm:inline">{'PHYSICS ENGINE: VERLET-SPRING'}</span>
++            </div>
+           </div>
+ 
+           {/* GitHub Universe 2-Column Bento Split */}
+-          <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-[#30363d]">
++          <div className={`grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x ${
++            isLight ? 'divide-slate-200/80' : 'divide-[#30363d]'
++          }`}>
+             {/* Left Column: Terminal Slug & Categories */}
+-            <div className="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between">
++            <div className="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between bg-transparent">
+               <div>
+-                <span className="text-xs font-mono text-[#8b949e] uppercase tracking-widest block mb-2">
++                <span className={`text-xs font-mono uppercase tracking-widest block mb-2 ${
++                  isLight ? 'text-slate-500' : 'text-[#8b949e]'
++                }`}>
+                   {'// THE SUMMIT ARCHITECTURE'}
+                 </span>
+-                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-mono">
++                <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight font-mono ${
++                  isLight ? 'text-slate-800' : 'text-white'
++                }`}>
+                   innovate-build-deploy/
+                 </h2>
+-                <p className="mt-4 text-sm text-[#8b949e] leading-relaxed font-mono">
++                <p className={`mt-4 text-sm leading-relaxed font-mono ${
++                  isLight ? 'text-slate-600' : 'text-[#8b949e]'
++                }`}>
+                   35 student research teams across Physical Computing, Artificial Intelligence,
+                   Sustainable Enterprise, and Combat Robotics.
+                 </p>
+               </div>
+ 
+               <div className="mt-8 grid grid-cols-2 gap-3 font-mono text-xs">
+-                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded">
++                <div className={`p-3 border rounded transition-colors ${
++                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
++                }`}>
+                   <span className="text-[#3fb950] font-bold block">[ 12 BOOTHS ]</span>
+-                  <span className="text-white mt-1 block">Physical Computing (P)</span>
++                  <span className={`mt-1 block ${isLight ? 'text-slate-800 font-semibold' : 'text-white'}`}>
++                    Physical Computing (P)
++                  </span>
+                 </div>
+-                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded">
++                <div className={`p-3 border rounded transition-colors ${
++                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
++                }`}>
+                   <span className="text-[#58a6ff] font-bold block">[ 12 BOOTHS ]</span>
+-                  <span className="text-white mt-1 block">Digital &amp; AI Software (D)</span>
++                  <span className={`mt-1 block ${isLight ? 'text-slate-800 font-semibold' : 'text-white'}`}>
++                    Digital &amp; AI Software (D)
++                  </span>
+                 </div>
+-                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded">
++                <div className={`p-3 border rounded transition-colors ${
++                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
++                }`}>
+                   <span className="text-[#d2a8ff] font-bold block">[ 07 BOOTHS ]</span>
+-                  <span className="text-white mt-1 block">Business Ventures (B)</span>
++                  <span className={`mt-1 block ${isLight ? 'text-slate-800 font-semibold' : 'text-white'}`}>
++                    Business Ventures (B)
++                  </span>
+                 </div>
+-                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded">
++                <div className={`p-3 border rounded transition-colors ${
++                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#21262d] bg-[#0d1117]'
++                }`}>
+                   <span className="text-[#f0883e] font-bold block">[ 04 HEATS ]</span>
+-                  <span className="text-white mt-1 block">Robotics Battle Arena</span>
++                  <span className={`mt-1 block ${isLight ? 'text-slate-800 font-semibold' : 'text-white'}`}>
++                    Robotics Battle Arena
++                  </span>
+                 </div>
+               </div>
+             </div>
+ 
+             {/* Right Column: Mission statement and Primary Action */}
+-            <div className="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between bg-[#040711]/60">
++            <div className={`lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between ${
++              isLight ? 'bg-white/30 backdrop-blur-[2px]' : 'bg-[#040711]/60'
++            }`}>
+               <div>
+-                <span className="text-xs font-mono text-[#8b949e] uppercase tracking-widest block mb-2">
++                <span className={`text-xs font-mono uppercase tracking-widest block mb-2 ${
++                  isLight ? 'text-slate-500' : 'text-[#8b949e]'
++                }`}>
+                   {'// PURPOSE & INVITATION'}
+                 </span>
+-                <p className="text-base sm:text-lg text-[#c9d1d9] leading-relaxed font-sans">
++                <p className={`text-base sm:text-lg leading-relaxed font-sans ${
++                  isLight ? 'text-slate-800' : 'text-[#c9d1d9]'
++                }`}>
+                   From deep-learning soil fertility scanners to hardware ADAS driver assistance and
+                   autonomous maze rovers, experience the next generation of engineers delivering live at
+                   Delhi Public School Indirapuram.
+                 </p>
+-                <p className="mt-3 text-xs sm:text-sm text-[#8b949e] font-mono">
++                <p className={`mt-3 text-xs sm:text-sm font-mono ${
++                  isLight ? 'text-slate-600' : 'text-[#8b949e]'
++                }`}>
+                   Inspect blueprints in 3D WebGL, evaluate technical schematics, and submit your verified
+                   ballot through our multi-factor anti-cheat voting portal.
+                 </p>
+@@ -267,12 +413,16 @@ export default function LandingPage() {
+                   className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-mono font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/25"
+                 >
+                   <Sparkles className="w-4 h-4" />
+-                  <span>Launch 3D Hall ({theme === 'light' ? 'Light Showroom' : 'Cosmic Dark'})</span>
++                  <span>Launch 3D Hall ({isLight ? 'Light Showroom' : 'Cosmic Dark'})</span>
+                   <ArrowRight className="w-4 h-4" />
+                 </Link>
+                 <a
+                   href="#projects"
+-                  className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white font-mono font-bold text-xs uppercase tracking-wider transition-all"
++                  className={`w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-6 py-4 border font-mono font-bold text-xs uppercase tracking-wider transition-all ${
++                    isLight
++                      ? 'bg-[#eef2f6]/95 hover:bg-[#e2e8f0] border-slate-300 text-slate-900 shadow-xs'
++                      : 'bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-white'
++                  }`}
+                 >
+                   <span>Browse 35 Projects [ ⌘K ]</span>
+                 </a>
+@@ -282,11 +432,15 @@ export default function LandingPage() {
+         </div>
+       </section>
+ 
+-      {/* ─── ELEMENT 5: <TextLoop /> IN EXACT PREVIOUS FORMAT ─── */}
+-      <section className="border-b border-[#30363d] bg-[#040711]">
+-        <div className="px-4 py-2 border-b border-[#21262d] flex items-center justify-between text-[11px] font-mono text-[#8b949e] max-w-7xl mx-auto">
++      {/* ─── ELEMENT 5: <TextLoop /> ─── */}
++      <section className={`border-b transition-colors duration-300 ${
++        isLight ? 'border-slate-200/80 bg-white/35 backdrop-blur-sm' : 'border-[#30363d] bg-[#040711]'
++      }`}>
++        <div className={`px-4 py-2 border-b flex items-center justify-between text-[11px] font-mono max-w-7xl mx-auto ${
++          isLight ? 'border-slate-200 text-slate-600' : 'border-[#21262d] text-[#8b949e]'
++        }`}>
+           <span>{'[ ELEMENT 05 ] :: SVG CURVED LOOP RIBBON'}</span>
+-          <span className="text-[#a855f7]">LIVE STREAM MARQUEE</span>
++          <span className="text-[#a855f7] font-semibold">LIVE STREAM MARQUEE</span>
+         </div>
+         <div className="py-2 overflow-hidden">
+           <TextLoop
+@@ -302,7 +456,7 @@ export default function LandingPage() {
+             letterSpacing={2}
+             uppercase
+             ribbon
+-            ribbonColor="#5227FF"
++            ribbonColor={isLight ? '#4338ca' : '#5227FF'}
+             ribbonWidth={86}
+             edgeFade={0}
+             cross={false}
+@@ -315,8 +469,8 @@ export default function LandingPage() {
+         </div>
+       </section>
+ 
+-      {/* ─── ELEMENT 1: <GradientASCII /> SEAMLESS HORIZON (BAR REMOVED) ─── */}
+-      <section className="relative bg-[#000000] overflow-hidden">
++      {/* ─── ELEMENT 1: <GradientASCII /> ─── */}
++      <section className={`relative overflow-hidden transition-colors duration-300 ${isLight ? 'bg-transparent' : 'bg-[#000000]'}`}>
+         <div className="max-w-7xl mx-auto">
+           <div
+             style={{
+@@ -328,27 +482,44 @@ export default function LandingPage() {
+             }}
+           >
+             <GradientASCII
+-              colors={['#1e3fd8', '#f6f8ff', '#a5d8ff', '#38bdf8']}
++              colors={
++                isLight
++                  ? ['#1d4ed8', '#3b82f6', '#60a5fa', '#93c5fd']
++                  : ['#1e3fd8', '#f6f8ff', '#a5d8ff', '#38bdf8']
++              }
+               shape="horizon"
+               characters=" =+xX0S8#@"
+               cellSize={18}
+               density={0.8}
+               softness={0.7}
+               gradientOpacity={0.85}
++              lightMode={isLight}
+             />
+ 
+-            {/* Seamless Bottom Gradient dissolve into black */}
+-            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-b from-transparent via-[#000000]/60 to-[#000000] pointer-events-none z-10" />
++            {/* Seamless Bottom Gradient dissolve into background */}
++            <div className={`absolute inset-x-0 bottom-0 h-48 pointer-events-none z-10 bg-gradient-to-b ${
++              isLight
++                ? 'from-transparent via-[#dfe3e8]/70 to-[#dfe3e8]'
++                : 'from-transparent via-[#000000]/60 to-[#000000]'
++            }`} />
+ 
+             {/* GitHub Universe Terminal Overlay in Center */}
+             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center pointer-events-none">
+-              <span className="px-3 py-1 rounded bg-black/80 border border-[#30363d] font-mono text-xs text-[#38bdf8] mb-4">
++              <span className={`px-3 py-1 rounded font-mono text-xs mb-4 backdrop-blur-sm ${
++                isLight
++                  ? 'bg-white/80 border border-slate-300/80 text-blue-700 shadow-xs'
++                  : 'bg-black/80 border border-slate-700 text-[#38bdf8]'
++              }`}>
+                 {'STAGE_A // COMPUTATIONAL ASCII CANVAS'}
+               </span>
+-              <h2 className="text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight text-white max-w-2xl drop-shadow-md">
++              <h2 className={`text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight max-w-2xl ${
++                isLight ? 'text-slate-800 drop-shadow-xs' : 'text-white drop-shadow-md'
++              }`}>
+                 Where Young Visionaries Shape Tomorrow
+               </h2>
+-              <p className="mt-3 text-xs sm:text-sm font-mono text-slate-300 max-w-lg">
++              <p className={`mt-3 text-xs sm:text-sm font-mono max-w-lg ${
++                isLight ? 'text-slate-600' : 'text-slate-300'
++              }`}>
+                 Move your cursor to warp the ASCII matrix field. Real-time dual-pass fragment shader
+                 computing character density.
+               </p>
+@@ -357,28 +528,38 @@ export default function LandingPage() {
+         </div>
+       </section>
+ 
+-      {/* ─── GITHUB UNIVERSE STYLE 35 INVENTIONS DIRECTORY (DIRECTLY UNDER ASCII HORIZON) ─── */}
+-      <section id="projects" className="border-b border-[#30363d] pt-6 pb-12">
++      {/* ─── GITHUB UNIVERSE STYLE 35 INVENTIONS DIRECTORY ─── */}
++      <section id="projects" className={`border-b pt-6 pb-12 transition-colors duration-300 ${
++        isLight ? 'border-slate-200/80 bg-transparent' : 'border-[#30363d] bg-transparent'
++      }`}>
+         <div className="max-w-7xl mx-auto px-4 sm:px-8">
+-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#30363d]">
++          <div className={`flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b ${
++            isLight ? 'border-slate-200/80' : 'border-[#30363d]'
++          }`}>
+             <div>
+-              <span className="text-xs font-mono text-[#3fb950] block mb-1">
++              <span className="text-xs font-mono text-[#3fb950] font-bold block mb-1">
+                 {'// COMPETING BOOTHS DIRECTORY'}
+               </span>
+-              <h2 className="text-3xl sm:text-4xl font-black text-white uppercase font-sans tracking-tight">
++              <h2 className={`text-3xl sm:text-4xl font-black uppercase font-sans tracking-tight ${
++                isLight ? 'text-slate-800' : 'text-white'
++              }`}>
+                 All 35 Inventions
+               </h2>
+             </div>
+ 
+             {/* Filter Cells */}
+-            <div className="flex items-center border border-[#30363d] bg-[#0d1117] rounded text-xs font-mono">
++            <div className={`flex items-center border rounded text-xs font-mono p-0.5 ${
++              isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
++            }`}>
+               {(['all', 'Physical', 'Digital', 'Business'] as const).map((z) => (
+                 <button
+                   key={z}
+                   onClick={() => setSelectedZone(z)}
+-                  className={`px-3 py-1.5 transition-colors ${
++                  className={`px-3 py-1.5 rounded transition-colors ${
+                     selectedZone === z
+-                      ? 'bg-[#238636] text-white font-bold'
++                      ? 'bg-[#238636] text-white font-bold shadow-xs'
++                      : isLight
++                      ? 'text-slate-600 hover:text-slate-900'
+                       : 'text-[#8b949e] hover:text-white'
+                   }`}
+                 >
+@@ -389,27 +570,57 @@ export default function LandingPage() {
+           </div>
+ 
+           {/* High-Density Session Cards Grid */}
+-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 divide-y md:divide-y-0 md:gap-4">
++          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+             {filteredProjects.map((p) => (
+               <div
+                 key={p.id}
+-                className="p-5 border border-[#30363d] bg-[#0d1117] rounded-md hover:border-[#58a6ff] transition-all flex flex-col justify-between group"
++                role="button"
++                tabIndex={0}
++                onClick={() => selectProject(p)}
++                onKeyDown={(e) => {
++                  if (e.key === 'Enter' || e.key === ' ') {
++                    e.preventDefault();
++                    selectProject(p);
++                  }
++                }}
++                className={`p-5 border rounded-xl transition-all flex flex-col justify-between group cursor-pointer hover:-translate-y-1 ${
++                  isLight
++                    ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs hover:shadow-md hover:border-blue-400 hover:bg-[#e2e8f0]'
++                    : 'border-[#30363d] bg-[#0d1117] hover:border-[#58a6ff] hover:shadow-xl hover:bg-[#161b22]/90'
++                }`}
+               >
+                 <div>
+-                  <div className="flex items-center justify-between font-mono text-xs mb-2">
+-                    <span className="px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[#f0883e] font-bold">
+-                      {p.booth_code}
+-                    </span>
+-                    <span className="text-[#3fb950] flex items-center gap-1">
++                  <div className="flex items-center justify-between font-mono text-xs mb-2.5">
++                    <div className="flex items-center gap-1.5">
++                      <span className={`px-2 py-0.5 rounded font-bold border ${
++                        isLight
++                          ? 'bg-amber-50/80 border-amber-200 text-amber-700'
++                          : 'bg-[#161b22] border-[#30363d] text-[#f0883e]'
++                      }`}>
++                        {p.booth_code}
++                      </span>
++                      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
++                        isLight
++                          ? 'bg-slate-100 border-slate-200 text-slate-600'
++                          : 'bg-slate-800/80 border-slate-700 text-slate-400'
++                      }`}>
++                        {p.category}
++                      </span>
++                    </div>
++                    <span className="text-[#3fb950] font-bold flex items-center gap-1 font-mono">
+                       <Vote className="w-3.5 h-3.5" />
+                       <span>{p.vote_count} votes</span>
+                     </span>
+                   </div>
+ 
+-                  <h3 className="text-base font-bold text-white group-hover:text-[#58a6ff] transition-colors line-clamp-1">
++                  <h3 className={`text-base font-bold transition-colors line-clamp-1 ${
++                    isLight ? 'text-slate-900 group-hover:text-blue-600' : 'text-white group-hover:text-[#58a6ff]'
++                  }`}>
+                     {p.title.replace(/^.+•\s*/, '')}
+                   </h3>
+-                  <p className="mt-2 text-xs text-[#8b949e] line-clamp-2 leading-relaxed">
++                  <p className={`mt-2 text-xs line-clamp-2 leading-relaxed ${
++                    isLight ? 'text-slate-600' : 'text-[#8b949e]'
++                  }`}>
+                     {p.description}
+                   </p>
+ 
+@@ -417,7 +628,11 @@ export default function LandingPage() {
+                     {p.tech_stack?.slice(0, 3).map((tech, i) => (
+                       <span
+                         key={i}
+-                        className="px-1.5 py-0.5 rounded bg-[#161b22] text-[#c9d1d9] border border-[#21262d]"
++                        className={`px-1.5 py-0.5 rounded border ${
++                          isLight
++                            ? 'bg-slate-100/80 text-slate-700 border-slate-200'
++                            : 'bg-[#161b22] text-[#c9d1d9] border-[#21262d]'
++                        }`}
+                       >
+                         {tech}
+                       </span>
+@@ -425,17 +640,32 @@ export default function LandingPage() {
+                   </div>
+                 </div>
+ 
+-                <div className="mt-6 pt-3 border-t border-[#21262d] flex items-center justify-between text-xs font-mono">
+-                  <span className="text-[#8b949e] truncate max-w-[170px]">
++                <div className={`mt-6 pt-3 border-t flex items-center justify-between text-xs font-mono ${
++                  isLight ? 'border-slate-100/90' : 'border-[#21262d]'
++                }`}>
++                  <span className={`truncate max-w-[140px] ${isLight ? 'text-slate-500' : 'text-[#8b949e]'}`}>
+                     {p.members?.join(', ')}
+                   </span>
+-                  <Link
+-                    href="/expo"
+-                    className="flex items-center gap-1 text-[#58a6ff] hover:text-[#79c0ff] font-bold group-hover:translate-x-0.5 transition-transform"
+-                  >
+-                    <span>View in 3D</span>
+-                    <ArrowRight className="w-3.5 h-3.5" />
+-                  </Link>
++                  <div className="flex items-center gap-3">
++                    <span className={`text-[11px] font-bold flex items-center gap-0.5 transition-colors ${
++                      isLight
++                        ? 'text-slate-500 group-hover:text-blue-600'
++                        : 'text-slate-400 group-hover:text-[#58a6ff]'
++                    }`}>
++                      <span>Expand</span>
++                      <ArrowUpRight className="w-3.5 h-3.5" />
++                    </span>
++                    <Link
++                      href="/expo"
++                      onClick={(e) => e.stopPropagation()}
++                      className={`flex items-center gap-1 font-bold transition-transform hover:scale-105 ${
++                        isLight ? 'text-blue-600 hover:text-blue-700' : 'text-[#58a6ff] hover:text-[#79c0ff]'
++                      }`}
++                    >
++                      <span>3D</span>
++                      <ArrowRight className="w-3.5 h-3.5" />
++                    </Link>
++                  </div>
+                 </div>
+               </div>
+             ))}
+@@ -444,7 +674,11 @@ export default function LandingPage() {
+           <div className="mt-8 text-center">
+             <Link
+               href="/expo"
+-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white font-mono text-xs font-bold uppercase transition-colors"
++              className={`inline-flex items-center gap-2 px-6 py-3 border font-mono text-xs font-bold uppercase transition-colors rounded ${
++                isLight
++                  ? 'bg-[#eef2f6]/95 hover:bg-[#e2e8f0] border-slate-300 text-slate-900 shadow-xs'
++                  : 'bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-white'
++              }`}
+             >
+               <span>Explore Full 3D Interactive Floor Plan</span>
+               <ArrowRight className="w-3.5 h-3.5" />
+@@ -453,38 +687,49 @@ export default function LandingPage() {
+         </div>
+       </section>
+ 
+-
+-      {/* ─── THE THREE EXHIBITION ARENAS (GITHUB UNIVERSE BENTO) ─── */}
+-      <section id="arenas" className="border-b border-[#30363d] py-12">
++      {/* ─── THE THREE EXHIBITION ARENAS ─── */}
++      <section id="arenas" className={`border-b py-12 transition-colors duration-300 ${
++        isLight ? 'border-slate-200/80 bg-transparent' : 'border-[#30363d] bg-transparent'
++      }`}>
+         <div className="max-w-7xl mx-auto px-4 sm:px-8">
+-          <div className="pb-6 border-b border-[#30363d]">
+-            <span className="text-xs font-mono text-[#3fb950] block mb-1">
++          <div className={`pb-6 border-b ${isLight ? 'border-slate-200/80' : 'border-[#30363d]'}`}>
++            <span className="text-xs font-mono text-[#3fb950] font-bold block mb-1">
+               {'// PHYSICAL BLUEPRINT'}
+             </span>
+-            <h2 className="text-3xl sm:text-4xl font-black text-white uppercase font-sans tracking-tight">
++            <h2 className={`text-3xl sm:text-4xl font-black uppercase font-sans tracking-tight ${
++              isLight ? 'text-slate-800' : 'text-white'
++            }`}>
+               The Three Arenas
+             </h2>
+           </div>
+ 
+-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:gap-6">
++          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+             {/* Arena 1 */}
+-            <div className="p-6 border border-[#30363d] bg-[#0d1117] rounded-md flex flex-col justify-between">
++            <div className={`p-6 border rounded-lg flex flex-col justify-between ${
++              isLight
++                ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs hover:bg-[#e2e8f0]'
++                : 'border-[#30363d] bg-[#0d1117]'
++            }`}>
+               <div>
+-                <span className="px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[#38bdf8] font-mono text-xs font-bold">
++                <span className={`px-2 py-0.5 rounded font-mono text-xs font-bold border ${
++                  isLight ? 'bg-sky-50/80 border-sky-200 text-sky-700' : 'bg-[#161b22] border-[#30363d] text-[#38bdf8]'
++                }`}>
+                   {'ZONE_01 // ST01-ST08'}
+                 </span>
+-                <h3 className="text-xl font-bold text-white mt-3 font-sans">
++                <h3 className={`text-xl font-bold mt-3 font-sans ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                   Show &amp; Tell Prototypes
+                 </h3>
+-                <p className="mt-2 text-xs text-[#8b949e] leading-relaxed font-mono">
++                <p className={`mt-2 text-xs leading-relaxed font-mono ${isLight ? 'text-slate-600' : 'text-[#8b949e]'}`}>
+                   Hands-on working prototypes, renewable energy micro-harvesters, clean water filtration,
+                   and bio-materials engineered by junior innovators.
+                 </p>
+               </div>
+-              <div className="mt-6 pt-4 border-t border-[#21262d]">
++              <div className={`mt-6 pt-4 border-t ${isLight ? 'border-slate-100/90' : 'border-[#21262d]'}`}>
+                 <Link
+                   href="/expo"
+-                  className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#58a6ff] hover:underline"
++                  className={`flex items-center gap-1.5 text-xs font-mono font-bold hover:underline ${
++                    isLight ? 'text-blue-600' : 'text-[#58a6ff]'
++                  }`}
+                 >
+                   <span>Enter Zone 1 in 3D</span>
+                   <ArrowRight className="w-3.5 h-3.5" />
+@@ -493,20 +738,26 @@ export default function LandingPage() {
+             </div>
+ 
+             {/* Arena 2 */}
+-            <div className="p-6 border border-[#30363d] bg-[#0d1117] rounded-md flex flex-col justify-between">
++            <div className={`p-6 border rounded-lg flex flex-col justify-between ${
++              isLight
++                ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs hover:bg-[#e2e8f0]'
++                : 'border-[#30363d] bg-[#0d1117]'
++            }`}>
+               <div>
+-                <span className="px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[#f0883e] font-mono text-xs font-bold">
++                <span className={`px-2 py-0.5 rounded font-mono text-xs font-bold border ${
++                  isLight ? 'bg-amber-50/80 border-amber-200 text-amber-700' : 'bg-[#161b22] border-[#30363d] text-[#f0883e]'
++                }`}>
+                   {'ZONE_02 // P, D & B PODS'}
+                 </span>
+-                <h3 className="text-xl font-bold text-white mt-3 font-sans">
++                <h3 className={`text-xl font-bold mt-3 font-sans ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                   The Innovation Hub
+                 </h3>
+-                <p className="mt-2 text-xs text-[#8b949e] leading-relaxed font-mono">
++                <p className={`mt-2 text-xs leading-relaxed font-mono ${isLight ? 'text-slate-600' : 'text-[#8b949e]'}`}>
+                   The flagship hall housing Physical computing (P01-12), Digital AI algorithms (D01-12), and
+                   sustainable Business enterprises (B01-07).
+                 </p>
+               </div>
+-              <div className="mt-6 pt-4 border-t border-[#21262d]">
++              <div className={`mt-6 pt-4 border-t ${isLight ? 'border-slate-100/90' : 'border-[#21262d]'}`}>
+                 <Link
+                   href="/expo"
+                   className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#f0883e] hover:underline"
+@@ -518,20 +769,26 @@ export default function LandingPage() {
+             </div>
+ 
+             {/* Arena 3 */}
+-            <div className="p-6 border border-[#30363d] bg-[#0d1117] rounded-md flex flex-col justify-between">
++            <div className={`p-6 border rounded-lg flex flex-col justify-between ${
++              isLight
++                ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs hover:bg-[#e2e8f0]'
++                : 'border-[#30363d] bg-[#0d1117]'
++            }`}>
+               <div>
+-                <span className="px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[#db61a2] font-mono text-xs font-bold">
++                <span className={`px-2 py-0.5 rounded font-mono text-xs font-bold border ${
++                  isLight ? 'bg-pink-50/80 border-pink-200 text-pink-700' : 'bg-[#161b22] border-[#30363d] text-[#db61a2]'
++                }`}>
+                   {'ZONE_03 // BATTLE PITS'}
+                 </span>
+-                <h3 className="text-xl font-bold text-white mt-3 font-sans">
++                <h3 className={`text-xl font-bold mt-3 font-sans ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                   Robotics Arena &amp; Drone Pit
+                 </h3>
+-                <p className="mt-2 text-xs text-[#8b949e] leading-relaxed font-mono">
++                <p className={`mt-2 text-xs leading-relaxed font-mono ${isLight ? 'text-slate-600' : 'text-[#8b949e]'}`}>
+                   Autonomous obstacle-navigating rovers, maze solvers, combat battle-bots, and drone telemetry
+                   stations battling in live heats.
+                 </p>
+               </div>
+-              <div className="mt-6 pt-4 border-t border-[#21262d]">
++              <div className={`mt-6 pt-4 border-t ${isLight ? 'border-slate-100/90' : 'border-[#21262d]'}`}>
+                 <Link
+                   href="/expo"
+                   className="flex items-center gap-1.5 text-xs font-mono font-bold text-[#db61a2] hover:underline"
+@@ -546,41 +803,57 @@ export default function LandingPage() {
+       </section>
+ 
+       {/* ─── GUARANTEED FAIR PLAY: ANTI-CHEAT VOTING ─── */}
+-      <section id="voting" className="border-b border-[#30363d] py-12 bg-[#040711]">
++      <section id="voting" className={`border-b py-12 transition-colors duration-300 ${
++        isLight ? 'border-slate-200/80 bg-white/30 backdrop-blur-sm' : 'border-[#30363d] bg-[#040711]'
++      }`}>
+         <div className="max-w-7xl mx-auto px-4 sm:px-8">
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+             <div className="lg:col-span-7">
+-              <span className="text-xs font-mono text-[#3fb950] block mb-1">
++              <span className="text-xs font-mono text-[#3fb950] font-bold block mb-1">
+                 {'// CRYPTOGRAPHIC INTEGRITY'}
+               </span>
+-              <h2 className="text-3xl sm:text-4xl font-black text-white uppercase font-sans tracking-tight">
++              <h2 className={`text-3xl sm:text-4xl font-black uppercase font-sans tracking-tight ${
++                isLight ? 'text-slate-800' : 'text-white'
++              }`}>
+                 Anti-Cheat Verified Voting
+               </h2>
+-              <p className="mt-3 text-sm text-[#8b949e] font-mono leading-relaxed">
++              <p className={`mt-3 text-sm font-mono leading-relaxed ${
++                isLight ? 'text-slate-600' : 'text-[#8b949e]'
++              }`}>
+                 To safeguard the awards, our custom-engineered voting pipeline eliminates duplicate ballots
+                 and ballot-stuffing using hardware-accelerated device fingerprinting and Cloud Firestore
+                 atomic transactions.
+               </p>
+ 
+               <div className="mt-6 space-y-3 font-mono text-xs">
+-                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded flex items-center justify-between">
+-                  <span className="text-white">Multi-Factor Hardware Fingerprint</span>
++                <div className={`p-3 border rounded flex items-center justify-between ${
++                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md text-slate-900 shadow-xs' : 'border-[#21262d] bg-[#0d1117] text-white'
++                }`}>
++                  <span className="font-semibold">Multi-Factor Hardware Fingerprint</span>
+                   <span className="text-[#3fb950] font-bold">[ ACTIVE ]</span>
+                 </div>
+-                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded flex items-center justify-between">
+-                  <span className="text-white">Weighted Ballots: Faculty (3x) • Community (1x)</span>
++                <div className={`p-3 border rounded flex items-center justify-between ${
++                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md text-slate-900 shadow-xs' : 'border-[#21262d] bg-[#0d1117] text-white'
++                }`}>
++                  <span className="font-semibold">Weighted Ballots: Faculty (3x) • Community (1x)</span>
+                   <span className="text-[#58a6ff] font-bold">[ VERIFIED ]</span>
+                 </div>
+-                <div className="p-3 border border-[#21262d] bg-[#0d1117] rounded flex items-center justify-between">
+-                  <span className="text-white">Live Leaderboard Real-Time Streaming</span>
++                <div className={`p-3 border rounded flex items-center justify-between ${
++                  isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md text-slate-900 shadow-xs' : 'border-[#21262d] bg-[#0d1117] text-white'
++                }`}>
++                  <span className="font-semibold">Live Leaderboard Real-Time Streaming</span>
+                   <span className="text-[#d2a8ff] font-bold">[ SYNCED ]</span>
+                 </div>
+               </div>
+             </div>
+ 
+-            <div className="lg:col-span-5 p-6 border border-[#30363d] bg-[#0d1117] rounded-md font-mono">
+-              <span className="text-xs text-[#8b949e] block mb-3">{'// HOW TO CAST BALLOT'}</span>
+-              <ol className="space-y-3 text-xs text-[#c9d1d9]">
++            <div className={`lg:col-span-5 p-6 border rounded-md font-mono ${
++              isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
++            }`}>
++              <span className={`text-xs block mb-3 font-bold ${isLight ? 'text-slate-600' : 'text-[#8b949e]'}`}>
++                {'// HOW TO CAST BALLOT'}
++              </span>
++              <ol className={`space-y-3 text-xs ${isLight ? 'text-slate-700' : 'text-[#c9d1d9]'}`}>
+                 <li className="flex items-start gap-2">
+                   <span className="text-[#3fb950] font-bold">01.</span>
+                   <span>Enter the 3D floor plan and select any booth.</span>
+@@ -597,7 +870,7 @@ export default function LandingPage() {
+ 
+               <Link
+                 href="/expo"
+-                className="mt-6 w-full flex items-center justify-center gap-2 py-3 bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-bold uppercase transition-colors"
++                className="mt-6 w-full flex items-center justify-center gap-2 py-3 bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-bold uppercase transition-colors rounded shadow-xs"
+               >
+                 <span>Go To Voting Portal</span>
+                 <ArrowRight className="w-3.5 h-3.5" />
+@@ -608,15 +881,19 @@ export default function LandingPage() {
+       </section>
+ 
+       {/* ─── ELEMENT 3: <BellToggle /> IN VIP PASS & ALERTS ─── */}
+-      <section className="border-b border-[#30363d] py-14 bg-[#000000]">
++      <section className={`border-b py-14 transition-colors duration-300 ${
++        isLight ? 'border-slate-200/80 bg-[#f1f5f9]/50 backdrop-blur-sm' : 'border-[#30363d] bg-[#000000]'
++      }`}>
+         <div className="max-w-3xl mx-auto px-4 text-center">
+-          <span className="text-xs font-mono text-[#3fb950] block mb-2">
++          <span className="text-xs font-mono text-[#3fb950] font-bold block mb-2">
+             {'// ELEMENT 03 // REAL-TIME ALERTS'}
+           </span>
+-          <h2 className="text-2xl sm:text-4xl font-black text-white uppercase font-sans tracking-tight">
++          <h2 className={`text-2xl sm:text-4xl font-black uppercase font-sans tracking-tight ${
++            isLight ? 'text-slate-800' : 'text-white'
++          }`}>
+             Live Round Notifications &amp; Digital Pass
+           </h2>
+-          <p className="mt-2 text-xs sm:text-sm text-[#8b949e] font-mono">
++          <p className={`mt-2 text-xs sm:text-sm font-mono ${isLight ? 'text-slate-600' : 'text-[#8b949e]'}`}>
+             Toggle the notification bell below to enable audio chime alerts when round evaluations close.
+           </p>
+ 
+@@ -625,10 +902,10 @@ export default function LandingPage() {
+             <BellToggle
+               offLabel="Notify me"
+               onLabel="You'll be notified"
+-              color="#f5f5f5"
+-              background="#27272a"
+-              onColor="#18181b"
+-              onBackground="#f5f5f5"
++              color={isLight ? '#334155' : '#f5f5f5'}
++              background={isLight ? '#e2e8f0' : '#27272a'}
++              onColor="#ffffff"
++              onBackground="#238636"
+               size="md"
+               count={3}
+               onChange={(active: boolean) => console.log('active: ', active)}
+@@ -642,18 +919,22 @@ export default function LandingPage() {
+               onChange={(e) => setEmail(e.target.value)}
+               placeholder="visitor@dpsi.in"
+               required
+-              className="flex-1 px-4 py-3 bg-[#0d1117] border border-[#30363d] text-white placeholder-[#8b949e] focus:outline-none focus:border-[#58a6ff] rounded"
++              className={`flex-1 px-4 py-3 border rounded focus:outline-none focus:border-blue-500 ${
++                isLight
++                  ? 'bg-[#eef2f6]/95 border-slate-300 text-slate-900 placeholder-slate-500 shadow-xs'
++                  : 'bg-[#0d1117] border-[#30363d] text-white placeholder-[#8b949e]'
++              }`}
+             />
+             <button
+               type="submit"
+-              className="px-6 py-3 bg-[#238636] hover:bg-[#2ea043] text-white font-bold uppercase transition-colors rounded"
++              className="px-6 py-3 bg-[#238636] hover:bg-[#2ea043] text-white font-bold uppercase transition-colors rounded shadow-xs"
+             >
+               Get Entry Pass
+             </button>
+           </form>
+ 
+           {registered && (
+-            <p className="mt-3 text-xs font-mono text-[#3fb950]">
++            <p className="mt-3 text-xs font-mono text-[#3fb950] font-bold">
+               ✓ Entry pass registered! You will receive live round alerts.
+             </p>
+           )}
+@@ -661,31 +942,47 @@ export default function LandingPage() {
+       </section>
+ 
+       {/* ─── GITHUB UNIVERSE ITINERARY TABLE ─── */}
+-      <section id="schedule" className="py-12 border-b border-[#30363d]">
++      <section id="schedule" className={`py-12 border-b transition-colors duration-300 ${
++        isLight ? 'border-slate-200/80 bg-transparent' : 'border-[#30363d] bg-transparent'
++      }`}>
+         <div className="max-w-7xl mx-auto px-4 sm:px-8">
+-          <div className="flex items-center justify-between pb-6 border-b border-[#30363d]">
++          <div className={`flex items-center justify-between pb-6 border-b ${
++            isLight ? 'border-slate-200/80' : 'border-[#30363d]'
++          }`}>
+             <div>
+-              <span className="text-xs font-mono text-[#3fb950] block mb-1">
++              <span className="text-xs font-mono text-[#3fb950] font-bold block mb-1">
+                 {'// CONFERENCE TIMETABLE'}
+               </span>
+-              <h2 className="text-3xl font-black text-white uppercase font-sans tracking-tight">
++              <h2 className={`text-3xl font-black uppercase font-sans tracking-tight ${
++                isLight ? 'text-slate-800' : 'text-white'
++              }`}>
+                 Two-Day Schedule
+               </h2>
+             </div>
+ 
+-            <div className="flex items-center border border-[#30363d] bg-[#0d1117] rounded text-xs font-mono">
++            <div className={`flex items-center border rounded text-xs font-mono p-0.5 ${
++              isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
++            }`}>
+               <button
+                 onClick={() => setSelectedDay('day1')}
+-                className={`px-3 py-1.5 transition-colors ${
+-                  selectedDay === 'day1' ? 'bg-[#238636] text-white font-bold' : 'text-[#8b949e]'
++                className={`px-3 py-1.5 rounded transition-colors ${
++                  selectedDay === 'day1'
++                    ? 'bg-[#238636] text-white font-bold shadow-xs'
++                    : isLight
++                    ? 'text-slate-600 hover:text-slate-900'
++                    : 'text-[#8b949e]'
+                 }`}
+               >
+                 Day 1 (Nov 14)
+               </button>
+               <button
+                 onClick={() => setSelectedDay('day2')}
+-                className={`px-3 py-1.5 transition-colors ${
+-                  selectedDay === 'day2' ? 'bg-[#238636] text-white font-bold' : 'text-[#8b949e]'
++                className={`px-3 py-1.5 rounded transition-colors ${
++                  selectedDay === 'day2'
++                    ? 'bg-[#238636] text-white font-bold shadow-xs'
++                    : isLight
++                    ? 'text-slate-600 hover:text-slate-900'
++                    : 'text-[#8b949e]'
+                 }`}
+               >
+                 Day 2 (Nov 15)
+@@ -693,51 +990,67 @@ export default function LandingPage() {
+             </div>
+           </div>
+ 
+-          <div className="mt-6 divide-y divide-[#21262d] font-mono text-xs">
++          <div className={`mt-6 divide-y font-mono text-xs ${
++            isLight ? 'divide-slate-200/80' : 'divide-[#21262d]'
++          }`}>
+             {selectedDay === 'day1' ? (
+               <>
+                 <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                   <span className="text-[#3fb950] font-bold w-28 shrink-0">09:00 - 10:30</span>
+-                  <span className="text-white font-bold flex-1">Student Booth Setup &amp; Electrical Safety Check</span>
+-                  <span className="text-[#8b949e]">Main Auditorium</span>
++                  <span className={`font-bold flex-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
++                    Student Booth Setup &amp; Electrical Safety Check
++                  </span>
++                  <span className={isLight ? 'text-slate-500' : 'text-[#8b949e]'}>Main Auditorium</span>
+                 </div>
+                 <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                   <span className="text-[#3fb950] font-bold w-28 shrink-0">10:30 - 11:30</span>
+-                  <span className="text-white font-bold flex-1">Opening Keynote: Next-Gen Autonomous AI</span>
+-                  <span className="text-[#8b949e]">Stage A</span>
++                  <span className={`font-bold flex-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
++                    Opening Keynote: Next-Gen Autonomous AI
++                  </span>
++                  <span className={isLight ? 'text-slate-500' : 'text-[#8b949e]'}>Stage A</span>
+                 </div>
+                 <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                   <span className="text-[#3fb950] font-bold w-28 shrink-0">11:30 - 14:00</span>
+-                  <span className="text-white font-bold flex-1">Round 1: Faculty &amp; Jury Technical Scoring</span>
+-                  <span className="text-[#8b949e]">Zones 1 &amp; 2</span>
++                  <span className={`font-bold flex-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
++                    Round 1: Faculty &amp; Jury Technical Scoring
++                  </span>
++                  <span className={isLight ? 'text-slate-500' : 'text-[#8b949e]'}>Zones 1 &amp; 2</span>
+                 </div>
+                 <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                   <span className="text-[#3fb950] font-bold w-28 shrink-0">14:30 - 16:30</span>
+-                  <span className="text-white font-bold flex-1">Robotics Combat &amp; Obstacle Course Qualifying Heats</span>
+-                  <span className="text-[#8b949e]">Zone 3 Battle Pit</span>
++                  <span className={`font-bold flex-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
++                    Robotics Combat &amp; Obstacle Course Qualifying Heats
++                  </span>
++                  <span className={isLight ? 'text-slate-500' : 'text-[#8b949e]'}>Zone 3 Battle Pit</span>
+                 </div>
+               </>
+             ) : (
+               <>
+                 <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                   <span className="text-[#3fb950] font-bold w-28 shrink-0">09:30 - 12:30</span>
+-                  <span className="text-white font-bold flex-1">Public Exhibition &amp; Community Ballot Voting Opens</span>
+-                  <span className="text-[#8b949e]">Full Floor</span>
++                  <span className={`font-bold flex-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
++                    Public Exhibition &amp; Community Ballot Voting Opens
++                  </span>
++                  <span className={isLight ? 'text-slate-500' : 'text-[#8b949e]'}>Full Floor</span>
+                 </div>
+                 <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                   <span className="text-[#3fb950] font-bold w-28 shrink-0">13:00 - 14:30</span>
+-                  <span className="text-white font-bold flex-1">Student Shark Tank: Finalist Venture Pitches</span>
+-                  <span className="text-[#8b949e]">Main Stage</span>
++                  <span className={`font-bold flex-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
++                    Student Shark Tank: Finalist Venture Pitches
++                  </span>
++                  <span className={isLight ? 'text-slate-500' : 'text-[#8b949e]'}>Main Stage</span>
+                 </div>
+                 <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                   <span className="text-[#3fb950] font-bold w-28 shrink-0">15:30</span>
+                   <span className="text-[#f0883e] font-bold flex-1">Live Voting Closes • Final Firestore Tally</span>
+-                  <span className="text-[#8b949e]">Online Portal</span>
++                  <span className={isLight ? 'text-slate-500' : 'text-[#8b949e]'}>Online Portal</span>
+                 </div>
+                 <div className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                   <span className="text-[#3fb950] font-bold w-28 shrink-0">16:00 - 17:00</span>
+-                  <span className="text-white font-bold flex-1">Grand Awards Ceremony &amp; Incubation Grants</span>
+-                  <span className="text-[#8b949e]">Auditorium</span>
++                  <span className={`font-bold flex-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
++                    Grand Awards Ceremony &amp; Incubation Grants
++                  </span>
++                  <span className={isLight ? 'text-slate-500' : 'text-[#8b949e]'}>Auditorium</span>
+                 </div>
+               </>
+             )}
+@@ -746,31 +1059,41 @@ export default function LandingPage() {
+       </section>
+ 
+       {/* ─── GITHUB UNIVERSE STYLE MINIMALIST FOOTER ─── */}
+-      <footer className="py-10 bg-[#000000] text-[#8b949e] font-mono text-xs">
++      <footer className={`py-10 font-mono text-xs border-t transition-colors duration-300 ${
++        isLight
++          ? 'bg-[#dfe3e8]/90 border-slate-300/80 backdrop-blur-md text-slate-700'
++          : 'bg-[#000000] border-[#21262d] text-[#8b949e]'
++      }`}>
+         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+           <div className="flex items-center gap-3">
+-            <div className="h-6 px-1.5 py-0.5 rounded bg-white flex items-center justify-center">
++            <div className="h-6 px-1.5 py-0.5 rounded bg-white flex items-center justify-center border border-slate-200">
+               <img src="/dps_shield.png" alt="DPS Indirapuram" className="h-full w-auto object-contain" />
+             </div>
+-            <span>© 2026 Delhi Public School Indirapuram.</span>
++            <span className={isLight ? 'text-slate-700' : 'text-[#8b949e]'}>
++              © 2026 Delhi Public School Indirapuram.
++            </span>
+           </div>
+ 
+           <div className="flex items-center gap-4 text-[11px]">
+-            <Link href="/expo" className="text-white hover:underline">
++            <Link href="/expo" className={`hover:underline ${isLight ? 'text-blue-600 font-semibold' : 'text-white'}`}>
+               [ 3D Floor Plan ]
+             </Link>
+-            <a href="#projects" className="hover:text-white transition-colors">
++            <a href="#projects" className={`transition-colors ${isLight ? 'hover:text-slate-900' : 'hover:text-white'}`}>
+               [ 35 Inventions ]
+             </a>
+-            <a href="#voting" className="hover:text-white transition-colors">
++            <a href="#voting" className={`transition-colors ${isLight ? 'hover:text-slate-900' : 'hover:text-white'}`}>
+               [ Fair-Play Voting ]
+             </a>
+-            <a href="#schedule" className="hover:text-white transition-colors">
++            <a href="#schedule" className={`transition-colors ${isLight ? 'hover:text-slate-900' : 'hover:text-white'}`}>
+               [ Itinerary ]
+             </a>
+           </div>
+         </div>
+       </footer>
++
++      {/* Centered Modals for Project Expansion and Anti-Cheat Voting */}
++      <ProjectDetailDrawer />
++      <AuthModal />
+     </div>
+   );
+ }
+diff --git a/src/components/canvas/BoothMesh.tsx b/src/components/canvas/BoothMesh.tsx
+index 5d8d837..0dceb7d 100644
+--- a/src/components/canvas/BoothMesh.tsx
++++ b/src/components/canvas/BoothMesh.tsx
+@@ -71,6 +71,8 @@ export default function BoothMesh({ project }: BoothMeshProps) {
+   const selectProject = useExhibitionStore((state) => state.selectProject);
+   const votedProjectIds = useExhibitionStore((state) => state.votedProjectIds);
+   const isMobile = useExhibitionStore((state) => state.isMobile);
++  const theme = useExhibitionStore((state) => state.theme);
++  const isLight = theme === 'light';
+ 
+   const isSelected = selectedProject?.id === project.id;
+   const isAnySelected = Boolean(selectedProject);
+@@ -121,13 +123,17 @@ export default function BoothMesh({ project }: BoothMeshProps) {
+         <meshBasicMaterial transparent opacity={0} />
+       </mesh>
+ 
+-      {/* 1. Base Platform in Matte Slate */}
++      {/* 1. Base Platform */}
+       <mesh position={[0, 0.06, 0]} receiveShadow castShadow>
+         <boxGeometry args={[2.2, 0.12, 1.4]} />
+         <meshStandardMaterial
+-          color={isSelected ? '#1e293b' : '#0f172a'}
+-          metalness={0.7}
+-          roughness={0.3}
++          color={
++            isSelected
++              ? (isLight ? '#475569' : '#334155')
++              : (isLight ? '#64748b' : '#0f172a')
++          }
++          metalness={isLight ? 0.2 : 0.7}
++          roughness={isLight ? 0.5 : 0.3}
+         />
+       </mesh>
+ 
+@@ -145,9 +151,9 @@ export default function BoothMesh({ project }: BoothMeshProps) {
+       <mesh position={[0, 0.55, 0]} castShadow receiveShadow>
+         <boxGeometry args={[1.8, 0.75, 0.8]} />
+         <meshStandardMaterial
+-          color="#1e293b"
+-          metalness={0.5}
+-          roughness={0.25}
++          color={isLight ? '#cbd5e1' : '#1e293b'}
++          metalness={isLight ? 0.15 : 0.5}
++          roughness={isLight ? 0.5 : 0.25}
+         />
+       </mesh>
+ 
+@@ -161,23 +167,27 @@ export default function BoothMesh({ project }: BoothMeshProps) {
+         />
+       </mesh>
+ 
+-      {/* 3. Sleek Display Screen Backboard */}
++      {/* 3. Display Screen Backboard */}
+       <mesh position={[0, 1.45, -0.32]} rotation={[-0.05, 0, 0]} castShadow>
+         <boxGeometry args={[1.5, 0.85, 0.06]} />
+-        <meshStandardMaterial color="#0b101c" metalness={0.9} roughness={0.15} />
++        <meshStandardMaterial
++          color={isLight ? '#334155' : '#0b101c'}
++          metalness={isLight ? 0.4 : 0.9}
++          roughness={0.2}
++        />
+       </mesh>
+ 
+       {/* Screen Face */}
+       <mesh position={[0, 1.45, -0.28]}>
+         <planeGeometry args={[1.4, 0.75]} />
+         <meshStandardMaterial
+-          color="#111827"
++          color={isLight ? '#1e293b' : '#111827'}
+           emissive={style.color}
+-          emissiveIntensity={hovered || isSelected ? 0.7 : 0.25}
++          emissiveIntensity={hovered || isSelected ? 0.8 : 0.3}
+         />
+       </mesh>
+ 
+-      {/* 4. Two Exhibitor Red Chairs / Stools (from Blueprint) */}
++      {/* 4. Two Exhibitor Stools */}
+       <group position={[0, 0, 0.85]}>
+         <mesh position={[-0.5, 0.35, 0]} castShadow>
+           <boxGeometry args={[0.4, 0.08, 0.4]} />
+@@ -185,7 +195,7 @@ export default function BoothMesh({ project }: BoothMeshProps) {
+         </mesh>
+         <mesh position={[-0.5, 0.17, 0]}>
+           <cylinderGeometry args={[0.04, 0.04, 0.35, 12]} />
+-          <meshStandardMaterial color="#475569" metalness={0.8} />
++          <meshStandardMaterial color={isLight ? '#94a3b8' : '#475569'} metalness={0.8} />
+         </mesh>
+ 
+         <mesh position={[0.5, 0.35, 0]} castShadow>
+@@ -194,7 +204,7 @@ export default function BoothMesh({ project }: BoothMeshProps) {
+         </mesh>
+         <mesh position={[0.5, 0.17, 0]}>
+           <cylinderGeometry args={[0.04, 0.04, 0.35, 12]} />
+-          <meshStandardMaterial color="#475569" metalness={0.8} />
++          <meshStandardMaterial color={isLight ? '#94a3b8' : '#475569'} metalness={0.8} />
+         </mesh>
+       </group>
+ 
+@@ -213,25 +223,28 @@ export default function BoothMesh({ project }: BoothMeshProps) {
+         </group>
+       )}
+ 
+-      {/* 6. Floating 3D Badge:
+-          - When NO project is selected: all booths show their interactive badge.
+-          - When ANY project is selected:
+-            * All OTHER booths: completely HIDDEN (return null) so there is ZERO overlap and clutter.
+-            * The SELECTED booth: shows a sleek, compact tag that never blocks the 3D booth or overlaps UI.
++      {/* 6. Clean 3D Floating Pin / Expanded Tooltip:
++          - Default state (not hovered): Compact badge pin [• P01] that NEVER overlaps neighbors!
++          - Hovered state: Expands to show title, category, and votes!
++          - Selected state: Pulse indicator!
+       */}
+       {isSelected ? (
+         <Html
+           position={[0, 2.1, 0]}
+-          distanceFactor={22}
++          distanceFactor={20}
+           zIndexRange={[15, 0]}
+           center
+           className="pointer-events-none select-none font-sans"
+         >
+           <div
+-            className={`px-2.5 py-0.5 rounded-full ${style.badgeBg} ${style.badgeBorder} border shadow-xl flex items-center gap-1.5 backdrop-blur-md`}
++            className={`px-2.5 py-1 rounded-full border shadow-xl flex items-center gap-1.5 backdrop-blur-md ${
++              isLight
++                ? 'bg-white/95 border-amber-500 text-slate-900 shadow-slate-300'
++                : `${style.badgeBg} ${style.badgeBorder} text-white`
++            }`}
+           >
+             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+-            <span className="text-[10px] font-mono font-black text-white">{project.booth_code}</span>
++            <span className="text-[10px] font-mono font-black">{project.booth_code}</span>
+             <span className={`text-[9px] font-bold uppercase tracking-wider ${style.badgeText}`}>
+               {project.category}
+             </span>
+@@ -239,42 +252,64 @@ export default function BoothMesh({ project }: BoothMeshProps) {
+         </Html>
+       ) : !isAnySelected ? (
+         <Html
+-          position={[0, 2.3, 0]}
+-          distanceFactor={isMobile ? 18 : 14}
+-          zIndexRange={[15, 0]}
++          position={[0, hovered ? 2.5 : 2.05, 0]}
++          distanceFactor={isMobile ? 18 : 15}
++          zIndexRange={[hovered ? 30 : 10, 0]}
+           center
+           className="pointer-events-none select-none font-sans"
+         >
+-          <div
+-            className={`px-3 py-1.5 rounded-xl backdrop-blur-xl border text-center whitespace-nowrap shadow-2xl transition-all duration-300 ${
+-              hovered
+-                ? `${style.badgeBg} ${style.badgeBorder} scale-105 shadow-black ring-2 ring-white/30`
+-                : 'bg-slate-950/85 border-slate-700/80 shadow-black/80'
+-            }`}
+-          >
+-            <div className="flex items-center justify-center gap-1.5 mb-0.5">
+-              <span className="text-[11px] font-mono font-black px-1.5 py-0.2 rounded bg-slate-800 text-white border border-slate-600">
+-                {project.booth_code}
+-              </span>
+-              <span className={`text-[10px] font-extrabold uppercase tracking-wider ${style.badgeText}`}>
+-                {project.category}
+-              </span>
+-            </div>
++          {hovered ? (
++            /* Rich Preview Card when hovered or touched */
++            <div
++              className={`px-3 py-2 rounded-2xl backdrop-blur-xl border text-center whitespace-nowrap shadow-2xl transition-all duration-300 scale-105 ${
++                isLight
++                  ? 'bg-white/95 border-amber-500 text-slate-900 shadow-slate-400/40 ring-2 ring-amber-400/30'
++                  : `${style.badgeBg} ${style.badgeBorder} text-white shadow-black ring-2 ring-white/30`
++              }`}
++            >
++              <div className="flex items-center justify-center gap-1.5 mb-0.5">
++                <span className={`text-[11px] font-mono font-black px-1.5 py-0.2 rounded border ${
++                  isLight ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-slate-800 text-white border-slate-600'
++                }`}>
++                  {project.booth_code}
++                </span>
++                <span className={`text-[10px] font-extrabold uppercase tracking-wider ${style.badgeText}`}>
++                  {project.category}
++                </span>
++              </div>
+ 
+-            <h4 className="text-xs font-bold text-white tracking-tight">
+-              {project.title.split('•')[1]?.trim()?.split(':')[0] || project.title}
+-            </h4>
++              <h4 className={`text-xs font-bold truncate max-w-[190px] ${isLight ? 'text-slate-900' : 'text-white'}`}>
++                {project.title.split('•')[1]?.trim()?.split(':')[0] || project.title}
++              </h4>
+ 
+-            <div className="mt-0.5 flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-300 font-mono">
+-              <ThumbsUp className={`w-3 h-3 ${hasVoted ? 'text-amber-400 fill-amber-400' : 'text-slate-400'}`} />
+-              <span>{project.vote_count} votes</span>
+-              {hasVoted && (
+-                <span className="ml-1 text-[10px] bg-emerald-500/20 text-emerald-400 px-1 py-0.2 rounded font-mono font-bold">
+-                  ✓
+-                </span>
+-              )}
++              <div className={`mt-0.5 flex items-center justify-center gap-1 text-[11px] font-semibold font-mono ${
++                isLight ? 'text-slate-600' : 'text-slate-300'
++              }`}>
++                <ThumbsUp className={`w-3 h-3 ${hasVoted ? 'text-amber-500 fill-amber-500' : 'text-slate-400'}`} />
++                <span>{project.vote_count} votes</span>
++                {hasVoted && (
++                  <span className="ml-1 text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1 py-0.2 rounded font-mono font-bold">
++                    ✓
++                  </span>
++                )}
++              </div>
++              <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-1 font-mono font-bold">
++                Tap to inspect →
++              </p>
+             </div>
+-          </div>
++          ) : (
++            /* Clean Compact Pill Marker in Overview — NEVER overlaps! */
++            <div
++              className={`px-2 py-0.5 rounded-full border shadow-md flex items-center gap-1 backdrop-blur-md transition-transform duration-200 hover:scale-110 ${
++                isLight
++                  ? 'bg-white/92 border-slate-300/90 text-slate-800 shadow-slate-200'
++                  : 'bg-slate-950/85 border-slate-700/80 text-white shadow-black/80'
++              }`}
++            >
++              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: style.color }} />
++              <span className="text-[10px] font-mono font-black">{project.booth_code}</span>
++            </div>
++          )}
+         </Html>
+       ) : null}
+     </group>
+diff --git a/src/components/canvas/ExhibitionCanvas.tsx b/src/components/canvas/ExhibitionCanvas.tsx
+index 572cc83..8f464ac 100644
+--- a/src/components/canvas/ExhibitionCanvas.tsx
++++ b/src/components/canvas/ExhibitionCanvas.tsx
+@@ -13,23 +13,29 @@ import { useExhibitionStore } from '@/store/useExhibitionStore';
+ import { Loader2 } from 'lucide-react';
+ 
+ function CanvasLoader() {
++  const theme = useExhibitionStore((state) => state.theme);
++  const isLight = theme === 'light';
+   return (
+-    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#070b14]/90 backdrop-blur-md">
++    <div className={`absolute inset-0 z-20 flex flex-col items-center justify-center backdrop-blur-md transition-colors ${
++      isLight ? 'bg-slate-100/90 text-slate-800' : 'bg-[#070b14]/90 text-slate-100'
++    }`}>
+       <div className="relative flex items-center justify-center">
+-        <div className="w-14 h-14 rounded-full border-2 border-amber-500/20 border-t-amber-400 animate-spin" />
+-        <Loader2 className="w-5 h-5 text-amber-400 animate-pulse absolute" />
++        <div className="w-14 h-14 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
++        <Loader2 className="w-5 h-5 text-amber-500 animate-pulse absolute" />
+       </div>
+-      <p className="mt-4 text-xs font-mono tracking-widest text-amber-300 uppercase">
++      <p className="mt-4 text-xs font-mono tracking-widest text-amber-600 dark:text-amber-300 uppercase font-bold">
+         Rendering Clean Floor Plan...
+       </p>
+-      <p className="text-[11px] text-slate-400 mt-1 font-sans">DPS Indirapuram Tech & Innovation</p>
++      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-sans">DPS Indirapuram Tech & Innovation</p>
+     </div>
+   );
+ }
+ 
+ function SceneSetup() {
++  const theme = useExhibitionStore((state) => state.theme);
++  const isLight = theme === 'light';
+   return (
+-    <color attach="background" args={['#060913']} />
++    <color attach="background" args={[isLight ? '#748596' : '#060913']} />
+   );
+ }
+ 
+@@ -40,13 +46,13 @@ export default function ExhibitionCanvas() {
+   const isLight = theme === 'light';
+ 
+   return (
+-    <div className={`relative isolate w-full h-[100dvh] select-none touch-none transition-colors duration-500 ${isLight ? 'bg-[#f1f5f9]' : 'bg-[#060913]'}`}>
++    <div className={`relative isolate w-full h-[100dvh] select-none touch-none transition-colors duration-500 ${isLight ? 'bg-[#748596]' : 'bg-[#060913]'}`}>
+       <Suspense fallback={<CanvasLoader />}>
+         <Canvas
+           shadows={!isMobile}
+           camera={{
+-            position: isMobile ? [-10, 92, 70] : [-10, 74, 56],
+-            fov: isMobile ? 48 : 40,
++            position: isMobile ? [-12, 54, 52] : [-12, 40, 44],
++            fov: isMobile ? 48 : 38,
+             near: 0.1,
+             far: 2200,
+           }}
+@@ -60,10 +66,10 @@ export default function ExhibitionCanvas() {
+             selectProject(null);
+           }}
+         >
+-          {/* Default Clean Velvet Space Slate Background */}
++          {/* Dynamic Scene Background */}
+           <SceneSetup />
+ 
+-          {/* Photorealistic Denoised Milky Way Atmosphere */}
++          {/* Photorealistic Denoised Milky Way / Sky Atmosphere */}
+           <MilkyWaySky />
+ 
+           {/* Architectural Solid PBR Floor & Environment (Zero Noise, Zero Banding) */}
+@@ -77,15 +83,15 @@ export default function ExhibitionCanvas() {
+           <Zone2InnovationHub />
+           <Zone3RoboticsArena />
+ 
+-          {/* Clean Post Processing (Subtle Bloom Only on Emissive LEDs) */}
++          {/* Clean Post Processing (Subtle Bloom Only on Emissive LEDs, never on light floor) */}
+           <EffectComposer multisampling={isMobile ? 0 : 4}>
+             <Bloom
+-              luminanceThreshold={1.2}
++              luminanceThreshold={1.3}
+               mipmapBlur
+-              intensity={0.22}
++              intensity={isLight ? 0.08 : 0.22}
+               radius={0.3}
+             />
+-            <Vignette eskil={false} offset={0.06} darkness={0.3} />
++            <Vignette eskil={false} offset={0.06} darkness={isLight ? 0.12 : 0.28} />
+           </EffectComposer>
+         </Canvas>
+       </Suspense>
+diff --git a/src/components/canvas/FloorAndEnvironment.tsx b/src/components/canvas/FloorAndEnvironment.tsx
+index 8e44dad..f0bf1a1 100644
+--- a/src/components/canvas/FloorAndEnvironment.tsx
++++ b/src/components/canvas/FloorAndEnvironment.tsx
+@@ -10,52 +10,51 @@ export default function FloorAndEnvironment() {
+ 
+   return (
+     <>
+-      {/* Studio Lighting Environment */}
+-      <Environment preset={isLight ? "sunset" : "city"} />
++      {/* Studio Lighting Environment (Low intensity in light mode to prevent washout) */}
++      <Environment preset={isLight ? "studio" : "city"} environmentIntensity={isLight ? 0.2 : 0.7} />
+ 
+       {/* 
+         Balanced Studio Directional Light 
+-        CRITICAL: shadow-bias must be POSITIVE (0.0004) to prevent shadow acne zebra stripes
++        Positive shadow-bias prevents shadow acne & floor moiré lines
+       */}
+-      <ambientLight intensity={isLight ? 1.05 : 0.75} color={isLight ? "#ffffff" : "#f8fafc"} />
++      <ambientLight intensity={isLight ? 0.45 : 0.75} color={isLight ? "#94a3b8" : "#f8fafc"} />
+       <directionalLight
+         position={[30, 50, 30]}
+-        intensity={isLight ? 1.6 : 1.2}
+-        color={isLight ? "#fffbf0" : "#ffffff"}
++        intensity={isLight ? 0.65 : 1.2}
++        color={isLight ? "#f8fafc" : "#ffffff"}
+         castShadow={!isMobile}
+         shadow-mapSize={isMobile ? [512, 512] : [2048, 2048]}
+         shadow-camera-left={-60}
+         shadow-camera-right={60}
+         shadow-camera-top={50}
+         shadow-camera-bottom={-50}
+-        shadow-bias={0.0004} // Fixes all shadow acne & floor moire
++        shadow-bias={0.0004}
+       />
+ 
+       <directionalLight
+         position={[-30, 35, -30]}
+-        intensity={isLight ? 0.6 : 0.4}
+-        color={isLight ? "#e0f2fe" : "#94a3b8"}
++        intensity={isLight ? 0.25 : 0.4}
++        color={isLight ? "#94a3b8" : "#94a3b8"}
+       />
+ 
+       {/* ========================================================= */}
+-      {/* 1. SOLID ARCHITECTURAL FLOOR SLABS (Zero Z-Fighting)      */}
++      {/* 1. SOLID ARCHITECTURAL FLOOR SLABS (Continuous Campus)    */}
+       {/* ========================================================= */}
+       
+       {/* 
+         Main Exhibition Hall Floor 
+         Solid box: top at y=0.0, height=0.8, bottom at y=-0.8
+-        Guaranteed zero coplanar collision, zero raster lines
+       */}
+       <mesh position={[-1, -0.4, 0]} receiveShadow>
+         <boxGeometry args={[46, 0.8, 42]} />
+         <meshStandardMaterial
+-          color={isLight ? "#f8fafc" : "#0f172a"}
+-          roughness={isLight ? 0.35 : 0.48}
+-          metalness={isLight ? 0.15 : 0.2}
++          color={isLight ? "#8fa0b2" : "#0f172a"}
++          roughness={isLight ? 0.82 : 0.48}
++          metalness={isLight ? 0.05 : 0.2}
+         />
+       </mesh>
+ 
+-      {/* Main Hall Outer Base Accent (placed strictly BELOW at y=-0.82) */}
++      {/* Main Hall Outer Base Accent (strictly BELOW at y=-0.82) */}
+       <mesh position={[-1, -0.82, 0]}>
+         <boxGeometry args={[46.6, 0.08, 42.6]} />
+         <meshStandardMaterial
+@@ -65,6 +64,29 @@ export default function FloorAndEnvironment() {
+         />
+       </mesh>
+ 
++      {/* 
++        Connecting Corridor 1: Main Hall <-> Robotics Arena Concourse
++        Links Main Hall (z=-21) and Robotics Arena (z=-24) seamlessly
++      */}
++      <mesh position={[-1, -0.4, -22.5]} receiveShadow>
++        <boxGeometry args={[32, 0.8, 5]} />
++        <meshStandardMaterial
++          color={isLight ? "#8899ab" : "#0d1424"}
++          roughness={isLight ? 0.82 : 0.48}
++          metalness={isLight ? 0.05 : 0.2}
++        />
++      </mesh>
++
++      {/* Connecting Corridor 1 Base Accent */}
++      <mesh position={[-1, -0.82, -22.5]}>
++        <boxGeometry args={[32.4, 0.08, 5.4]} />
++        <meshStandardMaterial
++          color="#f59e0b"
++          emissive="#d97706"
++          emissiveIntensity={isLight ? 0.35 : 0.6}
++        />
++      </mesh>
++
+       {/* 
+         Top Arena Floor (Robotics Arenas)
+         Solid box: top at y=0.0, height=0.8, bottom at y=-0.8
+@@ -72,13 +94,13 @@ export default function FloorAndEnvironment() {
+       <mesh position={[-1, -0.4, -36]} receiveShadow>
+         <boxGeometry args={[46, 0.8, 24]} />
+         <meshStandardMaterial
+-          color={isLight ? "#f1f5f9" : "#0b1120"}
+-          roughness={isLight ? 0.35 : 0.48}
+-          metalness={isLight ? 0.15 : 0.2}
++          color={isLight ? "#8293a5" : "#0b1120"}
++          roughness={isLight ? 0.82 : 0.48}
++          metalness={isLight ? 0.05 : 0.2}
+         />
+       </mesh>
+ 
+-      {/* Top Arena Outer Base Accent (placed strictly BELOW at y=-0.82) */}
++      {/* Top Arena Outer Base Accent */}
+       <mesh position={[-1, -0.82, -36]}>
+         <boxGeometry args={[46.6, 0.08, 24.6]} />
+         <meshStandardMaterial
+@@ -88,21 +110,43 @@ export default function FloorAndEnvironment() {
+         />
+       </mesh>
+ 
++      {/* 
++        Connecting Corridor 2: Covered Concourse to Show & Tell
++        Links West Wall Entrance to Show & Tell Pavilion seamlessly
++      */}
++      <mesh position={[-28, -0.4, -6]} receiveShadow>
++        <boxGeometry args={[14, 0.8, 8]} />
++        <meshStandardMaterial
++          color={isLight ? "#8fa0b2" : "#0f172a"}
++          roughness={isLight ? 0.82 : 0.48}
++          metalness={isLight ? 0.05 : 0.2}
++        />
++      </mesh>
++
++      {/* Connecting Corridor 2 Base Accent */}
++      <mesh position={[-28, -0.82, -6]}>
++        <boxGeometry args={[14.4, 0.08, 8.4]} />
++        <meshStandardMaterial
++          color="#8b5cf6"
++          emissive="#7c3aed"
++          emissiveIntensity={isLight ? 0.35 : 0.6}
++        />
++      </mesh>
++
+       {/* 
+         Left Angled Pavilion (Show & Tell)
+         Solid box: top at y=0.0, height=0.8, bottom at y=-0.8
+-        Corrected: 26 length along X, 14 width along Z, rotated by -0.3208 rad (-18.38 deg)
+       */}
+       <group position={[-36, 0, -6]} rotation={[0, -0.3208, 0]}>
+         <mesh position={[0, -0.4, 0]} receiveShadow>
+           <boxGeometry args={[26, 0.8, 14]} />
+           <meshStandardMaterial
+-            color={isLight ? "#faf5ff" : "#141124"}
+-            roughness={isLight ? 0.35 : 0.48}
+-            metalness={isLight ? 0.15 : 0.2}
++            color={isLight ? "#8d94a8" : "#141124"}
++            roughness={isLight ? 0.82 : 0.48}
++            metalness={isLight ? 0.05 : 0.2}
+           />
+         </mesh>
+-        {/* Base Accent strictly BELOW at y=-0.82 */}
++        {/* Base Accent */}
+         <mesh position={[0, -0.82, 0]}>
+           <boxGeometry args={[26.5, 0.08, 14.5]} />
+           <meshStandardMaterial
+@@ -114,72 +158,98 @@ export default function FloorAndEnvironment() {
+       </group>
+ 
+       {/* ========================================================= */}
+-      {/* 2. BLUEPRINT CORRIDOR PARTITION WALLS                     */}
++      {/* 2. OPEN ARCHITECTURAL WALLS & GRAND PORTALS               */}
+       {/* ========================================================= */}
+-      {/* North Wall between Main Hall and Top Arena Room */}
+-      <mesh position={[-1, 1.2, -21]}>
+-        <boxGeometry args={[46, 2.4, 0.3]} />
++      
++      {/* 
++        North Wall with Grand Portal Archway into Robotics Arena
++        Instead of a solid blind wall blocking the view, left and right walls flank a wide open entry
++      */}
++      {/* North Wall Left */}
++      <mesh position={[-17.5, 1.2, -21]}>
++        <boxGeometry args={[13, 2.4, 0.3]} />
++        <meshStandardMaterial
++          color={isLight ? "#526070" : "#1e293b"}
++          metalness={isLight ? 0.2 : 0.7}
++          roughness={isLight ? 0.6 : 0.3}
++        />
++      </mesh>
++      {/* North Wall Right */}
++      <mesh position={[15.5, 1.2, -21]}>
++        <boxGeometry args={[13, 2.4, 0.3]} />
++        <meshStandardMaterial
++          color={isLight ? "#526070" : "#1e293b"}
++          metalness={isLight ? 0.2 : 0.7}
++          roughness={isLight ? 0.6 : 0.3}
++        />
++      </mesh>
++      {/* North Portal Overhead Header Lintel */}
++      <mesh position={[-1, 3.2, -21]}>
++        <boxGeometry args={[20, 1.6, 0.4]} />
+         <meshStandardMaterial
+-          color={isLight ? "#e2e8f0" : "#1e293b"}
+-          metalness={isLight ? 0.3 : 0.7}
+-          roughness={isLight ? 0.4 : 0.3}
++          color={isLight ? "#3f4c5b" : "#0f172a"}
++          metalness={isLight ? 0.3 : 0.8}
++          roughness={0.4}
+         />
+       </mesh>
++
+       {/* South Wall */}
+       <mesh position={[-1, 1.2, 21]}>
+         <boxGeometry args={[46, 2.4, 0.3]} />
+         <meshStandardMaterial
+-          color={isLight ? "#e2e8f0" : "#1e293b"}
+-          metalness={isLight ? 0.3 : 0.7}
+-          roughness={isLight ? 0.4 : 0.3}
++          color={isLight ? "#526070" : "#1e293b"}
++          metalness={isLight ? 0.2 : 0.7}
++          roughness={isLight ? 0.6 : 0.3}
+         />
+       </mesh>
++
+       {/* East Wall */}
+       <mesh position={[22, 1.2, 0]}>
+         <boxGeometry args={[0.3, 2.4, 42]} />
+         <meshStandardMaterial
+-          color={isLight ? "#e2e8f0" : "#1e293b"}
+-          metalness={isLight ? 0.3 : 0.7}
+-          roughness={isLight ? 0.4 : 0.3}
++          color={isLight ? "#526070" : "#1e293b"}
++          metalness={isLight ? 0.2 : 0.7}
++          roughness={isLight ? 0.6 : 0.3}
+         />
+       </mesh>
++
+       {/* West Wall with 4 Entrance Door Openings */}
+       <group position={[-24, 0, 0]}>
+         <mesh position={[0, 1.2, -18]}>
+           <boxGeometry args={[0.3, 2.4, 6]} />
+           <meshStandardMaterial
+-            color={isLight ? "#e2e8f0" : "#1e293b"}
+-            metalness={isLight ? 0.3 : 0.7}
+-            roughness={isLight ? 0.4 : 0.3}
++            color={isLight ? "#526070" : "#1e293b"}
++            metalness={isLight ? 0.2 : 0.7}
++            roughness={isLight ? 0.6 : 0.3}
+           />
+         </mesh>
+         <mesh position={[0, 1.2, -7]}>
+           <boxGeometry args={[0.3, 2.4, 8]} />
+           <meshStandardMaterial
+-            color={isLight ? "#e2e8f0" : "#1e293b"}
+-            metalness={isLight ? 0.3 : 0.7}
+-            roughness={isLight ? 0.4 : 0.3}
++            color={isLight ? "#526070" : "#1e293b"}
++            metalness={isLight ? 0.2 : 0.7}
++            roughness={isLight ? 0.6 : 0.3}
+           />
+         </mesh>
+         <mesh position={[0, 1.2, 5]}>
+           <boxGeometry args={[0.3, 2.4, 8]} />
+           <meshStandardMaterial
+-            color={isLight ? "#e2e8f0" : "#1e293b"}
+-            metalness={isLight ? 0.3 : 0.7}
+-            roughness={isLight ? 0.4 : 0.3}
++            color={isLight ? "#526070" : "#1e293b"}
++            metalness={isLight ? 0.2 : 0.7}
++            roughness={isLight ? 0.6 : 0.3}
+           />
+         </mesh>
+         <mesh position={[0, 1.2, 17]}>
+           <boxGeometry args={[0.3, 2.4, 8]} />
+           <meshStandardMaterial
+-            color={isLight ? "#e2e8f0" : "#1e293b"}
+-            metalness={isLight ? 0.3 : 0.7}
+-            roughness={isLight ? 0.4 : 0.3}
++            color={isLight ? "#526070" : "#1e293b"}
++            metalness={isLight ? 0.2 : 0.7}
++            roughness={isLight ? 0.6 : 0.3}
+           />
+         </mesh>
+       </group>
+ 
+-      {/* Internal Serpentine Partition Walls (From Blueprint) */}
++      {/* Internal Aisle Dividers (Glass-like acrylic partitions) */}
+       <group position={[0, 0.7, 0]}>
+         {/* Horizontal divider above P07-P10 */}
+         <mesh position={[7.5, 0, -11.5]}>
+@@ -189,7 +259,7 @@ export default function FloorAndEnvironment() {
+             metalness={isLight ? 0.4 : 0.8}
+             roughness={0.2}
+             transparent
+-            opacity={isLight ? 0.7 : 0.85}
++            opacity={isLight ? 0.5 : 0.8}
+           />
+         </mesh>
+         <mesh position={[18, 0, -9.25]}>
+@@ -199,7 +269,7 @@ export default function FloorAndEnvironment() {
+             metalness={isLight ? 0.4 : 0.8}
+             roughness={0.2}
+             transparent
+-            opacity={isLight ? 0.7 : 0.85}
++            opacity={isLight ? 0.5 : 0.8}
+           />
+         </mesh>
+ 
+@@ -211,7 +281,7 @@ export default function FloorAndEnvironment() {
+             metalness={isLight ? 0.4 : 0.8}
+             roughness={0.2}
+             transparent
+-            opacity={isLight ? 0.7 : 0.85}
++            opacity={isLight ? 0.5 : 0.8}
+           />
+         </mesh>
+         <mesh position={[18, 0, 4.75]}>
+@@ -221,7 +291,7 @@ export default function FloorAndEnvironment() {
+             metalness={isLight ? 0.4 : 0.8}
+             roughness={0.2}
+             transparent
+-            opacity={isLight ? 0.7 : 0.85}
++            opacity={isLight ? 0.5 : 0.8}
+           />
+         </mesh>
+ 
+@@ -233,18 +303,18 @@ export default function FloorAndEnvironment() {
+             metalness={isLight ? 0.4 : 0.8}
+             roughness={0.2}
+             transparent
+-            opacity={isLight ? 0.7 : 0.85}
++            opacity={isLight ? 0.5 : 0.8}
+           />
+         </mesh>
+       </group>
+ 
+-      {/* Entrance Help Desks */}
++      {/* Entrance Welcome Desks */}
+       <group position={[-21, 0, 0]}>
+         {[-14, -6, 2, 10].map((z, i) => (
+           <group key={i} position={[0, 0.45, z]}>
+             <mesh castShadow receiveShadow>
+               <boxGeometry args={[1.4, 0.9, 0.8]} />
+-              <meshStandardMaterial color="#e11d48" roughness={0.3} />
++              <meshStandardMaterial color={isLight ? "#e11d48" : "#be123c"} roughness={0.3} />
+             </mesh>
+             <mesh position={[0, 0.46, 0]}>
+               <boxGeometry args={[1.5, 0.04, 0.85]} />
+@@ -254,59 +324,60 @@ export default function FloorAndEnvironment() {
+         ))}
+       </group>
+ 
+-      {/* Decorative Plants in Bottom Right Corner (B04-B07 corner) */}
+-      <group position={[19.5, 0, 19.5]}>
+-        <mesh position={[0, 0.4, 0]}>
+-          <cylinderGeometry args={[0.3, 0.25, 0.8, 16]} />
+-          <meshStandardMaterial color="#334155" />
++      {/* Architectural Entrance Portal Banner across North Wall */}
++      <group position={[-1, 6.2, -21]}>
++        {/* Supporting Architectural Pillars */}
++        <mesh position={[-11, -3.1, 0]} castShadow>
++          <cylinderGeometry args={[0.3, 0.35, 6.2, 16]} />
++          <meshStandardMaterial color={isLight ? "#94a3b8" : "#334155"} metalness={0.7} />
+         </mesh>
+-        <mesh position={[0, 1.0, 0]}>
+-          <sphereGeometry args={[0.45, 16, 16]} />
+-          <meshStandardMaterial color="#10b981" roughness={0.6} />
++        <mesh position={[11, -3.1, 0]} castShadow>
++          <cylinderGeometry args={[0.3, 0.35, 6.2, 16]} />
++          <meshStandardMaterial color={isLight ? "#94a3b8" : "#334155"} metalness={0.7} />
+         </mesh>
+-      </group>
+ 
+-      {/* Architectural Entrance Portal Banner across North Wall */}
+-      <Float speed={1.0} rotationIntensity={0.01} floatIntensity={0.1}>
+-        <group position={[-1, 7.5, -21]}>
+-          <mesh position={[0, 0, -0.15]}>
+-            <boxGeometry args={[32, 2.6, 0.25]} />
+-            <meshStandardMaterial
+-              color={isLight ? "#ffffff" : "#090d16"}
+-              metalness={isLight ? 0.2 : 0.85}
+-              roughness={isLight ? 0.3 : 0.25}
+-            />
+-          </mesh>
+-          <mesh position={[0, 0, -0.05]}>
+-            <boxGeometry args={[32.3, 2.8, 0.08]} />
+-            <meshStandardMaterial
+-              color="#f59e0b"
+-              emissive="#d97706"
+-              emissiveIntensity={isLight ? 0.4 : 0.7}
+-            />
+-          </mesh>
+-          <Text
+-            position={[0, 0.4, 0.1]}
+-            fontSize={0.95}
+-            color={isLight ? "#0f172a" : "#ffffff"}
+-            anchorX="center"
+-            anchorY="middle"
+-            letterSpacing={0.08}
+-          >
+-            DPS INDIRAPURAM TECH & INNOVATION EXHIBITION
+-          </Text>
+-          <Text
+-            position={[0, -0.5, 0.1]}
+-            fontSize={0.48}
+-            color={isLight ? "#b45309" : "#fbbf24"}
+-            anchorX="center"
+-            anchorY="middle"
+-            letterSpacing={0.15}
+-          >
+-            ★ OFFICIAL FLOOR PLAN: PHYSICAL • DIGITAL • BUSINESS • ROBOTICS ★
+-          </Text>
+-        </group>
+-      </Float>
++        {/* Portal Signboard */}
++        <Float speed={0.8} rotationIntensity={0.01} floatIntensity={0.05}>
++          <group>
++            <mesh position={[0, 0, -0.15]}>
++              <boxGeometry args={[24, 2.2, 0.25]} />
++              <meshStandardMaterial
++                color={isLight ? "#cbd5e1" : "#090d16"}
++                metalness={isLight ? 0.2 : 0.85}
++                roughness={isLight ? 0.3 : 0.25}
++              />
++            </mesh>
++            <mesh position={[0, 0, -0.05]}>
++              <boxGeometry args={[24.3, 2.35, 0.08]} />
++              <meshStandardMaterial
++                color="#f59e0b"
++                emissive="#d97706"
++                emissiveIntensity={isLight ? 0.4 : 0.7}
++              />
++            </mesh>
++            <Text
++              position={[0, 0.35, 0.1]}
++              fontSize={0.82}
++              color={isLight ? "#0f172a" : "#ffffff"}
++              anchorX="center"
++              anchorY="middle"
++              letterSpacing={0.08}
++            >
++              DPS INDIRAPURAM TECH & INNOVATION
++            </Text>
++            <Text
++              position={[0, -0.4, 0.1]}
++              fontSize={0.4}
++              color={isLight ? "#b45309" : "#fbbf24"}
++              anchorX="center"
++              anchorY="middle"
++              letterSpacing={0.15}
++            >
++              ★ 35 INVENTIONS • PHYSICAL • DIGITAL • BUSINESS • ROBOTICS ★
++            </Text>
++          </group>
++        </Float>
++      </group>
+     </>
+   );
+ }
+diff --git a/src/components/canvas/MilkyWaySky.tsx b/src/components/canvas/MilkyWaySky.tsx
+index 49b9547..74cc07d 100644
+--- a/src/components/canvas/MilkyWaySky.tsx
++++ b/src/components/canvas/MilkyWaySky.tsx
+@@ -53,18 +53,17 @@ export default function MilkyWaySky() {
+   if (isLight) {
+     return (
+       <group>
+-        {/* Luminous Daytime Architectural Sky Dome */}
++        {/* Eye-friendly calm architectural drafting slate dome (zero glare) */}
+         <mesh scale={[-1, 1, 1]}>
+           <sphereGeometry args={[950, 32, 24]} />
+           <meshBasicMaterial
+-            color="#e0f2fe"
++            color="#748596"
+             side={THREE.BackSide}
+-            toneMapped={false}
++            toneMapped={true}
+             fog={false}
+             depthWrite={false}
+           />
+         </mesh>
+-        <ambientLight intensity={0.7} color="#ffffff" />
+       </group>
+     );
+   }
+diff --git a/src/components/reactbits/GradientASCII.css b/src/components/reactbits/GradientASCII.css
+index a7236e2..341b07f 100644
+--- a/src/components/reactbits/GradientASCII.css
++++ b/src/components/reactbits/GradientASCII.css
+@@ -3,7 +3,7 @@
+   width: 100%;
+   height: 100%;
+   overflow: hidden;
+-  background-color: #000000;
++  background-color: transparent;
+ }
+ 
+ .gradient-ascii-canvas {
+@@ -12,5 +12,6 @@
+   display: block;
+   width: 100%;
+   height: 100%;
+-  background-color: #000000;
++  background-color: transparent;
+ }
++
+diff --git a/src/components/reactbits/GradientASCII.tsx b/src/components/reactbits/GradientASCII.tsx
+index 2e2b3fa..98f3ba3 100644
+--- a/src/components/reactbits/GradientASCII.tsx
++++ b/src/components/reactbits/GradientASCII.tsx
+@@ -540,7 +540,7 @@ export default function GradientASCII({
+       const tick2D = (now: number) => {
+         const t = (now - startTime) * 0.001;
+         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+-        ctx.fillStyle = '#050811';
++        ctx.fillStyle = settingsRef.current.lightMode ? '#f6f8fa' : '#050811';
+         ctx.fillRect(0, 0, width, height);
+         ctx.font = `600 ${cellSize * 0.75}px ${settingsRef.current.fontFamily || 'monospace'}`;
+         ctx.textAlign = 'center';
+@@ -558,7 +558,11 @@ export default function GradientASCII({
+             if (brightness > 0.1) {
+               const charIdx = Math.floor(brightness * (chars.length - 1));
+               const char = chars[charIdx] || ' ';
+-              ctx.fillStyle = brightness > 0.6 ? '#38bdf8' : brightness > 0.35 ? '#1e3fd8' : '#1e293b';
++              if (settingsRef.current.lightMode) {
++                ctx.fillStyle = brightness > 0.6 ? '#1d4ed8' : brightness > 0.35 ? '#2563eb' : '#94a3b8';
++              } else {
++                ctx.fillStyle = brightness > 0.6 ? '#38bdf8' : brightness > 0.35 ? '#1e3fd8' : '#1e293b';
++              }
+               ctx.fillText(char, x, y);
+             }
+           }
+diff --git a/src/components/ui/AmbientBackground.tsx b/src/components/ui/AmbientBackground.tsx
+index 74f8953..f2b571e 100644
+--- a/src/components/ui/AmbientBackground.tsx
++++ b/src/components/ui/AmbientBackground.tsx
+@@ -8,24 +8,28 @@ import { useExhibitionStore } from '@/store/useExhibitionStore';
+ export default function AmbientBackground() {
+   const pathname = usePathname();
+   const theme = useExhibitionStore((state) => state.theme);
++  const isLight = theme === 'light';
+ 
+-  // Do not render behind the 3D exhibition room or in clean light mode
+-  if (pathname === '/expo' || theme === 'light') {
++  // Do not render behind the dedicated 3D exhibition room
++  if (pathname === '/expo') {
+     return null;
+   }
+ 
+   return (
+     <div
+-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-50"
++      className={`fixed inset-0 pointer-events-none z-0 overflow-hidden transition-opacity duration-500 ${
++        isLight ? 'opacity-25' : 'opacity-50'
++      }`}
+       aria-hidden="true"
+     >
+       <AeroShards
+-        shardColor="#896ABD"
+-        accentColor="#A855F7"
++        shardColor={isLight ? '#94a3b8' : '#896ABD'}
++        accentColor={isLight ? '#60a5fa' : '#A855F7'}
+         placement="full"
+         material="glass"
+-        count={1300}
+-        speed={0.8}
++        count={isLight ? 420 : 1300}
++        speed={isLight ? 0.5 : 0.8}
++        lightMode={isLight}
+         style={{ width: '100%', height: '100%' }}
+       />
+     </div>
+diff --git a/src/components/ui/AuthModal.tsx b/src/components/ui/AuthModal.tsx
+index 1f5e44e..cd23da7 100644
+--- a/src/components/ui/AuthModal.tsx
++++ b/src/components/ui/AuthModal.tsx
+@@ -40,7 +40,6 @@ export default function AuthModal() {
+         });
+         setAuthModalOpen(false);
+       } else {
+-        // Returned null because popup was blocked and signInWithRedirect was automatically initiated
+         setAuthError('Popup blocked by browser. Redirecting you to Google Sign-In...');
+       }
+     } catch (err: unknown) {
+@@ -103,13 +102,13 @@ export default function AuthModal() {
+ 
+   return (
+     <AnimatePresence>
+-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xl">
++      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 dark:bg-black/80 backdrop-blur-md">
+         <motion.div
+           initial={{ opacity: 0, scale: 0.96, y: 8 }}
+           animate={{ opacity: 1, scale: 1, y: 0 }}
+           exit={{ opacity: 0, scale: 0.96, y: 8 }}
+           transition={{ duration: 0.2, ease: 'easeOut' }}
+-          className="relative w-full max-w-md rounded-3xl bg-[#0c1220]/95 border border-slate-800 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_40px_rgba(245,158,11,0.06)] p-6 sm:p-7 text-slate-100 overflow-hidden"
++          className="relative w-full max-w-md rounded-3xl bg-[#f8fafc]/98 dark:bg-[#0c1220]/95 border border-slate-300/80 dark:border-slate-800 shadow-2xl p-6 sm:p-7 text-slate-800 dark:text-slate-100 overflow-hidden"
+         >
+           {/* Subtle Ambient Radial Highlight */}
+           <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+@@ -121,7 +120,7 @@ export default function AuthModal() {
+               setAuthError(null);
+               setAuthModalOpen(false);
+             }}
+-            className="absolute top-5 right-5 p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition-all"
++            className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/80 dark:hover:bg-slate-800 border border-slate-300/80 dark:border-slate-800 text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white transition-all"
+             aria-label="Close dialog"
+           >
+             <X className="w-4 h-4" />
+@@ -129,7 +128,8 @@ export default function AuthModal() {
+ 
+           {/* School Brand & Header Alignment */}
+           <div className="flex items-center gap-3.5 mb-5 pr-8">
+-            <div className="w-12 h-12 rounded-2xl bg-white p-1.5 shadow-lg shadow-black/40 flex items-center justify-center shrink-0 border border-slate-200">
++            <div className="w-12 h-12 rounded-2xl bg-white p-1.5 shadow-md flex items-center justify-center shrink-0 border border-slate-200">
++              {/* eslint-disable-next-line @next/next/no-img-element */}
+               <img
+                 src="/dps_shield.png"
+                 alt="DPS Indirapuram Emblem"
+@@ -138,34 +138,34 @@ export default function AuthModal() {
+             </div>
+             <div>
+               <div className="flex items-center gap-2">
+-                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400 font-mono">
++                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-mono">
+                   DPS Indirapuram
+                 </span>
+-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
++                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+                   Official Expo
+                 </span>
+               </div>
+-              <h2 className="text-lg sm:text-xl font-black text-white tracking-tight mt-0.5">
++              <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
+                 Voter Verification
+               </h2>
+             </div>
+           </div>
+ 
+           {/* Trust & Transparency Feature Ribbon */}
+-          <div className="mb-5 p-3 rounded-2xl bg-slate-900/70 border border-slate-800/80 flex items-center justify-between gap-3 text-xs">
+-            <div className="flex items-center gap-2 text-slate-300">
+-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+-              <span className="text-[11px] text-slate-300 font-sans">
++          <div className="mb-5 p-3 rounded-2xl bg-slate-100 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-3 text-xs">
++            <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
++              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
++              <span className="text-[11px] font-sans">
+                 1 verified vote per booth • Real-time live tally
+               </span>
+             </div>
+-            <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 shrink-0">
++            <span className="text-[10px] font-mono font-bold text-amber-700 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 shrink-0">
+               Anti-Tamper
+             </span>
+           </div>
+ 
+           {/* Segmented Tab Control (Google OAuth vs Visitor Pass) */}
+-          <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-900/90 border border-slate-800 mb-5">
++          <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 mb-5">
+             <button
+               type="button"
+               onClick={() => {
+@@ -175,7 +175,7 @@ export default function AuthModal() {
+               className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                 activeTab === 'google'
+                   ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+-                  : 'text-slate-400 hover:text-white'
++                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+               }`}
+             >
+               <span>Google Account</span>
+@@ -189,7 +189,7 @@ export default function AuthModal() {
+               className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                 activeTab === 'guest'
+                   ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+-                  : 'text-slate-400 hover:text-white'
++                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+               }`}
+             >
+               <span>Visitor Pass</span>
+@@ -201,13 +201,13 @@ export default function AuthModal() {
+             <motion.div
+               initial={{ opacity: 0, y: -4 }}
+               animate={{ opacity: 1, y: 0 }}
+-              className="mb-4 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex flex-col gap-2 text-xs text-rose-300"
++              className="mb-4 p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 flex flex-col gap-2 text-xs text-rose-700 dark:text-rose-300"
+             >
+               <div className="flex items-start gap-2.5">
+-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
++                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                 <div>
+-                  <p className="font-bold text-rose-200">Sign-in Notice</p>
+-                  <p className="text-[11px] mt-0.5 text-rose-300/90 leading-relaxed">
++                  <p className="font-bold text-rose-800 dark:text-rose-200">Sign-in Notice</p>
++                  <p className="text-[11px] mt-0.5 text-rose-700/90 dark:text-rose-300/90 leading-relaxed">
+                     {authError}
+                   </p>
+                 </div>
+@@ -217,7 +217,7 @@ export default function AuthModal() {
+                 <button
+                   type="button"
+                   onClick={() => signInWithGoogleRedirect()}
+-                  className="self-start mt-1 flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 underline decoration-amber-400/50"
++                  className="self-start mt-1 flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 hover:underline"
+                 >
+                   <span>Continue with direct page redirect</span>
+                   <ArrowRight className="w-3.5 h-3.5" />
+@@ -234,14 +234,14 @@ export default function AuthModal() {
+               transition={{ duration: 0.15 }}
+               className="space-y-4"
+             >
+-              <p className="text-xs text-slate-400 leading-relaxed font-sans">
++              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-sans">
+                 Sign in with your Google account for instantaneous voting verification across all exhibition zones.
+               </p>
+ 
+               <button
+                 onClick={handleGoogleSignIn}
+                 disabled={loading}
+-                className="w-full min-h-[48px] flex items-center justify-center gap-3 py-3 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs sm:text-sm shadow-xl shadow-black/30 transition-all active:scale-[0.98] disabled:opacity-50"
++                className="w-full min-h-[48px] flex items-center justify-center gap-3 py-3 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs sm:text-sm border border-slate-300/80 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+               >
+                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                   <path
+@@ -269,7 +269,7 @@ export default function AuthModal() {
+                 <button
+                   type="button"
+                   onClick={() => setActiveTab('guest')}
+-                  className="text-amber-400 font-bold hover:underline"
++                  className="text-amber-600 dark:text-amber-400 font-bold hover:underline"
+                 >
+                   Use instant Visitor Pass →
+                 </button>
+@@ -287,34 +287,34 @@ export default function AuthModal() {
+               className="space-y-3.5 font-sans"
+             >
+               <div>
+-                <label className="block text-[11px] font-bold text-slate-300 mb-1.5">
+-                  Attendee or Judge Name <span className="text-amber-400">*</span>
++                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">
++                  Attendee or Judge Name <span className="text-amber-500">*</span>
+                 </label>
+                 <div className="relative">
+-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
++                  <User className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                   <input
+                     type="text"
+                     required
+                     placeholder="Enter your name"
+                     value={guestName}
+                     onChange={(e) => setGuestName(e.target.value)}
+-                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-xs sm:text-sm text-white placeholder-slate-500 outline-none transition-all shadow-inner"
++                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300/80 dark:border-slate-700/80 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all shadow-inner"
+                   />
+                 </div>
+               </div>
+ 
+               <div>
+-                <label className="block text-[11px] font-bold text-slate-300 mb-1.5">
++                <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                   Email Address <span className="text-slate-500 text-[10px]">(Optional)</span>
+                 </label>
+                 <div className="relative">
+-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
++                  <Mail className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                   <input
+                     type="email"
+                     placeholder="name@example.com"
+                     value={guestEmail}
+                     onChange={(e) => setGuestEmail(e.target.value)}
+-                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-900/90 border border-slate-700/80 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-xs sm:text-sm text-white placeholder-slate-500 outline-none transition-all shadow-inner"
++                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-300/80 dark:border-slate-700/80 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none transition-all shadow-inner"
+                   />
+                 </div>
+               </div>
+diff --git a/src/components/ui/CustomCursor.tsx b/src/components/ui/CustomCursor.tsx
+index 9cae602..5d472fa 100644
+--- a/src/components/ui/CustomCursor.tsx
++++ b/src/components/ui/CustomCursor.tsx
+@@ -2,8 +2,12 @@
+ 
+ import React from 'react';
+ import BlobCursor from '@/components/reactbits/BlobCursor';
++import { useExhibitionStore } from '@/store/useExhibitionStore';
+ 
+ export default function CustomCursor() {
++  const theme = useExhibitionStore((state) => state.theme);
++  const isLight = theme === 'light';
++
+   return (
+     <div
+       className="fixed inset-0 pointer-events-none z-[2] overflow-hidden"
+@@ -11,8 +15,8 @@ export default function CustomCursor() {
+     >
+       <BlobCursor
+         material="chrome"
+-        color="#3B82F6"
+-        size={64}
++        color={isLight ? '#2563eb' : '#3B82F6'}
++        size={isLight ? 52 : 64}
+         hideCursor={true}
+       />
+     </div>
+diff --git a/src/components/ui/LiveLeaderboard.tsx b/src/components/ui/LiveLeaderboard.tsx
+index 852bbad..da2413d 100644
+--- a/src/components/ui/LiveLeaderboard.tsx
++++ b/src/components/ui/LiveLeaderboard.tsx
+@@ -43,23 +43,25 @@ export default function LiveLeaderboard() {
+ 
+   return (
+     <AnimatePresence>
+-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/75 backdrop-blur-md">
++      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/50 dark:bg-black/80 backdrop-blur-md">
+         <motion.div
+           initial={{ opacity: 0, scale: 0.95, y: 15 }}
+           animate={{ opacity: 1, scale: 1, y: 0 }}
+           exit={{ opacity: 0, scale: 0.95, y: 15 }}
+           transition={{ duration: 0.2 }}
+-          className="relative w-full max-w-3xl max-h-[90vh] rounded-3xl bg-[#090d16] border border-slate-800 shadow-2xl flex flex-col text-slate-100 overflow-hidden"
++          className="relative w-full max-w-3xl max-h-[90vh] rounded-3xl bg-[#f8fafc]/98 dark:bg-[#090d16] border border-slate-300/80 dark:border-slate-800 shadow-2xl flex flex-col text-slate-800 dark:text-slate-100 overflow-hidden"
+         >
+           {/* Header */}
+-          <div className="p-4 sm:p-5 border-b border-slate-800 bg-gradient-to-r from-amber-500/15 via-[#0b101c] to-amber-500/10 flex items-center justify-between">
++          <div className="p-4 sm:p-5 border-b border-slate-200/90 dark:border-slate-800 bg-gradient-to-r from-amber-100/70 dark:from-amber-500/15 via-white/50 dark:via-[#0b101c] to-amber-100/50 dark:to-amber-500/10 flex items-center justify-between">
+             <div className="flex items-center gap-3">
+               <div className="h-10 px-2 sm:px-2.5 py-1 rounded-xl bg-white shadow-md flex items-center justify-center shrink-0 border border-slate-200">
++                {/* eslint-disable-next-line @next/next/no-img-element */}
+                 <img
+                   src="/dps_shield.png"
+                   alt="DPS Indirapuram Emblem"
+                   className="h-full w-auto object-contain block sm:hidden"
+                 />
++                {/* eslint-disable-next-line @next/next/no-img-element */}
+                 <img
+                   src="/dps_indirapuram_logo.png"
+                   alt="DPS Indirapuram Logo"
+@@ -68,15 +70,15 @@ export default function LiveLeaderboard() {
+               </div>
+               <div>
+                 <div className="flex items-center gap-2">
+-                  <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
++                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
+                     Live Leaderboard
+                   </h2>
+-                  <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
++                  <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
++                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
+                     REALTIME
+                   </span>
+                 </div>
+-                <p className="text-[11px] text-slate-400 font-sans">
++                <p className="text-[11px] text-slate-600 dark:text-slate-400 font-sans">
+                   DPS Indirapuram • Real-time verified standings across all aisles
+                 </p>
+               </div>
+@@ -84,14 +86,15 @@ export default function LiveLeaderboard() {
+ 
+             <button
+               onClick={() => setLeaderboardOpen(false)}
+-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
++              aria-label="Close leaderboard"
++              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300/80 text-slate-600 hover:text-slate-950 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors"
+             >
+               <X className="w-5 h-5" />
+             </button>
+           </div>
+ 
+           {/* Category Tabs */}
+-          <div className="p-2 sm:p-3 bg-slate-950/80 border-b border-slate-800 overflow-x-auto flex items-center gap-1.5">
++          <div className="p-2 sm:p-3 bg-slate-100/80 dark:bg-slate-950/80 border-b border-slate-200/90 dark:border-slate-800 overflow-x-auto flex items-center gap-1.5">
+             {FILTER_TABS.map((tab) => {
+               const isSelected = activeTab === tab.value;
+               return (
+@@ -101,7 +104,7 @@ export default function LiveLeaderboard() {
+                   className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                     isSelected
+                       ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+-                      : 'text-slate-400 hover:text-white hover:bg-slate-900'
++                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/80 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-900'
+                   }`}
+                 >
+                   {tab.label}
+@@ -118,12 +121,12 @@ export default function LiveLeaderboard() {
+                 const isTop3 = rank <= 3;
+                 const medalColors =
+                   rank === 1
+-                    ? 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30'
++                    ? 'text-yellow-600 dark:text-yellow-400 bg-yellow-400/20 dark:bg-yellow-400/10 border-yellow-400/40 dark:border-yellow-400/30'
+                     : rank === 2
+-                    ? 'text-slate-300 bg-slate-300/10 border-slate-300/30'
++                    ? 'text-slate-600 dark:text-slate-300 bg-slate-200/80 dark:bg-slate-300/10 border-slate-300 dark:border-slate-300/30'
+                     : rank === 3
+-                    ? 'text-amber-500 bg-amber-500/10 border-amber-500/30'
+-                    : 'text-slate-500 bg-slate-900 border-slate-800';
++                    ? 'text-amber-700 dark:text-amber-500 bg-amber-500/20 dark:bg-amber-500/10 border-amber-500/40 dark:border-amber-500/30'
++                    : 'text-slate-600 dark:text-slate-500 bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800';
+ 
+                 return (
+                   <motion.div
+@@ -135,8 +138,8 @@ export default function LiveLeaderboard() {
+                     transition={{ duration: 0.25 }}
+                     className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                       isTop3
+-                        ? 'bg-[#0f1422] border-slate-700/80'
+-                        : 'bg-[#0a0d16] border-slate-800/60'
++                        ? 'bg-amber-50/60 dark:bg-[#0f1422] border-amber-300/70 dark:border-slate-700/80 shadow-xs'
++                        : 'bg-slate-50/80 dark:bg-[#0a0d16] border-slate-200/90 dark:border-slate-800/60 shadow-xs'
+                     }`}
+                   >
+                     {/* Rank Badge & Project Info */}
+@@ -145,11 +148,11 @@ export default function LiveLeaderboard() {
+                         className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 border ${medalColors}`}
+                       >
+                         {rank === 1 ? (
+-                          <Medal className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
++                          <Medal className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 dark:text-yellow-400" />
+                         ) : rank === 2 ? (
+-                          <Medal className="w-4 h-4 sm:w-5 sm:h-5 text-slate-300" />
++                          <Medal className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600 dark:text-slate-300" />
+                         ) : rank === 3 ? (
+-                          <Medal className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" />
++                          <Medal className="w-4 h-4 sm:w-5 sm:h-5 text-amber-700 dark:text-amber-500" />
+                         ) : (
+                           <span className="font-mono">#{rank}</span>
+                         )}
+@@ -157,17 +160,17 @@ export default function LiveLeaderboard() {
+ 
+                       <div className="min-w-0">
+                         <div className="flex items-center gap-1.5">
+-                          <span className="text-[10px] font-mono font-black px-1.5 py-0.2 rounded bg-slate-800 text-amber-300 border border-slate-700">
++                          <span className="text-[10px] font-mono font-black px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-amber-700 dark:text-amber-300 border border-slate-300/80 dark:border-slate-700">
+                             {project.booth_code}
+                           </span>
+-                          <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-400">
++                          <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                             {project.category}
+                           </span>
+                         </div>
+-                        <h3 className="text-xs sm:text-sm font-bold text-white truncate mt-0.5">
++                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate mt-0.5">
+                           {project.title.split('•')[1]?.trim() || project.title}
+                         </h3>
+-                        <p className="text-[10px] sm:text-[11px] text-slate-400 truncate font-sans">
++                        <p className="text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-400 truncate font-sans">
+                           {project.members.join(', ')}
+                         </p>
+                       </div>
+@@ -175,9 +178,9 @@ export default function LiveLeaderboard() {
+ 
+                     {/* Votes & Inspect */}
+                     <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
+-                      <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800">
+-                        <ThumbsUp className="w-3 h-3 text-amber-400" />
+-                        <span className="text-xs font-bold text-white font-mono">
++                      <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
++                        <ThumbsUp className="w-3 h-3 text-amber-500 dark:text-amber-400" />
++                        <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">
+                           {project.vote_count}
+                         </span>
+                       </div>
+@@ -187,7 +190,7 @@ export default function LiveLeaderboard() {
+                           setLeaderboardOpen(false);
+                           selectProject(project);
+                         }}
+-                        className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all group font-mono"
++                        className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/40 dark:border-amber-500/30 text-xs font-bold transition-all group font-mono"
+                       >
+                         <span className="hidden xs:inline">Inspect</span>
+                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+@@ -200,9 +203,9 @@ export default function LiveLeaderboard() {
+           </div>
+ 
+           {/* Footer */}
+-          <div className="p-3 bg-[#07090e] border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 px-4 sm:px-5 pb-safe">
++          <div className="p-3 bg-slate-50 dark:bg-[#07090e] border-t border-slate-200/90 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-4 sm:px-5 pb-safe">
+             <span className="font-mono text-[11px]">{sortedProjects.length} Competing Projects</span>
+-            <div className="flex items-center gap-1 text-amber-400 font-semibold text-[11px]">
++            <div className="flex items-center gap-1 text-amber-700 dark:text-amber-400 font-semibold text-[11px]">
+               <Flame className="w-3.5 h-3.5" />
+               <span>Verified Standings</span>
+             </div>
+diff --git a/src/components/ui/MobileNavMenu.tsx b/src/components/ui/MobileNavMenu.tsx
+index d17dbaa..c098f47 100644
+--- a/src/components/ui/MobileNavMenu.tsx
++++ b/src/components/ui/MobileNavMenu.tsx
+@@ -49,10 +49,10 @@ export default function MobileNavMenu() {
+     {
+       id: 'overview',
+       title: 'Full Floor Overview',
+-      subtitle: 'Zoom out into Milky Way',
++      subtitle: theme === 'light' ? 'Daylight Aerial View' : 'Zoom out into Milky Way',
+       badge: 'All 35',
+       icon: Compass,
+-      color: 'from-amber-500/20 to-amber-600/10 text-amber-400 border-amber-500/30',
++      color: 'from-amber-500/20 to-amber-600/10 text-amber-700 dark:text-amber-400 border-amber-500/30',
+     },
+     {
+       id: 'zone-1',
+@@ -60,7 +60,7 @@ export default function MobileNavMenu() {
+       subtitle: 'Junior & Senior innovators',
+       badge: 'ST01–08',
+       icon: Sparkles,
+-      color: 'from-purple-500/20 to-purple-600/10 text-purple-400 border-purple-500/30',
++      color: 'from-purple-500/20 to-purple-600/10 text-purple-700 dark:text-purple-400 border-purple-500/30',
+     },
+     {
+       id: 'physical',
+@@ -68,7 +68,7 @@ export default function MobileNavMenu() {
+       subtitle: 'Hardware, IoT & Automation',
+       badge: 'P01–12',
+       icon: Cpu,
+-      color: 'from-emerald-500/20 to-emerald-600/10 text-emerald-400 border-emerald-500/30',
++      color: 'from-emerald-500/20 to-emerald-600/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
+     },
+     {
+       id: 'digital',
+@@ -76,7 +76,7 @@ export default function MobileNavMenu() {
+       subtitle: 'AI, Web3 & Cloud Systems',
+       badge: 'D01–12',
+       icon: Code2,
+-      color: 'from-cyan-500/20 to-cyan-600/10 text-cyan-400 border-cyan-500/30',
++      color: 'from-cyan-500/20 to-cyan-600/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/30',
+     },
+     {
+       id: 'business',
+@@ -84,7 +84,7 @@ export default function MobileNavMenu() {
+       subtitle: 'Fintech, Startups & Marketplaces',
+       badge: 'B01–07',
+       icon: TrendingUp,
+-      color: 'from-amber-500/20 to-amber-600/10 text-amber-400 border-amber-500/30',
++      color: 'from-amber-500/20 to-amber-600/10 text-amber-700 dark:text-amber-400 border-amber-500/30',
+     },
+     {
+       id: 'zone-3',
+@@ -92,7 +92,7 @@ export default function MobileNavMenu() {
+       subtitle: 'Soccer & Obstacle race fields',
+       badge: 'Arenas',
+       icon: Bot,
+-      color: 'from-rose-500/20 to-rose-600/10 text-rose-400 border-rose-500/30',
++      color: 'from-rose-500/20 to-rose-600/10 text-rose-700 dark:text-rose-400 border-rose-500/30',
+     },
+   ];
+ 
+@@ -103,22 +103,24 @@ export default function MobileNavMenu() {
+   };
+ 
+   return (
+-    <div className="fixed inset-0 z-[150] flex flex-col bg-[#050811]/98 backdrop-blur-3xl animate-in fade-in slide-in-from-top-4 duration-200 overflow-y-auto">
++    <div className="fixed inset-0 z-[150] flex flex-col bg-[#f8fafc]/98 dark:bg-[#050811]/98 backdrop-blur-3xl animate-in fade-in slide-in-from-top-4 duration-200 overflow-y-auto text-slate-800 dark:text-slate-100">
+       {/* Top Bar with brand and Close Button */}
+-      <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-[#050811]/90 backdrop-blur-xl border-b border-slate-800/80 pt-safe">
++      <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-[#f8fafc]/95 dark:bg-[#050811]/90 backdrop-blur-xl border-b border-slate-200/90 dark:border-slate-800/80 pt-safe">
+         <div className="flex items-center gap-3">
+-          <div className="h-8 px-2 py-0.5 rounded-lg bg-white flex items-center justify-center shrink-0">
++          <div className="h-8 px-2 py-0.5 rounded-lg bg-white shadow-xs border border-slate-200 flex items-center justify-center shrink-0">
++            {/* eslint-disable-next-line @next/next/no-img-element */}
+             <img src="/dps_shield.png" alt="DPSI" className="h-full w-auto object-contain" />
+           </div>
+           <div>
+-            <h2 className="text-sm font-extrabold text-white tracking-tight">Navigation Menu</h2>
+-            <p className="text-[10px] text-slate-400 font-mono">DPSI Tech & Innovation Expo</p>
++            <h2 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight">Navigation Menu</h2>
++            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">DPSI Tech & Innovation Expo</p>
+           </div>
+         </div>
+ 
+         <button
+           onClick={() => setMobileMenuOpen(false)}
+-          className="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center border border-slate-700/60 active:scale-95 transition-all"
++          aria-label="Close mobile navigation"
++          className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 hover:text-slate-950 dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-white dark:border-slate-700/60 flex items-center justify-center active:scale-95 transition-all"
+         >
+           <X className="w-5 h-5" />
+         </button>
+@@ -132,19 +134,19 @@ export default function MobileNavMenu() {
+             setMobileMenuOpen(false);
+             setSearchOpen(true);
+           }}
+-          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-left text-slate-400 hover:text-white hover:border-slate-700 transition-all shadow-inner"
++          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-slate-100/90 hover:bg-slate-100 border border-slate-200 text-left text-slate-500 hover:text-slate-900 dark:bg-slate-900/90 dark:border-slate-800 dark:text-slate-400 dark:hover:text-white transition-all shadow-inner"
+         >
+           <div className="flex items-center gap-2.5">
+-            <Search className="w-4 h-4 text-amber-400" />
++            <Search className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+             <span className="text-xs font-medium">Search student, booth or topic...</span>
+           </div>
+-          <kbd className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
++          <kbd className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400 border border-slate-300 dark:border-slate-700">
+             Find
+           </kbd>
+         </button>
+ 
+         {/* View Mode Switching Pill */}
+-        <div className="p-1 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center gap-1 shadow-inner">
++        <div className="p-1 rounded-2xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center gap-1 shadow-inner">
+           <button
+             onClick={() => {
+               setViewMode('3d');
+@@ -153,11 +155,11 @@ export default function MobileNavMenu() {
+             className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+               viewMode === '3d'
+                 ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+-                : 'text-slate-400 hover:text-white'
++                : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
+             }`}
+           >
+             <Box className="w-4 h-4" />
+-            <span>3D Cosmic Floor</span>
++            <span>3D Interactive Floor</span>
+           </button>
+           <button
+             onClick={() => {
+@@ -167,47 +169,47 @@ export default function MobileNavMenu() {
+             className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+               viewMode === '2d'
+                 ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+-                : 'text-slate-400 hover:text-white'
++                : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
+             }`}
+           >
+             <LayoutGrid className="w-4 h-4" />
+-            <span>2D Bento Grid</span>
++            <span>2D Directory</span>
+           </button>
+         </div>
+ 
+         {/* Theme Mode Switching Pill */}
+-        <div className="p-1 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center gap-1 shadow-inner">
++        <div className="p-1 rounded-2xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center gap-1 shadow-inner">
+           <button
+             onClick={() => setTheme('light')}
+             className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+               theme === 'light'
+                 ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+-                : 'text-slate-400 hover:text-white'
++                : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
+             }`}
+           >
+-            <Sun className="w-4 h-4 text-amber-300" />
+-            <span>Light Showroom</span>
++            <Sun className="w-4 h-4 text-amber-700 dark:text-amber-300" />
++            <span>Light Mode</span>
+           </button>
+           <button
+             onClick={() => setTheme('dark')}
+             className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+               theme === 'dark'
+                 ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+-                : 'text-slate-400 hover:text-white'
++                : 'text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white'
+             }`}
+           >
+-            <Moon className="w-4 h-4 text-amber-300" />
+-            <span>Cosmic Dark</span>
++            <Moon className="w-4 h-4 text-amber-700 dark:text-amber-300" />
++            <span>Dark Mode</span>
+           </button>
+         </div>
+ 
+         {/* Exhibition Zones Navigation Section */}
+         <div className="space-y-2 pt-1">
+           <div className="flex items-center justify-between px-1">
+-            <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-bold">
++            <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
+               Exhibition Arenas
+             </span>
+-            <span className="text-[10px] font-mono text-slate-500">Tap to Fly Camera</span>
++            <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">Tap to Fly Camera</span>
+           </div>
+ 
+           <div className="space-y-1.5">
+@@ -221,8 +223,8 @@ export default function MobileNavMenu() {
+                   onClick={() => handleZoneClick(item.id)}
+                   className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all text-left ${
+                     isActive
+-                      ? 'bg-amber-500/20 border-amber-500/50 shadow-lg shadow-amber-500/10'
+-                      : 'bg-slate-900/70 border-slate-800/80 hover:bg-slate-800/60'
++                      ? 'bg-amber-500/20 border-amber-500/50 shadow-md shadow-amber-500/10'
++                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200/90 dark:bg-slate-900/70 dark:border-slate-800/80 dark:hover:bg-slate-800/60'
+                   }`}
+                 >
+                   <div className="flex items-center gap-3">
+@@ -231,16 +233,16 @@ export default function MobileNavMenu() {
+                     </div>
+                     <div>
+                       <div className="flex items-center gap-2">
+-                        <h4 className="text-xs font-bold text-white">{item.title}</h4>
+-                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
++                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">{item.title}</h4>
++                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+                           {item.badge}
+                         </span>
+                       </div>
+-                      <p className="text-[11px] text-slate-400 mt-0.5">{item.subtitle}</p>
++                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{item.subtitle}</p>
+                     </div>
+                   </div>
+ 
+-                  <ChevronRight className={`w-4 h-4 ${isActive ? 'text-amber-400' : 'text-slate-600'}`} />
++                  <ChevronRight className={`w-4 h-4 ${isActive ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 dark:text-slate-600'}`} />
+                 </button>
+               );
+             })}
+@@ -253,7 +255,7 @@ export default function MobileNavMenu() {
+             setMobileMenuOpen(false);
+             setLeaderboardOpen(true);
+           }}
+-          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-600/5 border border-amber-500/40 text-left transition-all active:scale-[0.98]"
++          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-amber-100/90 via-amber-50/60 to-transparent dark:from-amber-500/20 dark:via-amber-500/10 dark:to-amber-600/5 border border-amber-300 dark:border-amber-500/40 text-left transition-all active:scale-[0.98]"
+         >
+           <div className="flex items-center gap-3">
+             <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/30">
+@@ -261,28 +263,28 @@ export default function MobileNavMenu() {
+             </div>
+             <div>
+               <div className="flex items-center gap-2">
+-                <h4 className="text-xs font-black text-amber-300 uppercase tracking-wide">
++                <h4 className="text-xs font-black text-amber-900 dark:text-amber-300 uppercase tracking-wide">
+                   Live Voting Leaderboard
+                 </h4>
+-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
++                <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400 animate-ping" />
+               </div>
+-              <p className="text-[11px] text-amber-200/70">Inspect real-time student standings</p>
++              <p className="text-[11px] text-amber-800/80 dark:text-amber-200/70">Inspect real-time student standings</p>
+             </div>
+           </div>
+-          <ChevronRight className="w-5 h-5 text-amber-400" />
++          <ChevronRight className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+         </button>
+ 
+         {/* User Account / Sign In */}
+-        <div className="pt-2 border-t border-slate-800/80">
++        <div className="pt-2 border-t border-slate-200 dark:border-slate-800/80">
+           {user ? (
+-            <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-900 border border-slate-800">
++            <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+               <div className="flex items-center gap-3 min-w-0">
+                 <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-sm shrink-0">
+                   {user.name.charAt(0)}
+                 </div>
+                 <div className="min-w-0">
+-                  <p className="text-xs font-bold text-white truncate">{user.name}</p>
+-                  <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
++                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{user.name}</p>
++                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
+                 </div>
+               </div>
+ 
+@@ -295,7 +297,7 @@ export default function MobileNavMenu() {
+                     console.error(e);
+                   }
+                 }}
+-                className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-all shrink-0"
++                className="p-2 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-rose-400 dark:hover:bg-slate-800 transition-all shrink-0"
+                 title="Sign Out"
+               >
+                 <LogOut className="w-4 h-4" />
+diff --git a/src/components/ui/ProjectDetailDrawer.tsx b/src/components/ui/ProjectDetailDrawer.tsx
+index 833cffe..c9be256 100644
+--- a/src/components/ui/ProjectDetailDrawer.tsx
++++ b/src/components/ui/ProjectDetailDrawer.tsx
+@@ -2,6 +2,7 @@
+ 
+ import { useState } from 'react';
+ import { motion, AnimatePresence } from 'framer-motion';
++import Link from 'next/link';
+ import { useExhibitionStore } from '@/store/useExhibitionStore';
+ import { getDeviceFingerprint } from '@/lib/fingerprint';
+ import confetti from 'canvas-confetti';
+@@ -15,48 +16,44 @@ import {
+   MapPin,
+   CheckCircle2,
+   Lock,
++  ArrowUpRight,
++  Maximize2,
+ } from 'lucide-react';
+ import { CategoryType } from '@/types';
+ 
+ const CATEGORY_THEMES: Record<
+   CategoryType,
+-  { badgeBg: string; badgeText: string; border: string; glow: string }
++  { badgeBg: string; border: string; glow: string }
+ > = {
+   Physical: {
+-    badgeBg: 'bg-amber-500/15',
+-    badgeText: 'text-amber-300',
++    badgeBg: 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30 dark:border-amber-500/40',
+     border: 'border-amber-500/40',
+-    glow: 'from-amber-950/60 to-slate-900/40',
++    glow: 'from-amber-100/70 dark:from-amber-950/60 via-transparent to-transparent',
+   },
+   Digital: {
+-    badgeBg: 'bg-sky-500/15',
+-    badgeText: 'text-sky-300',
++    badgeBg: 'bg-sky-500/15 text-sky-800 dark:text-sky-300 border-sky-500/30 dark:border-sky-500/40',
+     border: 'border-sky-500/40',
+-    glow: 'from-sky-950/60 to-slate-900/40',
++    glow: 'from-sky-100/70 dark:from-sky-950/60 via-transparent to-transparent',
+   },
+   Business: {
+-    badgeBg: 'bg-emerald-500/15',
+-    badgeText: 'text-emerald-300',
++    badgeBg: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 dark:border-emerald-500/40',
+     border: 'border-emerald-500/40',
+-    glow: 'from-emerald-950/60 to-slate-900/40',
++    glow: 'from-emerald-100/70 dark:from-emerald-950/60 via-transparent to-transparent',
+   },
+   'Show & Tell': {
+-    badgeBg: 'bg-purple-500/15',
+-    badgeText: 'text-purple-300',
++    badgeBg: 'bg-purple-500/15 text-purple-800 dark:text-purple-300 border-purple-500/30 dark:border-purple-500/40',
+     border: 'border-purple-500/40',
+-    glow: 'from-purple-950/60 to-slate-900/40',
++    glow: 'from-purple-100/70 dark:from-purple-950/60 via-transparent to-transparent',
+   },
+   'Robo Race': {
+-    badgeBg: 'bg-rose-500/15',
+-    badgeText: 'text-rose-300',
++    badgeBg: 'bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30 dark:border-rose-500/40',
+     border: 'border-rose-500/40',
+-    glow: 'from-rose-950/60 to-slate-900/40',
++    glow: 'from-rose-100/70 dark:from-rose-950/60 via-transparent to-transparent',
+   },
+   'Robo Soccer': {
+-    badgeBg: 'bg-teal-500/15',
+-    badgeText: 'text-teal-300',
++    badgeBg: 'bg-teal-500/15 text-teal-800 dark:text-teal-300 border-teal-500/30 dark:border-teal-500/40',
+     border: 'border-teal-500/40',
+-    glow: 'from-teal-950/60 to-slate-900/40',
++    glow: 'from-teal-100/70 dark:from-teal-950/60 via-transparent to-transparent',
+   },
+ };
+ 
+@@ -95,7 +92,6 @@ export default function ProjectDetailDrawer() {
+     try {
+       const fingerprint = await getDeviceFingerprint();
+ 
+-      // Submit exclusively to serverless anti-cheat endpoint (supports deployed Cloud Function or local API route)
+       const voteApiUrl = process.env.NEXT_PUBLIC_VOTE_API_URL || '/api/vote';
+       const res = await fetch(voteApiUrl, {
+         method: 'POST',
+@@ -110,7 +106,6 @@ export default function ProjectDetailDrawer() {
+ 
+       const data = await res.json().catch(() => ({}));
+ 
+-      // 409 Conflict: Already voted from this hardware fingerprint or user account
+       if (res.status === 409 || data.alreadyVoted) {
+         markProjectVoted(selectedProject.id);
+         setVoteError(
+@@ -120,7 +115,6 @@ export default function ProjectDetailDrawer() {
+         return;
+       }
+ 
+-      // 429 Too Many Requests: Volumetric flood protection
+       if (res.status === 429) {
+         setVoteError(
+           data.message || 'Rate limit reached: Too many requests. Please wait a moment before trying again.'
+@@ -128,13 +122,11 @@ export default function ProjectDetailDrawer() {
+         return;
+       }
+ 
+-      // 400 Bad Request or 500 Internal Error
+       if (!res.ok || !data.success) {
+         setVoteError(data.message || 'Vote verification failed. Please try again.');
+         return;
+       }
+ 
+-      // 200 OK: Validated & atomically recorded
+       markProjectVoted(selectedProject.id);
+       incrementProjectVote(selectedProject.id);
+       setVoteSuccessMessage(data.message || 'Vote successfully verified and recorded!');
+@@ -156,72 +148,77 @@ export default function ProjectDetailDrawer() {
+   return (
+     <AnimatePresence>
+       {isDrawerOpen && (
+-        <>
+-          {/* Backdrop */}
++        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
++          {/* Backdrop with Blur */}
+           <motion.div
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0 }}
+             onClick={() => selectProject(null)}
+-            className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm"
++            className="fixed inset-0 bg-slate-900/40 dark:bg-black/80 backdrop-blur-md transition-all"
+           />
+ 
+-          {/* Drawer / Mobile Bottom Sheet */}
+-          <motion.aside
+-            initial={isMobile ? { y: '100%' } : { x: '100%' }}
+-            animate={isMobile ? { y: 0 } : { x: 0 }}
+-            exit={isMobile ? { y: '100%' } : { x: '100%' }}
+-            transition={{ type: 'spring', damping: 28, stiffness: 240 }}
+-            className={`fixed z-[9999] bg-[#090d16]/95 backdrop-blur-2xl border-slate-800 shadow-2xl flex flex-col text-slate-100 overflow-hidden ${
+-              isMobile
+-                ? 'bottom-0 inset-x-0 max-h-[90vh] rounded-t-3xl border-t'
+-                : 'top-0 right-0 h-full w-[460px] md:w-[480px] border-l'
+-            }`}
++          {/* Centered Modal Card */}
++          <motion.div
++            role="dialog"
++            aria-modal="true"
++            initial={{ opacity: 0, scale: 0.95, y: 16 }}
++            animate={{ opacity: 1, scale: 1, y: 0 }}
++            exit={{ opacity: 0, scale: 0.95, y: 16 }}
++            transition={{ type: 'spring', damping: 26, stiffness: 280 }}
++            className="relative z-10 w-full max-w-2xl max-h-[88vh] rounded-2xl sm:rounded-3xl border border-slate-300/80 dark:border-slate-800 bg-[#f8fafc]/98 dark:bg-[#0c1220]/95 backdrop-blur-2xl shadow-2xl flex flex-col text-slate-800 dark:text-slate-100 overflow-hidden my-auto"
+           >
+-            {/* Mobile Drag Pill */}
+-            {isMobile && (
+-              <div className="w-full pt-3 pb-1 flex justify-center cursor-grab active:cursor-grabbing">
+-                <div className="w-12 h-1.5 rounded-full bg-slate-700" />
+-              </div>
+-            )}
+-
+             {/* Header */}
+-            <div className={`p-4 border-b border-slate-800/80 bg-gradient-to-r ${theme.glow} flex items-center justify-between`}>
++            <div
++              className={`p-4 sm:p-5 border-b border-slate-200/90 dark:border-slate-800/80 bg-gradient-to-r ${theme.glow} flex items-center justify-between`}
++            >
+               <div className="flex items-center gap-2">
+-                <span className="text-xs font-mono font-black px-2 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-amber-300">
++                <span className="text-xs font-mono font-black px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-900 border border-slate-300/80 dark:border-slate-700 text-amber-700 dark:text-amber-300 shadow-xs">
+                   Booth {selectedProject.booth_code}
+                 </span>
+                 <span
+-                  className={`text-xs font-bold px-2.5 py-0.5 rounded-md ${theme.badgeBg} ${theme.badgeText} border ${theme.border}`}
++                  className={`text-xs font-bold px-2.5 py-1 rounded-md border ${theme.badgeBg}`}
+                 >
+                   {selectedProject.category}
+                 </span>
+               </div>
+ 
+-              <button
+-                onClick={() => selectProject(null)}
+-                className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-700/60"
+-              >
+-                <X className="w-4 h-4" />
+-              </button>
++              <div className="flex items-center gap-2">
++                <Link
++                  href="/expo"
++                  onClick={() => selectProject(null)}
++                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-900/80 dark:hover:bg-slate-800 border border-slate-300/80 dark:border-slate-700/60 transition-colors"
++                >
++                  <span>3D Arena</span>
++                  <ArrowUpRight className="w-3.5 h-3.5" />
++                </Link>
++
++                <button
++                  onClick={() => selectProject(null)}
++                  aria-label="Close project modal"
++                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-950 dark:bg-slate-900/80 dark:hover:bg-slate-800 dark:text-slate-400 dark:hover:text-white transition-colors border border-slate-300/80 dark:border-slate-700/60"
++                >
++                  <X className="w-4 h-4" />
++                </button>
++              </div>
+             </div>
+ 
+-            {/* Content Body */}
+-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 sm:space-y-5">
++            {/* Scrollable Content Body */}
++            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+               {/* Project Title & Tagline */}
+               <div>
+-                <h2 className="text-lg sm:text-xl font-extrabold tracking-tight text-white">
++                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                   {selectedProject.title}
+                 </h2>
+                 {selectedProject.tagline && (
+-                  <p className="text-xs text-amber-400 font-semibold mt-1">
++                  <p className="text-xs sm:text-sm text-amber-600 dark:text-amber-400 font-semibold mt-1">
+                     {selectedProject.tagline}
+                   </p>
+                 )}
+               </div>
+ 
+-              {/* Image */}
+-              <div className="relative w-full h-44 sm:h-52 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 group shadow-md">
++              {/* High-Resolution Project Photo */}
++              <div className="relative w-full h-52 sm:h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 group shadow-md">
+                 {/* eslint-disable-next-line @next/next/no-img-element */}
+                 <img
+                   src={selectedProject.image_url}
+@@ -232,22 +229,33 @@ export default function ProjectDetailDrawer() {
+                       'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80';
+                   }}
+                 />
+-                <div className="absolute inset-0 bg-gradient-to-t from-[#090d16] via-transparent to-transparent opacity-85" />
+-                
+-                <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono text-slate-300 bg-slate-950/80 px-2 py-1 rounded-md border border-slate-800 backdrop-blur-md">
+-                  <MapPin className="w-3 h-3 text-amber-400" />
+-                  <span>
+-                    Floor Location: [{selectedProject.position_x}, {selectedProject.position_z}]
+-                  </span>
++                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-80" />
++
++                <div className="absolute bottom-3 left-3 flex items-center gap-2">
++                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-200 bg-slate-950/80 px-2.5 py-1 rounded-md border border-slate-700/80 backdrop-blur-md">
++                    <MapPin className="w-3.5 h-3.5 text-amber-400" />
++                    <span>
++                      Floor Coordinates: [{selectedProject.position_x}, {selectedProject.position_z}]
++                    </span>
++                  </div>
+                 </div>
++
++                <Link
++                  href="/expo"
++                  onClick={() => selectProject(null)}
++                  className="absolute bottom-3 right-3 flex items-center gap-1 text-[11px] font-mono font-bold text-white bg-blue-600/90 hover:bg-blue-600 px-3 py-1 rounded-md shadow-md backdrop-blur-md transition-all hover:scale-105"
++                >
++                  <Maximize2 className="w-3 h-3" />
++                  <span>Locate in 3D</span>
++                </Link>
+               </div>
+ 
+-              {/* Description */}
++              {/* Full Expanded Description */}
+               <div className="space-y-1.5">
+-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+-                  Project Description
++                <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
++                  Project Overview &amp; Abstract
+                 </h3>
+-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 font-sans">
++                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 font-sans shadow-xs">
+                   {selectedProject.description}
+                 </p>
+               </div>
+@@ -255,15 +263,15 @@ export default function ProjectDetailDrawer() {
+               {/* Tech Stack Chips */}
+               {selectedProject.tech_stack && selectedProject.tech_stack.length > 0 && (
+                 <div className="space-y-2">
+-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+-                    <Code2 className="w-3.5 h-3.5 text-amber-400" />
+-                    <span>Tech Architecture</span>
++                  <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
++                    <Code2 className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
++                    <span>Tech Architecture &amp; Schematics</span>
+                   </h3>
+                   <div className="flex flex-wrap gap-1.5">
+                     {selectedProject.tech_stack.map((tech, i) => (
+                       <span
+                         key={i}
+-                        className="text-xs px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 font-mono font-medium"
++                        className="text-xs px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-300 font-mono font-medium shadow-xs"
+                       >
+                         {tech}
+                       </span>
+@@ -274,20 +282,20 @@ export default function ProjectDetailDrawer() {
+ 
+               {/* Student Team Members */}
+               <div className="space-y-2">
+-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+-                  <Users className="w-3.5 h-3.5 text-amber-400" />
+-                  <span>Student Exhibitors</span>
++                <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
++                  <Users className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
++                  <span>Student Exhibitors &amp; Innovators</span>
+                 </h3>
+-                <div className="grid grid-cols-1 gap-1.5">
++                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                   {selectedProject.members.map((member, i) => (
+                     <div
+                       key={i}
+-                      className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/70 border border-slate-800"
++                      className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 shadow-xs"
+                     >
+-                      <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center font-black text-xs text-slate-950 shadow-sm">
++                      <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center font-black text-xs text-slate-950 shadow-sm shrink-0">
+                         {member.charAt(0)}
+                       </div>
+-                      <span className="text-xs font-semibold text-slate-200">
++                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                         {member}
+                       </span>
+                     </div>
+@@ -295,61 +303,61 @@ export default function ProjectDetailDrawer() {
+                 </div>
+               </div>
+ 
+-              {/* Anti-Cheat Notice */}
+-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex items-start gap-2.5 text-xs text-slate-400">
+-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
++              {/* Anti-Cheat Voting Notice */}
++              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400">
++                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                 <p>
+-                  <strong>Verified Anti-Cheat Voting:</strong> Protected with hardware canvas fingerprinting and account validation to ensure 100% election fairness.
++                  <strong>Verified Anti-Cheat Voting:</strong> Ballots are cryptographically bound to hardware canvas fingerprints and Google OAuth signatures to prevent duplicate submissions.
+                 </p>
+               </div>
+ 
+               {/* Error Alert */}
+               {voteError && (
+-                <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/50 flex items-start gap-2.5 text-xs text-rose-300">
+-                  <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
++                <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-500/50 flex items-start gap-2.5 text-xs text-rose-700 dark:text-rose-300">
++                  <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                   <div>
+                     <p className="font-semibold">Voting Blocked</p>
+-                    <p className="text-[11px] mt-0.5 text-rose-400/90">{voteError}</p>
++                    <p className="text-[11px] mt-0.5 text-rose-600/90 dark:text-rose-400/90">{voteError}</p>
+                   </div>
+                 </div>
+               )}
+ 
+               {/* Success Alert */}
+               {voteSuccessMessage && (
+-                <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/50 flex items-start gap-2.5 text-xs text-emerald-300">
+-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
++                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-500/50 flex items-start gap-2.5 text-xs text-emerald-800 dark:text-emerald-300">
++                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                   <div>
+                     <p className="font-semibold">Vote Confirmed!</p>
+-                    <p className="text-[11px] mt-0.5 text-emerald-400/90">{voteSuccessMessage}</p>
++                    <p className="text-[11px] mt-0.5 text-emerald-700/90 dark:text-emerald-400/90">{voteSuccessMessage}</p>
+                   </div>
+                 </div>
+               )}
+             </div>
+ 
+             {/* Bottom Action Bar */}
+-            <div className="p-4 border-t border-slate-800 bg-[#090d16] flex items-center justify-between gap-3 pb-safe">
++            <div className="p-4 sm:p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/95 dark:bg-[#090d16] flex items-center justify-between gap-4">
+               <div className="flex flex-col">
+-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
+-                  Total Votes
++                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
++                  Total Verified Votes
+                 </span>
+                 <div className="flex items-center gap-1.5">
+-                  <ThumbsUp className={`w-4 h-4 ${hasVoted ? 'text-amber-400 fill-amber-400' : 'text-slate-400'}`} />
+-                  <span className="text-lg font-black text-white font-mono">
++                  <ThumbsUp className={`w-4 h-4 ${hasVoted ? 'text-amber-500 fill-amber-500' : 'text-slate-400'}`} />
++                  <span className="text-xl font-black text-slate-900 dark:text-white font-mono">
+                     {selectedProject.vote_count}
+                   </span>
+                 </div>
+               </div>
+ 
+               {hasVoted ? (
+-                <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-bold font-mono">
+-                  <CheckCircle2 className="w-4 h-4 text-amber-400" />
++                <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-800 dark:text-amber-300 text-xs font-bold font-mono">
++                  <CheckCircle2 className="w-4 h-4 text-amber-500" />
+                   <span>Voted ✓</span>
+                 </div>
+               ) : (
+                 <button
+                   onClick={handleCastVote}
+                   disabled={isVoting}
+-                  className="flex-1 min-h-[44px] flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50 transition-all font-mono"
++                  className="flex-1 max-w-xs min-h-[44px] flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shadow-lg shadow-amber-500/20 active:scale-95 disabled:opacity-50 transition-all font-mono"
+                 >
+                   {isVoting ? (
+                     <>
+@@ -370,8 +378,8 @@ export default function ProjectDetailDrawer() {
+                 </button>
+               )}
+             </div>
+-          </motion.aside>
+-        </>
++          </motion.div>
++        </div>
+       )}
+     </AnimatePresence>
+   );
+diff --git a/src/components/ui/SearchModal.tsx b/src/components/ui/SearchModal.tsx
+index 908cd22..693b2be 100644
+--- a/src/components/ui/SearchModal.tsx
++++ b/src/components/ui/SearchModal.tsx
+@@ -91,7 +91,7 @@ export default function SearchModal() {
+   if (!isSearchOpen) return null;
+ 
+   return (
+-    <div className="fixed inset-0 z-[120] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
++    <div className="fixed inset-0 z-[120] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-950/50 dark:bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+       {/* Backdrop tap to close */}
+       <div
+         className="fixed inset-0"
+@@ -100,10 +100,10 @@ export default function SearchModal() {
+       />
+ 
+       {/* Search Palette Container */}
+-      <div className="relative w-full max-w-2xl bg-[#090e1a]/95 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/90 overflow-hidden flex flex-col max-h-[82vh]">
++      <div className="relative w-full max-w-2xl bg-[#f8fafc]/98 dark:bg-[#090e1a]/95 border border-slate-300/90 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[82vh] backdrop-blur-2xl">
+         {/* Input Bar */}
+-        <div className="relative flex items-center px-4 py-3.5 border-b border-slate-800/80 gap-3">
+-          <Search className="w-5 h-5 text-amber-400 shrink-0" />
++        <div className="relative flex items-center px-4 py-3.5 border-b border-slate-200/90 dark:border-slate-800/80 gap-3">
++          <Search className="w-5 h-5 text-amber-500 dark:text-amber-400 shrink-0" />
+           <input
+             ref={inputRef}
+             type="text"
+@@ -114,29 +114,29 @@ export default function SearchModal() {
+             }}
+             onKeyDown={handleKeyNavigation}
+             placeholder="Search booths, student names, project codes (e.g. P04, Aarav)..."
+-            className="w-full bg-transparent text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none"
++            className="w-full bg-transparent text-sm sm:text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
+           />
+           {query ? (
+             <button
+               onClick={() => setQuery('')}
+-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60"
++              className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60"
+             >
+               <X className="w-4 h-4" />
+             </button>
+           ) : (
+-            <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-400 bg-slate-800/80 rounded border border-slate-700">
++            <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 rounded border border-slate-300 dark:border-slate-700">
+               ESC
+             </kbd>
+           )}
+         </div>
+ 
+         {/* Results List */}
+-        <div className="overflow-y-auto divide-y divide-slate-800/50 p-2 space-y-1">
++        <div className="overflow-y-auto divide-y divide-slate-200/80 dark:divide-slate-800/50 p-2 space-y-1">
+           {filteredProjects.length === 0 ? (
+-            <div className="py-12 text-center text-slate-500">
+-              <Sparkles className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-60" />
++            <div className="py-12 text-center text-slate-500 dark:text-slate-400">
++              <Sparkles className="w-8 h-8 text-slate-400 dark:text-slate-600 mx-auto mb-2 opacity-60" />
+               <p className="text-sm font-medium">No exhibition projects matched &quot;{query}&quot;</p>
+-              <p className="text-xs text-slate-600 mt-1">Try searching by student name, code (P01-P12, D01-D12), or topic</p>
++              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Try searching by student name, code (P01-P12, D01-D12), or topic</p>
+             </div>
+           ) : (
+             filteredProjects.map((project, idx) => {
+@@ -153,8 +153,8 @@ export default function SearchModal() {
+                   onMouseEnter={() => setSelectedIndex(idx)}
+                   className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${
+                     isSelected
+-                      ? 'bg-amber-500/15 border border-amber-500/40 text-white'
+-                      : 'hover:bg-slate-800/50 text-slate-300'
++                      ? 'bg-amber-500/15 border border-amber-500/40 text-slate-900 dark:text-white'
++                      : 'hover:bg-slate-100/80 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300'
+                   }`}
+                 >
+                   <div className="flex items-start gap-3 min-w-0">
+@@ -162,14 +162,14 @@ export default function SearchModal() {
+                     <span
+                       className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-mono font-bold border ${
+                         isPhysical
+-                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
++                          ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border-emerald-500/30'
+                           : isDigital
+-                          ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
++                          ? 'bg-cyan-500/15 text-cyan-800 dark:text-cyan-400 border-cyan-500/30'
+                           : isBusiness
+-                          ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
++                          ? 'bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-500/30'
+                           : isShowAndTell
+-                          ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
+-                          : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
++                          ? 'bg-purple-500/15 text-purple-800 dark:text-purple-400 border-purple-500/30'
++                          : 'bg-rose-500/15 text-rose-800 dark:text-rose-400 border-rose-500/30'
+                       }`}
+                     >
+                       {project.booth_code}
+@@ -178,17 +178,17 @@ export default function SearchModal() {
+                     {/* Details */}
+                     <div className="min-w-0">
+                       <div className="flex items-center gap-2">
+-                        <h4 className="text-sm font-bold text-white truncate">
++                        <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                           {project.title}
+                         </h4>
+-                        <span className="hidden sm:inline-block text-[10px] text-slate-400 font-mono">
++                        <span className="hidden sm:inline-block text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                           • {project.category}
+                         </span>
+                       </div>
+                       
+                       {/* Student members */}
+-                      <p className="text-xs text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
+-                        <Users className="w-3 h-3 text-slate-500 shrink-0" />
++                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
++                        <Users className="w-3 h-3 text-slate-400 shrink-0" />
+                         <span>{project.members.join(', ')}</span>
+                       </p>
+                     </div>
+@@ -196,11 +196,11 @@ export default function SearchModal() {
+ 
+                   {/* Fly-to indicator */}
+                   <div className="flex items-center gap-2 shrink-0 pl-3">
+-                    <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
+-                      <MapPin className="w-3 h-3 text-amber-400" />
++                    <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1">
++                      <MapPin className="w-3 h-3 text-amber-500 dark:text-amber-400" />
+                       <span>{project.vote_count} votes</span>
+                     </span>
+-                    <ArrowRight className={`w-4 h-4 transition-transform ${isSelected ? 'text-amber-400 translate-x-0.5' : 'text-slate-600'}`} />
++                    <ArrowRight className={`w-4 h-4 transition-transform ${isSelected ? 'text-amber-500 dark:text-amber-400 translate-x-0.5' : 'text-slate-400 dark:text-slate-600'}`} />
+                   </div>
+                 </div>
+               );
+@@ -209,7 +209,7 @@ export default function SearchModal() {
+         </div>
+ 
+         {/* Footer shortcuts */}
+-        <div className="px-4 py-2.5 bg-slate-950/80 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-500">
++        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200/90 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400">
+           <div className="flex items-center gap-3">
+             <span>↑↓ Navigate</span>
+             <span>↵ Jump to Booth in 3D</span>
+diff --git a/src/store/useExhibitionStore.ts b/src/store/useExhibitionStore.ts
+index ef95911..620b756 100644
+--- a/src/store/useExhibitionStore.ts
++++ b/src/store/useExhibitionStore.ts
+@@ -14,71 +14,71 @@ export type NavZoneId =
+ export type ThemeMode = 'light' | 'dark';
+ 
+ export const CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
+-  // Zoomed-out master view matching user screenshot: captures Show & Tell, Main Hall, Robotics, and overhead banner
++  // Balanced isometric perspective capturing Show & Tell, Main Hall, and Robotics with clear depth
+   overview: {
+-    position: [-10, 74, 56],
+-    target: [-10, 0, -14],
++    position: [-12, 40, 44],
++    target: [-12, 0.5, -12],
+   },
+   'zone-1': {
+     // Show & Tell angled pavilion
+-    position: [-36, 20, 8],
+-    target: [-36, 1.2, -7],
++    position: [-36, 18, 12],
++    target: [-36, 1.0, -6],
+   },
+   'zone-2': {
+     // Main Hall comprehensive view
+-    position: [12, 34, 28],
+-    target: [12, 1.2, 2],
++    position: [-1, 24, 26],
++    target: [-1, 1.0, 0],
+   },
+   'zone-3': {
+     // Robotics arenas
+-    position: [-1, 32, -14],
+-    target: [-1, 1.2, -36],
++    position: [-1, 22, -14],
++    target: [-1, 1.0, -36],
+   },
+   physical: {
+     // Physical Booths P01-P12
+-    position: [13, 26, 12],
+-    target: [13, 1.2, -9],
++    position: [-10, 16, 6],
++    target: [-10, 1.0, -8],
+   },
+   digital: {
+     // Digital Booths D01-D12
+-    position: [13, 26, 26],
+-    target: [13, 1.2, 5],
++    position: [0, 16, 6],
++    target: [0, 1.0, 0],
+   },
+   business: {
+     // Business Booths B01-B07
+-    position: [13, 24, 36],
+-    target: [13, 1.2, 17],
++    position: [10, 16, 6],
++    target: [10, 1.0, 0],
+   },
+ };
+ 
+ export const MOBILE_CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
+   overview: {
+-    position: [-10, 92, 70],
+-    target: [-10, 0, -14],
++    position: [-12, 54, 52],
++    target: [-12, 0.5, -12],
+   },
+   'zone-1': {
+-    position: [-36, 30, 18],
+-    target: [-36, 1.2, -6],
++    position: [-36, 26, 18],
++    target: [-36, 1.0, -6],
+   },
+   'zone-2': {
+-    position: [12, 44, 36],
+-    target: [12, 1.2, 2],
++    position: [-1, 32, 32],
++    target: [-1, 1.0, 0],
+   },
+   'zone-3': {
+-    position: [-1, 40, -10],
+-    target: [-1, 1.2, -36],
++    position: [-1, 30, -8],
++    target: [-1, 1.0, -36],
+   },
+   physical: {
+-    position: [13, 34, 18],
+-    target: [13, 1.2, -9],
++    position: [-10, 22, 10],
++    target: [-10, 1.0, -8],
+   },
+   digital: {
+-    position: [13, 34, 32],
+-    target: [13, 1.2, 5],
++    position: [0, 22, 10],
++    target: [0, 1.0, 0],
+   },
+   business: {
+-    position: [13, 32, 42],
+-    target: [13, 1.2, 17],
++    position: [10, 22, 10],
++    target: [10, 1.0, 0],
+   },
+ };
+ 

@@ -71,6 +71,8 @@ export default function BoothMesh({ project }: BoothMeshProps) {
   const selectProject = useExhibitionStore((state) => state.selectProject);
   const votedProjectIds = useExhibitionStore((state) => state.votedProjectIds);
   const isMobile = useExhibitionStore((state) => state.isMobile);
+  const theme = useExhibitionStore((state) => state.theme);
+  const isLight = theme === 'light';
 
   const isSelected = selectedProject?.id === project.id;
   const isAnySelected = Boolean(selectedProject);
@@ -121,13 +123,17 @@ export default function BoothMesh({ project }: BoothMeshProps) {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* 1. Base Platform in Matte Slate */}
+      {/* 1. Base Platform */}
       <mesh position={[0, 0.06, 0]} receiveShadow castShadow>
         <boxGeometry args={[2.2, 0.12, 1.4]} />
         <meshStandardMaterial
-          color={isSelected ? '#1e293b' : '#0f172a'}
-          metalness={0.7}
-          roughness={0.3}
+          color={
+            isSelected
+              ? (isLight ? '#475569' : '#334155')
+              : (isLight ? '#64748b' : '#0f172a')
+          }
+          metalness={isLight ? 0.2 : 0.7}
+          roughness={isLight ? 0.5 : 0.3}
         />
       </mesh>
 
@@ -145,9 +151,9 @@ export default function BoothMesh({ project }: BoothMeshProps) {
       <mesh position={[0, 0.55, 0]} castShadow receiveShadow>
         <boxGeometry args={[1.8, 0.75, 0.8]} />
         <meshStandardMaterial
-          color="#1e293b"
-          metalness={0.5}
-          roughness={0.25}
+          color={isLight ? '#cbd5e1' : '#1e293b'}
+          metalness={isLight ? 0.15 : 0.5}
+          roughness={isLight ? 0.5 : 0.25}
         />
       </mesh>
 
@@ -161,23 +167,27 @@ export default function BoothMesh({ project }: BoothMeshProps) {
         />
       </mesh>
 
-      {/* 3. Sleek Display Screen Backboard */}
+      {/* 3. Display Screen Backboard */}
       <mesh position={[0, 1.45, -0.32]} rotation={[-0.05, 0, 0]} castShadow>
         <boxGeometry args={[1.5, 0.85, 0.06]} />
-        <meshStandardMaterial color="#0b101c" metalness={0.9} roughness={0.15} />
+        <meshStandardMaterial
+          color={isLight ? '#334155' : '#0b101c'}
+          metalness={isLight ? 0.4 : 0.9}
+          roughness={0.2}
+        />
       </mesh>
 
       {/* Screen Face */}
       <mesh position={[0, 1.45, -0.28]}>
         <planeGeometry args={[1.4, 0.75]} />
         <meshStandardMaterial
-          color="#111827"
+          color={isLight ? '#1e293b' : '#111827'}
           emissive={style.color}
-          emissiveIntensity={hovered || isSelected ? 0.7 : 0.25}
+          emissiveIntensity={hovered || isSelected ? 0.8 : 0.3}
         />
       </mesh>
 
-      {/* 4. Two Exhibitor Red Chairs / Stools (from Blueprint) */}
+      {/* 4. Two Exhibitor Stools */}
       <group position={[0, 0, 0.85]}>
         <mesh position={[-0.5, 0.35, 0]} castShadow>
           <boxGeometry args={[0.4, 0.08, 0.4]} />
@@ -185,7 +195,7 @@ export default function BoothMesh({ project }: BoothMeshProps) {
         </mesh>
         <mesh position={[-0.5, 0.17, 0]}>
           <cylinderGeometry args={[0.04, 0.04, 0.35, 12]} />
-          <meshStandardMaterial color="#475569" metalness={0.8} />
+          <meshStandardMaterial color={isLight ? '#94a3b8' : '#475569'} metalness={0.8} />
         </mesh>
 
         <mesh position={[0.5, 0.35, 0]} castShadow>
@@ -194,7 +204,7 @@ export default function BoothMesh({ project }: BoothMeshProps) {
         </mesh>
         <mesh position={[0.5, 0.17, 0]}>
           <cylinderGeometry args={[0.04, 0.04, 0.35, 12]} />
-          <meshStandardMaterial color="#475569" metalness={0.8} />
+          <meshStandardMaterial color={isLight ? '#94a3b8' : '#475569'} metalness={0.8} />
         </mesh>
       </group>
 
@@ -213,25 +223,28 @@ export default function BoothMesh({ project }: BoothMeshProps) {
         </group>
       )}
 
-      {/* 6. Floating 3D Badge:
-          - When NO project is selected: all booths show their interactive badge.
-          - When ANY project is selected:
-            * All OTHER booths: completely HIDDEN (return null) so there is ZERO overlap and clutter.
-            * The SELECTED booth: shows a sleek, compact tag that never blocks the 3D booth or overlaps UI.
+      {/* 6. Clean 3D Floating Pin / Expanded Tooltip:
+          - Default state (not hovered): Compact badge pin [• P01] that NEVER overlaps neighbors!
+          - Hovered state: Expands to show title, category, and votes!
+          - Selected state: Pulse indicator!
       */}
       {isSelected ? (
         <Html
           position={[0, 2.1, 0]}
-          distanceFactor={22}
+          distanceFactor={20}
           zIndexRange={[15, 0]}
           center
           className="pointer-events-none select-none font-sans"
         >
           <div
-            className={`px-2.5 py-0.5 rounded-full ${style.badgeBg} ${style.badgeBorder} border shadow-xl flex items-center gap-1.5 backdrop-blur-md`}
+            className={`px-2.5 py-1 rounded-full border shadow-xl flex items-center gap-1.5 backdrop-blur-md ${
+              isLight
+                ? 'bg-white/95 border-amber-500 text-slate-900 shadow-slate-300'
+                : `${style.badgeBg} ${style.badgeBorder} text-white`
+            }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-            <span className="text-[10px] font-mono font-black text-white">{project.booth_code}</span>
+            <span className="text-[10px] font-mono font-black">{project.booth_code}</span>
             <span className={`text-[9px] font-bold uppercase tracking-wider ${style.badgeText}`}>
               {project.category}
             </span>
@@ -239,42 +252,64 @@ export default function BoothMesh({ project }: BoothMeshProps) {
         </Html>
       ) : !isAnySelected ? (
         <Html
-          position={[0, 2.3, 0]}
-          distanceFactor={isMobile ? 18 : 14}
-          zIndexRange={[15, 0]}
+          position={[0, hovered ? 2.5 : 2.05, 0]}
+          distanceFactor={isMobile ? 18 : 15}
+          zIndexRange={[hovered ? 30 : 10, 0]}
           center
           className="pointer-events-none select-none font-sans"
         >
-          <div
-            className={`px-3 py-1.5 rounded-xl backdrop-blur-xl border text-center whitespace-nowrap shadow-2xl transition-all duration-300 ${
-              hovered
-                ? `${style.badgeBg} ${style.badgeBorder} scale-105 shadow-black ring-2 ring-white/30`
-                : 'bg-slate-950/85 border-slate-700/80 shadow-black/80'
-            }`}
-          >
-            <div className="flex items-center justify-center gap-1.5 mb-0.5">
-              <span className="text-[11px] font-mono font-black px-1.5 py-0.2 rounded bg-slate-800 text-white border border-slate-600">
-                {project.booth_code}
-              </span>
-              <span className={`text-[10px] font-extrabold uppercase tracking-wider ${style.badgeText}`}>
-                {project.category}
-              </span>
-            </div>
-
-            <h4 className="text-xs font-bold text-white tracking-tight">
-              {project.title.split('•')[1]?.trim()?.split(':')[0] || project.title}
-            </h4>
-
-            <div className="mt-0.5 flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-300 font-mono">
-              <ThumbsUp className={`w-3 h-3 ${hasVoted ? 'text-amber-400 fill-amber-400' : 'text-slate-400'}`} />
-              <span>{project.vote_count} votes</span>
-              {hasVoted && (
-                <span className="ml-1 text-[10px] bg-emerald-500/20 text-emerald-400 px-1 py-0.2 rounded font-mono font-bold">
-                  ✓
+          {hovered ? (
+            /* Rich Preview Card when hovered or touched */
+            <div
+              className={`px-3 py-2 rounded-2xl backdrop-blur-xl border text-center whitespace-nowrap shadow-2xl transition-all duration-300 scale-105 ${
+                isLight
+                  ? 'bg-white/95 border-amber-500 text-slate-900 shadow-slate-400/40 ring-2 ring-amber-400/30'
+                  : `${style.badgeBg} ${style.badgeBorder} text-white shadow-black ring-2 ring-white/30`
+              }`}
+            >
+              <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                <span className={`text-[11px] font-mono font-black px-1.5 py-0.2 rounded border ${
+                  isLight ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-slate-800 text-white border-slate-600'
+                }`}>
+                  {project.booth_code}
                 </span>
-              )}
+                <span className={`text-[10px] font-extrabold uppercase tracking-wider ${style.badgeText}`}>
+                  {project.category}
+                </span>
+              </div>
+
+              <h4 className={`text-xs font-bold truncate max-w-[190px] ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                {project.title.split('•')[1]?.trim()?.split(':')[0] || project.title}
+              </h4>
+
+              <div className={`mt-0.5 flex items-center justify-center gap-1 text-[11px] font-semibold font-mono ${
+                isLight ? 'text-slate-600' : 'text-slate-300'
+              }`}>
+                <ThumbsUp className={`w-3 h-3 ${hasVoted ? 'text-amber-500 fill-amber-500' : 'text-slate-400'}`} />
+                <span>{project.vote_count} votes</span>
+                {hasVoted && (
+                  <span className="ml-1 text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1 py-0.2 rounded font-mono font-bold">
+                    ✓
+                  </span>
+                )}
+              </div>
+              <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-1 font-mono font-bold">
+                Tap to inspect →
+              </p>
             </div>
-          </div>
+          ) : (
+            /* Clean Compact Pill Marker in Overview — NEVER overlaps! */
+            <div
+              className={`px-2 py-0.5 rounded-full border shadow-md flex items-center gap-1 backdrop-blur-md transition-transform duration-200 hover:scale-110 ${
+                isLight
+                  ? 'bg-white/92 border-slate-300/90 text-slate-800 shadow-slate-200'
+                  : 'bg-slate-950/85 border-slate-700/80 text-white shadow-black/80'
+              }`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: style.color }} />
+              <span className="text-[10px] font-mono font-black">{project.booth_code}</span>
+            </div>
+          )}
         </Html>
       ) : null}
     </group>

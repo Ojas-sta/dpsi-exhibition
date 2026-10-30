@@ -53,18 +53,17 @@ export default function MilkyWaySky() {
   if (isLight) {
     return (
       <group>
-        {/* Luminous Daytime Architectural Sky Dome */}
+        {/* Eye-friendly calm architectural drafting slate dome (zero glare) */}
         <mesh scale={[-1, 1, 1]}>
           <sphereGeometry args={[950, 32, 24]} />
           <meshBasicMaterial
-            color="#e0f2fe"
+            color="#748596"
             side={THREE.BackSide}
-            toneMapped={false}
+            toneMapped={true}
             fog={false}
             depthWrite={false}
           />
         </mesh>
-        <ambientLight intensity={0.7} color="#ffffff" />
       </group>
     );
   }

@@ -91,7 +91,7 @@ export default function SearchModal() {
   if (!isSearchOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[120] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-950/50 dark:bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
       {/* Backdrop tap to close */}
       <div
         className="fixed inset-0"
@@ -100,10 +100,10 @@ export default function SearchModal() {
       />
 
       {/* Search Palette Container */}
-      <div className="relative w-full max-w-2xl bg-[#090e1a]/95 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/90 overflow-hidden flex flex-col max-h-[82vh]">
+      <div className="relative w-full max-w-2xl bg-[#f8fafc]/98 dark:bg-[#090e1a]/95 border border-slate-300/90 dark:border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[82vh] backdrop-blur-2xl">
         {/* Input Bar */}
-        <div className="relative flex items-center px-4 py-3.5 border-b border-slate-800/80 gap-3">
-          <Search className="w-5 h-5 text-amber-400 shrink-0" />
+        <div className="relative flex items-center px-4 py-3.5 border-b border-slate-200/90 dark:border-slate-800/80 gap-3">
+          <Search className="w-5 h-5 text-amber-500 dark:text-amber-400 shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -114,29 +114,29 @@ export default function SearchModal() {
             }}
             onKeyDown={handleKeyNavigation}
             placeholder="Search booths, student names, project codes (e.g. P04, Aarav)..."
-            className="w-full bg-transparent text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none"
+            className="w-full bg-transparent text-sm sm:text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
           />
           {query ? (
             <button
               onClick={() => setQuery('')}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/60"
             >
               <X className="w-4 h-4" />
             </button>
           ) : (
-            <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-400 bg-slate-800/80 rounded border border-slate-700">
+            <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 rounded border border-slate-300 dark:border-slate-700">
               ESC
             </kbd>
           )}
         </div>
 
         {/* Results List */}
-        <div className="overflow-y-auto divide-y divide-slate-800/50 p-2 space-y-1">
+        <div className="overflow-y-auto divide-y divide-slate-200/80 dark:divide-slate-800/50 p-2 space-y-1">
           {filteredProjects.length === 0 ? (
-            <div className="py-12 text-center text-slate-500">
-              <Sparkles className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-60" />
+            <div className="py-12 text-center text-slate-500 dark:text-slate-400">
+              <Sparkles className="w-8 h-8 text-slate-400 dark:text-slate-600 mx-auto mb-2 opacity-60" />
               <p className="text-sm font-medium">No exhibition projects matched &quot;{query}&quot;</p>
-              <p className="text-xs text-slate-600 mt-1">Try searching by student name, code (P01-P12, D01-D12), or topic</p>
+              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Try searching by student name, code (P01-P12, D01-D12), or topic</p>
             </div>
           ) : (
             filteredProjects.map((project, idx) => {
@@ -153,8 +153,8 @@ export default function SearchModal() {
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-amber-500/15 border border-amber-500/40 text-white'
-                      : 'hover:bg-slate-800/50 text-slate-300'
+                      ? 'bg-amber-500/15 border border-amber-500/40 text-slate-900 dark:text-white'
+                      : 'hover:bg-slate-100/80 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300'
                   }`}
                 >
                   <div className="flex items-start gap-3 min-w-0">
@@ -162,14 +162,14 @@ export default function SearchModal() {
                     <span
                       className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-mono font-bold border ${
                         isPhysical
-                          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                          ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-400 border-emerald-500/30'
                           : isDigital
-                          ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
+                          ? 'bg-cyan-500/15 text-cyan-800 dark:text-cyan-400 border-cyan-500/30'
                           : isBusiness
-                          ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                          ? 'bg-amber-500/15 text-amber-800 dark:text-amber-400 border-amber-500/30'
                           : isShowAndTell
-                          ? 'bg-purple-500/15 text-purple-400 border-purple-500/30'
-                          : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                          ? 'bg-purple-500/15 text-purple-800 dark:text-purple-400 border-purple-500/30'
+                          : 'bg-rose-500/15 text-rose-800 dark:text-rose-400 border-rose-500/30'
                       }`}
                     >
                       {project.booth_code}
@@ -178,17 +178,17 @@ export default function SearchModal() {
                     {/* Details */}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-white truncate">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                           {project.title}
                         </h4>
-                        <span className="hidden sm:inline-block text-[10px] text-slate-400 font-mono">
+                        <span className="hidden sm:inline-block text-[10px] text-slate-500 dark:text-slate-400 font-mono">
                           • {project.category}
                         </span>
                       </div>
                       
                       {/* Student members */}
-                      <p className="text-xs text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
-                        <Users className="w-3 h-3 text-slate-500 shrink-0" />
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
+                        <Users className="w-3 h-3 text-slate-400 shrink-0" />
                         <span>{project.members.join(', ')}</span>
                       </p>
                     </div>
@@ -196,11 +196,11 @@ export default function SearchModal() {
 
                   {/* Fly-to indicator */}
                   <div className="flex items-center gap-2 shrink-0 pl-3">
-                    <span className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-amber-400" />
+                    <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-amber-500 dark:text-amber-400" />
                       <span>{project.vote_count} votes</span>
                     </span>
-                    <ArrowRight className={`w-4 h-4 transition-transform ${isSelected ? 'text-amber-400 translate-x-0.5' : 'text-slate-600'}`} />
+                    <ArrowRight className={`w-4 h-4 transition-transform ${isSelected ? 'text-amber-500 dark:text-amber-400 translate-x-0.5' : 'text-slate-400 dark:text-slate-600'}`} />
                   </div>
                 </div>
               );
@@ -209,7 +209,7 @@ export default function SearchModal() {
         </div>
 
         {/* Footer shortcuts */}
-        <div className="px-4 py-2.5 bg-slate-950/80 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-500">
+        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-200/90 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-3">
             <span>↑↓ Navigate</span>
             <span>↵ Jump to Booth in 3D</span>

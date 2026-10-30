@@ -540,7 +540,7 @@ export default function GradientASCII({
       const tick2D = (now: number) => {
         const t = (now - startTime) * 0.001;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.fillStyle = '#050811';
+        ctx.fillStyle = settingsRef.current.lightMode ? '#f6f8fa' : '#050811';
         ctx.fillRect(0, 0, width, height);
         ctx.font = `600 ${cellSize * 0.75}px ${settingsRef.current.fontFamily || 'monospace'}`;
         ctx.textAlign = 'center';
@@ -558,7 +558,11 @@ export default function GradientASCII({
             if (brightness > 0.1) {
               const charIdx = Math.floor(brightness * (chars.length - 1));
               const char = chars[charIdx] || ' ';
-              ctx.fillStyle = brightness > 0.6 ? '#38bdf8' : brightness > 0.35 ? '#1e3fd8' : '#1e293b';
+              if (settingsRef.current.lightMode) {
+                ctx.fillStyle = brightness > 0.6 ? '#1d4ed8' : brightness > 0.35 ? '#2563eb' : '#94a3b8';
+              } else {
+                ctx.fillStyle = brightness > 0.6 ? '#38bdf8' : brightness > 0.35 ? '#1e3fd8' : '#1e293b';
+              }
               ctx.fillText(char, x, y);
             }
           }
