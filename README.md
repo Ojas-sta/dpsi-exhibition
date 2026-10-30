@@ -41,14 +41,32 @@ A photorealistic, architectural light-themed 3D Virtual Exhibition and Live Voti
 
 ---
 
-## ☁️ Cloudflare Deployment & Custom Domain
+## ☁️ Cloudflare Deployment & CI/CD
 
 ### 1. Live Deployment
 The project is hosted on Cloudflare Pages:
 - **Production URL:** [https://dpsiexibition.pages.dev](https://dpsiexibition.pages.dev)
 - **Deployment Script:** `npm run deploy`
 
-### 2. Attaching Custom Domain (`dpsiexibition.com`):
+### 2. Automated CI/CD Pipelines (GitHub Actions)
+The repository includes automated CI/CD workflows configured in `.github/workflows/`:
+
+- **CI (`.github/workflows/ci.yml`):**
+  - Triggers on: Pull Requests and pushes to `main`.
+  - Runs ESLint validation, TypeScript typechecks (`tsc --noEmit`), and static Next.js production builds (`npm run build`).
+  - Verifies that static export artifacts (`out/`) are generated without errors.
+- **CD (`.github/workflows/cd.yml`):**
+  - Triggers on: Push to `main` branch or manual trigger (`workflow_dispatch`).
+  - Automatically compiles and deploys the static build directly to Cloudflare Pages (`dpsiexibition`).
+
+#### Setting Up GitHub Secrets for Cloudflare CD:
+To enable automated deployments from GitHub Actions, add these repository secrets (**Settings > Secrets and variables > Actions**):
+- `CLOUDFLARE_API_TOKEN`: Cloudflare API token with `Cloudflare Pages: Edit` permissions.
+- `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID (visible on Cloudflare Dashboard sidebar).
+
+*(Optional)* Firebase build variables can also be provided as secrets: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, etc.
+
+### 3. Attaching Custom Domain (`dpsiexibition.com`):
 1. Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com).
 2. Go to **Workers & Pages** -> **`dpsiexibition`**.
 3. Navigate to the **Custom domains** tab and click **Set up a custom domain**.
