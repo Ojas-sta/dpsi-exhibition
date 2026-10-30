@@ -18,17 +18,18 @@ export default function AmbientBackground() {
   return (
     <div
       className={`fixed inset-0 pointer-events-none z-0 overflow-hidden transition-opacity duration-500 ${
-        isLight ? 'opacity-55' : 'opacity-50'
+        isLight ? 'opacity-25' : 'opacity-50'
       }`}
       aria-hidden="true"
     >
       <AeroShards
-        shardColor={isLight ? '#6366f1' : '#896ABD'}
-        accentColor={isLight ? '#3b82f6' : '#A855F7'}
+        shardColor={isLight ? '#94a3b8' : '#896ABD'}
+        accentColor={isLight ? '#60a5fa' : '#A855F7'}
         placement="full"
         material="glass"
-        count={1300}
-        speed={0.8}
+        count={isLight ? 420 : 1300}
+        speed={isLight ? 0.5 : 0.8}
+        lightMode={isLight}
         style={{ width: '100%', height: '100%' }}
       />
     </div>

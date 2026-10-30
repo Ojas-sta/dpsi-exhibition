@@ -50,7 +50,7 @@ export default function RootLayout({
       className={`${outfit.variable} ${spaceGrotesk.variable} antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen w-full bg-[#f6f8fa] dark:bg-[#000000] text-[#1f2328] dark:text-[#f1f5f9] font-sans selection:bg-amber-500 selection:text-black relative transition-colors duration-300">
+      <body className="min-h-screen w-full bg-[#edf0f4] dark:bg-[#000000] text-[#24292f] dark:text-[#f1f5f9] font-sans selection:bg-amber-500 selection:text-black relative transition-colors duration-300">
         <ThemeSync />
 
         {/* [ ELEMENT 04 ] :: REFRACTIVE GLASS AERO-SHARDS SIMULATION in the background of landing page */}

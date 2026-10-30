@@ -3,8 +3,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f6f8fa;
-  --foreground: #1f2328;
+  --background: #edf0f4;
+  --foreground: #24292f;
   --font-sans: var(--font-outfit), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-space-grotesk), monospace;
 }

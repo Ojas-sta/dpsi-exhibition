@@ -68,13 +68,13 @@ export default function LandingPage() {
       {/* ─── GITHUB UNIVERSE TOP ANNOUNCEMENT TICKER ─── */}
       <div className={`w-full border-b px-4 py-2 flex items-center justify-between text-[11px] font-mono transition-colors duration-300 ${
         isLight
-          ? 'bg-[#f6f8fa]/80 border-slate-200/80 backdrop-blur-md text-slate-600'
+          ? 'bg-[#edf0f4]/80 border-slate-200/80 backdrop-blur-md text-slate-600'
           : 'bg-[#0d1117] border-[#21262d] text-[#8b949e]'
       }`}>
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse" />
-            <span className={`font-bold ${isLight ? 'text-slate-900' : 'text-[#f0f6fc]'}`}>
+            <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-[#f0f6fc]'}`}>
               ANNUAL TECH &amp; INNOVATION SUMMIT 2026
             </span>
             <span className={`hidden sm:inline ${isLight ? 'text-slate-500' : 'text-[#8b949e]'}`}>
@@ -96,7 +96,7 @@ export default function LandingPage() {
       {/* ─── GITHUB UNIVERSE GRID NAVBAR ─── */}
       <header className={`sticky top-0 z-50 w-full backdrop-blur-md border-b transition-colors duration-300 ${
         isLight
-          ? 'bg-[#f6f8fa]/85 border-slate-200/80 shadow-sm'
+          ? 'bg-[#edf0f4]/85 border-slate-200/80 shadow-xs'
           : 'bg-[#000000]/95 border-[#30363d]'
       }`}>
         <div className="max-w-7xl mx-auto flex items-stretch h-14">
@@ -105,7 +105,7 @@ export default function LandingPage() {
             href="/"
             className={`flex items-center gap-3 px-4 border-r transition-colors shrink-0 ${
               isLight
-                ? 'border-slate-200/80 hover:bg-slate-100/60'
+                ? 'border-slate-200/80 hover:bg-slate-200/50'
                 : 'border-[#30363d] hover:bg-[#161b22]'
             }`}
           >
@@ -114,7 +114,7 @@ export default function LandingPage() {
             </div>
             <div className="hidden md:flex flex-col">
               <span className={`text-[12px] font-black tracking-tight uppercase font-mono ${
-                isLight ? 'text-slate-950' : 'text-white'
+                isLight ? 'text-slate-800' : 'text-white'
               }`}>
                 DPSI EXPO &apos;26
               </span>
@@ -140,7 +140,7 @@ export default function LandingPage() {
                 href={item.href}
                 className={`flex items-center px-4 border-r transition-colors ${
                   isLight
-                    ? 'border-slate-200/80 text-slate-700 hover:text-slate-950 hover:bg-slate-100/60'
+                    ? 'border-slate-200/80 text-slate-700 hover:text-slate-900 hover:bg-slate-200/50'
                     : 'border-[#30363d] text-[#c9d1d9] hover:text-white hover:bg-[#161b22]'
                 }`}
               >
@@ -155,7 +155,7 @@ export default function LandingPage() {
               onClick={toggleTheme}
               className={`flex items-center gap-1.5 px-3.5 border-r font-mono text-xs transition-colors ${
                 isLight
-                  ? 'border-slate-200/80 hover:bg-slate-100/60 text-amber-600'
+                  ? 'border-slate-200/80 hover:bg-slate-200/50 text-amber-600'
                   : 'border-[#30363d] hover:bg-[#161b22] text-amber-400'
               }`}
               title="Toggle Light / Dark Mode"
@@ -208,7 +208,7 @@ export default function LandingPage() {
             {/* Massive Conference Title with Neon Block Accent */}
             <div className="flex items-start justify-between gap-4">
               <h1 className={`text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter uppercase font-sans leading-none ${
-                isLight ? 'text-slate-950' : 'text-white'
+                isLight ? 'text-slate-800' : 'text-white'
               }`}>
                 EXPO&apos;26<span className="inline-block w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#2ea043] ml-2 -mb-1 align-baseline" /><span className="inline-block w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#db61a2] -mb-1 align-baseline" />
               </h1>
@@ -250,7 +250,7 @@ export default function LandingPage() {
                   {'// THE SUMMIT ARCHITECTURE'}
                 </span>
                 <h2 className={`text-3xl sm:text-4xl font-extrabold tracking-tight font-mono ${
-                  isLight ? 'text-slate-950' : 'text-white'
+                  isLight ? 'text-slate-800' : 'text-white'
                 }`}>
                   innovate-build-deploy/
                 </h2>
@@ -415,7 +415,7 @@ export default function LandingPage() {
             {/* Seamless Bottom Gradient dissolve into background */}
             <div className={`absolute inset-x-0 bottom-0 h-48 pointer-events-none z-10 bg-gradient-to-b ${
               isLight
-                ? 'from-transparent via-[#f6f8fa]/60 to-[#f6f8fa]'
+                ? 'from-transparent via-[#edf0f4]/60 to-[#edf0f4]'
                 : 'from-transparent via-[#000000]/60 to-[#000000]'
             }`} />
 
@@ -429,7 +429,7 @@ export default function LandingPage() {
                 {'STAGE_A // COMPUTATIONAL ASCII CANVAS'}
               </span>
               <h2 className={`text-3xl sm:text-5xl font-black font-sans uppercase tracking-tight max-w-2xl ${
-                isLight ? 'text-slate-900 drop-shadow-xs' : 'text-white drop-shadow-md'
+                isLight ? 'text-slate-800 drop-shadow-xs' : 'text-white drop-shadow-md'
               }`}>
                 Where Young Visionaries Shape Tomorrow
               </h2>
@@ -457,7 +457,7 @@ export default function LandingPage() {
                 {'// COMPETING BOOTHS DIRECTORY'}
               </span>
               <h2 className={`text-3xl sm:text-4xl font-black uppercase font-sans tracking-tight ${
-                isLight ? 'text-slate-950' : 'text-white'
+                isLight ? 'text-slate-800' : 'text-white'
               }`}>
                 All 35 Inventions
               </h2>
@@ -475,7 +475,7 @@ export default function LandingPage() {
                     selectedZone === z
                       ? 'bg-[#238636] text-white font-bold shadow-xs'
                       : isLight
-                      ? 'text-slate-600 hover:text-slate-950'
+                      ? 'text-slate-600 hover:text-slate-900'
                       : 'text-[#8b949e] hover:text-white'
                   }`}
                 >
@@ -584,7 +584,7 @@ export default function LandingPage() {
               {'// PHYSICAL BLUEPRINT'}
             </span>
             <h2 className={`text-3xl sm:text-4xl font-black uppercase font-sans tracking-tight ${
-              isLight ? 'text-slate-950' : 'text-white'
+              isLight ? 'text-slate-800' : 'text-white'
             }`}>
               The Three Arenas
             </h2>
@@ -700,7 +700,7 @@ export default function LandingPage() {
                 {'// CRYPTOGRAPHIC INTEGRITY'}
               </span>
               <h2 className={`text-3xl sm:text-4xl font-black uppercase font-sans tracking-tight ${
-                isLight ? 'text-slate-950' : 'text-white'
+                isLight ? 'text-slate-800' : 'text-white'
               }`}>
                 Anti-Cheat Verified Voting
               </h2>
@@ -776,7 +776,7 @@ export default function LandingPage() {
             {'// ELEMENT 03 // REAL-TIME ALERTS'}
           </span>
           <h2 className={`text-2xl sm:text-4xl font-black uppercase font-sans tracking-tight ${
-            isLight ? 'text-slate-950' : 'text-white'
+            isLight ? 'text-slate-800' : 'text-white'
           }`}>
             Live Round Notifications &amp; Digital Pass
           </h2>
@@ -841,7 +841,7 @@ export default function LandingPage() {
                 {'// CONFERENCE TIMETABLE'}
               </span>
               <h2 className={`text-3xl font-black uppercase font-sans tracking-tight ${
-                isLight ? 'text-slate-950' : 'text-white'
+                isLight ? 'text-slate-800' : 'text-white'
               }`}>
                 Two-Day Schedule
               </h2>
@@ -856,7 +856,7 @@ export default function LandingPage() {
                   selectedDay === 'day1'
                     ? 'bg-[#238636] text-white font-bold shadow-xs'
                     : isLight
-                    ? 'text-slate-600 hover:text-slate-950'
+                    ? 'text-slate-600 hover:text-slate-900'
                     : 'text-[#8b949e]'
                 }`}
               >
@@ -868,7 +868,7 @@ export default function LandingPage() {
                   selectedDay === 'day2'
                     ? 'bg-[#238636] text-white font-bold shadow-xs'
                     : isLight
-                    ? 'text-slate-600 hover:text-slate-950'
+                    ? 'text-slate-600 hover:text-slate-900'
                     : 'text-[#8b949e]'
                 }`}
               >
@@ -948,7 +948,7 @@ export default function LandingPage() {
       {/* ─── GITHUB UNIVERSE STYLE MINIMALIST FOOTER ─── */}
       <footer className={`py-10 font-mono text-xs border-t transition-colors duration-300 ${
         isLight
-          ? 'bg-[#f6f8fa]/85 border-slate-200/80 backdrop-blur-md text-slate-600'
+          ? 'bg-[#edf0f4]/85 border-slate-200/80 backdrop-blur-md text-slate-600'
           : 'bg-[#000000] border-[#21262d] text-[#8b949e]'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -965,13 +965,13 @@ export default function LandingPage() {
             <Link href="/expo" className={`hover:underline ${isLight ? 'text-blue-600 font-semibold' : 'text-white'}`}>
               [ 3D Floor Plan ]
             </Link>
-            <a href="#projects" className={`transition-colors ${isLight ? 'hover:text-slate-950' : 'hover:text-white'}`}>
+            <a href="#projects" className={`transition-colors ${isLight ? 'hover:text-slate-900' : 'hover:text-white'}`}>
               [ 35 Inventions ]
             </a>
-            <a href="#voting" className={`transition-colors ${isLight ? 'hover:text-slate-950' : 'hover:text-white'}`}>
+            <a href="#voting" className={`transition-colors ${isLight ? 'hover:text-slate-900' : 'hover:text-white'}`}>
               [ Fair-Play Voting ]
             </a>
-            <a href="#schedule" className={`transition-colors ${isLight ? 'hover:text-slate-950' : 'hover:text-white'}`}>
+            <a href="#schedule" className={`transition-colors ${isLight ? 'hover:text-slate-900' : 'hover:text-white'}`}>
               [ Itinerary ]
             </a>
           </div>
