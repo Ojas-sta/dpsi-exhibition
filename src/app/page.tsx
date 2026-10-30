@@ -68,7 +68,7 @@ export default function LandingPage() {
       {/* ─── GITHUB UNIVERSE TOP ANNOUNCEMENT TICKER ─── */}
       <div className={`w-full border-b px-4 py-2 flex items-center justify-between text-[11px] font-mono transition-colors duration-300 ${
         isLight
-          ? 'bg-[#edf0f4]/80 border-slate-200/80 backdrop-blur-md text-slate-600'
+          ? 'bg-[#dfe3e8]/90 border-slate-300/80 backdrop-blur-md text-slate-700'
           : 'bg-[#0d1117] border-[#21262d] text-[#8b949e]'
       }`}>
         <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
@@ -96,7 +96,7 @@ export default function LandingPage() {
       {/* ─── GITHUB UNIVERSE GRID NAVBAR ─── */}
       <header className={`sticky top-0 z-50 w-full backdrop-blur-md border-b transition-colors duration-300 ${
         isLight
-          ? 'bg-[#edf0f4]/85 border-slate-200/80 shadow-xs'
+          ? 'bg-[#dfe3e8]/90 border-slate-300/80 shadow-xs'
           : 'bg-[#000000]/95 border-[#30363d]'
       }`}>
         <div className="max-w-7xl mx-auto flex items-stretch h-14">
@@ -456,7 +456,7 @@ export default function LandingPage() {
             {/* Seamless Bottom Gradient dissolve into background */}
             <div className={`absolute inset-x-0 bottom-0 h-48 pointer-events-none z-10 bg-gradient-to-b ${
               isLight
-                ? 'from-transparent via-[#edf0f4]/60 to-[#edf0f4]'
+                ? 'from-transparent via-[#dfe3e8]/70 to-[#dfe3e8]'
                 : 'from-transparent via-[#000000]/60 to-[#000000]'
             }`} />
 
@@ -989,7 +989,7 @@ export default function LandingPage() {
       {/* ─── GITHUB UNIVERSE STYLE MINIMALIST FOOTER ─── */}
       <footer className={`py-10 font-mono text-xs border-t transition-colors duration-300 ${
         isLight
-          ? 'bg-[#edf0f4]/85 border-slate-200/80 backdrop-blur-md text-slate-600'
+          ? 'bg-[#dfe3e8]/90 border-slate-300/80 backdrop-blur-md text-slate-700'
           : 'bg-[#000000] border-[#21262d] text-[#8b949e]'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
