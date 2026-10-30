@@ -242,7 +242,7 @@ export default function LandingPage() {
                 <span>{'[ ELEMENT 02 ] :: INTERACTIVE PHYSICS WORDMARK'}</span>
               </div>
               <span className="hidden md:inline text-[10px] text-slate-400 font-mono tracking-widest">
-                COORDINATES: 28.6415° N, 77.3714° E // AUDITORIUM MAIN
+                COORDINATES: 28.6479° N, 77.3764° E // AUDITORIUM MAIN
               </span>
               <span className={isLight ? 'text-blue-600 font-semibold' : 'text-[#58a6ff]'}>
                 SPRING DYNAMICS ACTIVE
