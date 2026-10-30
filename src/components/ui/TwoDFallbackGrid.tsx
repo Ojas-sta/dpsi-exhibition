@@ -51,7 +51,7 @@ export default function TwoDFallbackGrid() {
   }, [projects, selectedCategory, searchQuery]);
 
   return (
-    <div className={`w-full min-h-screen transition-colors duration-300 pt-20 pb-28 px-3 sm:px-6 lg:px-8 ${
+    <div className={`w-full min-h-screen transition-colors duration-300 pt-20 pb-36 pb-safe px-3 sm:px-6 lg:px-8 ${
       isLight ? 'bg-[#f8fafc] text-slate-900' : 'bg-[#070b14] text-slate-100'
     }`}>
       <div className="max-w-7xl mx-auto space-y-5">

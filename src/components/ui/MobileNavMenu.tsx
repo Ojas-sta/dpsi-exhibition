@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useExhibitionStore, NavZoneId } from '@/store/useExhibitionStore';
 import { signOutFromFirebase } from '@/lib/firebase';
 import {
@@ -19,6 +20,7 @@ import {
   Sparkles,
   Sun,
   Moon,
+  ArrowLeft,
 } from 'lucide-react';
 
 export default function MobileNavMenu() {
@@ -202,6 +204,19 @@ export default function MobileNavMenu() {
             <span>Dark Mode</span>
           </button>
         </div>
+
+        {/* Back to Event Info & Overview Link */}
+        <Link
+          href="/"
+          onClick={() => setMobileMenuOpen(false)}
+          className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 text-amber-900 dark:text-amber-300 transition-all font-semibold text-xs"
+        >
+          <div className="flex items-center gap-2.5">
+            <ArrowLeft className="w-4 h-4 text-amber-500 shrink-0" />
+            <span>Event Info & Timetable Overview</span>
+          </div>
+          <ChevronRight className="w-4 h-4 text-amber-500/70 shrink-0" />
+        </Link>
 
         {/* Exhibition Zones Navigation Section */}
         <div className="space-y-2 pt-1">

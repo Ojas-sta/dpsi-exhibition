@@ -46,7 +46,7 @@ export default function ExhibitionCanvas() {
   const isLight = theme === 'light';
 
   return (
-    <div className={`relative isolate w-full h-[100dvh] select-none touch-none transition-colors duration-500 ${isLight ? 'bg-[#748596]' : 'bg-[#060913]'}`}>
+    <div className={`expo-canvas relative isolate w-full h-[100dvh] select-none touch-none transition-colors duration-500 ${isLight ? 'bg-[#748596]' : 'bg-[#060913]'}`}>
       <Suspense fallback={<CanvasLoader />}>
         <Canvas
           shadows={!isMobile}

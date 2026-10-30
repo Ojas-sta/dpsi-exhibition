@@ -152,7 +152,7 @@ export default function ProjectDetailDrawer() {
   return (
     <AnimatePresence>
       {isDrawerOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto">
           {/* Backdrop with Blur */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -162,16 +162,21 @@ export default function ProjectDetailDrawer() {
             className="fixed inset-0 bg-slate-900/40 dark:bg-black/80 backdrop-blur-md transition-all"
           />
 
-          {/* Centered Modal Card */}
+          {/* Centered Modal Card / Mobile Bottom Sheet */}
           <motion.div
             role="dialog"
             aria-modal="true"
-            initial={{ opacity: 0, scale: 0.95, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 16 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-            className="relative z-10 w-full max-w-2xl max-h-[88vh] rounded-2xl sm:rounded-3xl border border-slate-300/80 dark:border-slate-800 bg-[#f8fafc]/98 dark:bg-[#0c1220]/95 backdrop-blur-2xl shadow-2xl flex flex-col text-slate-800 dark:text-slate-100 overflow-hidden my-auto"
+            initial={isMobile ? { y: '100%', opacity: 0 } : { opacity: 0, scale: 0.95, y: 16 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={isMobile ? { y: '100%', opacity: 0 } : { opacity: 0, scale: 0.95, y: 16 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 290 }}
+            className="relative z-10 w-full max-w-2xl max-h-[88vh] rounded-t-3xl sm:rounded-3xl border-t sm:border border-slate-300/80 dark:border-slate-800 bg-[#f8fafc]/98 dark:bg-[#0c1220]/95 backdrop-blur-2xl shadow-2xl flex flex-col text-slate-800 dark:text-slate-100 overflow-hidden sm:my-auto"
           >
+            {/* Mobile Drag Indicator Handle */}
+            <div className="sm:hidden pt-2.5 pb-1 flex justify-center w-full">
+              <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+            </div>
+
             {/* Header */}
             <div
               className={`p-4 sm:p-5 border-b border-slate-200/90 dark:border-slate-800/80 bg-gradient-to-r ${theme.glow} flex items-center justify-between`}
@@ -243,7 +248,7 @@ export default function ProjectDetailDrawer() {
               </div>
 
               {/* High-Resolution Project Photo */}
-              <div className="relative w-full h-52 sm:h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 group shadow-md">
+              <div className="relative w-full h-44 sm:h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 group shadow-md">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={selectedProject.image_url}
@@ -360,7 +365,7 @@ export default function ProjectDetailDrawer() {
             </div>
 
             {/* Bottom Action Bar */}
-            <div className="p-4 sm:p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/95 dark:bg-[#090d16] flex items-center justify-between gap-4">
+            <div className="p-4 sm:p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/95 dark:bg-[#090d16] flex items-center justify-between gap-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <div className="flex flex-col">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
                   Total Verified Votes

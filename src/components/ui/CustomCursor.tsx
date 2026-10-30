@@ -6,7 +6,11 @@ import { useExhibitionStore } from '@/store/useExhibitionStore';
 
 export default function CustomCursor() {
   const theme = useExhibitionStore((state) => state.theme);
+  const isMobile = useExhibitionStore((state) => state.isMobile);
   const isLight = theme === 'light';
+
+  // Completely disable custom virtual cursor on mobile and touch devices
+  if (isMobile) return null;
 
   return (
     <div

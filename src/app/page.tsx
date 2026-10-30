@@ -46,6 +46,8 @@ export default function LandingPage() {
   const theme = useExhibitionStore((state) => state.theme);
   const toggleTheme = useExhibitionStore((state) => state.toggleTheme);
   const isLight = theme === 'light';
+  const isMobile = useExhibitionStore((state) => state.isMobile);
+  const setIsMobile = useExhibitionStore((state) => state.setIsMobile);
   const selectProject = useExhibitionStore((state) => state.selectProject);
   const storeProjects = useExhibitionStore((state) => state.projects);
   const setProjects = useExhibitionStore((state) => state.setProjects);
@@ -58,6 +60,12 @@ export default function LandingPage() {
   const [registered, setRegistered] = useState(false);
 
   useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
     getDeviceFingerprint().then((fp) => {
       setDeviceFingerprint(fp);
     });
@@ -81,10 +89,11 @@ export default function LandingPage() {
     });
 
     return () => {
+      window.removeEventListener('resize', handleResize);
       unsubAuth();
       unsubProjects();
     };
-  }, [setDeviceFingerprint, setUser, setProjects]);
+  }, [setIsMobile, setDeviceFingerprint, setUser, setProjects]);
 
   const allProjects = storeProjects.length > 0 ? storeProjects : SEED_PROJECTS;
   const filteredProjects = allProjects.filter((p) => {
@@ -218,7 +227,7 @@ export default function LandingPage() {
 
             <Link
               href="/expo"
-              className="flex items-center gap-2 px-5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-mono font-black text-xs uppercase tracking-wider transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-mono font-black text-[11px] sm:text-xs uppercase tracking-wider transition-colors shrink-0"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Enter 3D Hall ↗</span>
@@ -233,10 +242,10 @@ export default function LandingPage() {
       }`}>
         <div className="max-w-7xl mx-auto">
           {/* Giant UNIVERSE-Style Headline */}
-          <div className={`px-4 sm:px-8 pt-10 pb-6 border-b ${
+          <div className={`px-4 sm:px-8 pt-8 sm:pt-10 pb-5 sm:pb-6 border-b ${
             isLight ? 'border-slate-200/80' : 'border-[#30363d]'
           }`}>
-            <div className={`flex items-center justify-between font-mono text-xs mb-3 ${
+            <div className={`flex items-center justify-between font-mono text-[11px] sm:text-xs mb-3 ${
               isLight ? 'text-slate-500' : 'text-[#8b949e]'
             }`}>
               <span className="flex items-center gap-2 text-[#3fb950]">
@@ -250,10 +259,10 @@ export default function LandingPage() {
 
             {/* Massive Conference Title with Neon Block Accent */}
             <div className="flex items-start justify-between gap-4">
-              <h1 className={`text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter uppercase font-sans leading-none ${
+              <h1 className={`text-4xl sm:text-7xl md:text-9xl font-black tracking-tighter uppercase font-sans leading-none ${
                 isLight ? 'text-slate-800' : 'text-white'
               }`}>
-                EXPO&apos;26<span className="inline-block w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#2ea043] ml-2 -mb-1 align-baseline" /><span className="inline-block w-6 h-6 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#db61a2] -mb-1 align-baseline" />
+                EXPO&apos;26<span className="inline-block w-5 h-5 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#2ea043] ml-1.5 sm:ml-2 -mb-1 align-baseline" /><span className="inline-block w-5 h-5 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#db61a2] -mb-1 align-baseline" />
               </h1>
             </div>
           </div>
@@ -274,23 +283,23 @@ export default function LandingPage() {
             />
 
             {/* Technical Sub-Header with Telemetry */}
-            <div className={`relative z-10 px-4 py-2 border-b flex items-center justify-between text-[11px] font-mono ${
+            <div className={`relative z-10 px-4 py-2 border-b flex items-center justify-between text-[10px] sm:text-[11px] font-mono ${
               isLight ? 'border-slate-200/80 text-slate-600' : 'border-[#21262d] text-[#8b949e]'
             }`}>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                <span>{'[ ELEMENT 02 ] :: INTERACTIVE PHYSICS WORDMARK'}</span>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
+                <span className="truncate">{'[ ELEMENT 02 ] :: INTERACTIVE PHYSICS WORDMARK'}</span>
               </div>
               <span className="hidden md:inline text-[10px] text-slate-400 font-mono tracking-widest">
                 COORDINATES: 28.6479° N, 77.3764° E // AUDITORIUM MAIN
               </span>
-              <span className={isLight ? 'text-blue-600 font-semibold' : 'text-[#58a6ff]'}>
-                SPRING DYNAMICS ACTIVE
+              <span className={`shrink-0 ${isLight ? 'text-blue-600 font-semibold' : 'text-[#58a6ff]'}`}>
+                SPRING DYNAMICS
               </span>
             </div>
 
             {/* Canvas Container with Balanced Proportions */}
-            <div className="relative z-10" style={{ width: '100%', height: '190px' }}>
+            <div className="relative z-10" style={{ width: '100%', height: isMobile ? '150px' : '190px' }}>
               {/* Corner Blueprint Crosshairs */}
               <span className="absolute top-2 left-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
               <span className="absolute top-2 right-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
@@ -302,12 +311,12 @@ export default function LandingPage() {
                 color={isLight ? '#1d4ed8' : '#38bdf8'}
                 accentColor={isLight ? '#3b82f6' : '#60a5fa'}
                 fontFamily='"Space Grotesk", sans-serif'
-                fontSize={78}
+                fontSize={isMobile ? 36 : 74}
                 fontWeight={800}
                 letterSpacing={0}
                 guides={true}
-                specks={16}
-                reach={180}
+                specks={isMobile ? 8 : 16}
+                reach={isMobile ? 120 : 180}
                 bounce={0.4}
               />
             </div>
@@ -451,13 +460,13 @@ export default function LandingPage() {
             separator="✦"
             curviness={90}
             tilt={0}
-            fontSize={46}
+            fontSize={isMobile ? 26 : 46}
             fontWeight={800}
             letterSpacing={2}
             uppercase
             ribbon
             ribbonColor={isLight ? '#4338ca' : '#5227FF'}
-            ribbonWidth={86}
+            ribbonWidth={isMobile ? 54 : 86}
             edgeFade={0}
             cross={false}
             crossAngle={16}
@@ -475,7 +484,7 @@ export default function LandingPage() {
           <div
             style={{
               width: '100%',
-              height: '600px',
+              height: isMobile ? '380px' : '600px',
               position: 'relative',
               maskImage: 'linear-gradient(to bottom, black 0%, black 65%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 65%, transparent 100%)'
@@ -489,8 +498,8 @@ export default function LandingPage() {
               }
               shape="horizon"
               characters=" =+xX0S8#@"
-              cellSize={18}
-              density={0.8}
+              cellSize={isMobile ? 14 : 18}
+              density={isMobile ? 0.65 : 0.8}
               softness={0.7}
               gradientOpacity={0.85}
               lightMode={isLight}
@@ -548,7 +557,7 @@ export default function LandingPage() {
             </div>
 
             {/* Filter Cells */}
-            <div className={`flex items-center border rounded text-xs font-mono p-0.5 ${
+            <div className={`flex items-center border rounded text-xs font-mono p-0.5 overflow-x-auto max-w-full ${
               isLight ? 'border-slate-300/80 bg-[#eef2f6]/90 backdrop-blur-md shadow-xs' : 'border-[#30363d] bg-[#0d1117]'
             }`}>
               {(['all', 'Physical', 'Digital', 'Business'] as const).map((z) => (

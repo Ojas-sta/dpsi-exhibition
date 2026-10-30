@@ -8,6 +8,7 @@ import { useExhibitionStore } from '@/store/useExhibitionStore';
 export default function AmbientBackground() {
   const pathname = usePathname();
   const theme = useExhibitionStore((state) => state.theme);
+  const isMobile = useExhibitionStore((state) => state.isMobile);
   const isLight = theme === 'light';
 
   // Do not render behind the dedicated 3D exhibition room
@@ -27,8 +28,8 @@ export default function AmbientBackground() {
         accentColor={isLight ? '#60a5fa' : '#A855F7'}
         placement="full"
         material="glass"
-        count={isLight ? 420 : 1300}
-        speed={isLight ? 0.5 : 0.8}
+        count={isLight ? (isMobile ? 120 : 420) : (isMobile ? 250 : 1300)}
+        speed={isLight ? (isMobile ? 0.35 : 0.5) : (isMobile ? 0.5 : 0.8)}
         lightMode={isLight}
         style={{ width: '100%', height: '100%' }}
       />

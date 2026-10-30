@@ -160,10 +160,10 @@ export default function TopNavHUD() {
 
         {/* Right: Controls & Login (ALWAYS ANCHORED, NEVER CUT OFF) */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto">
-          {/* Mobile/Tablet Search Button */}
+          {/* Mobile/Tablet Search Button (Shown on tablet, dock handles on phone) */}
           <button
             onClick={() => setSearchOpen(true)}
-            className={`lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl border flex items-center justify-center transition-all ${
+            className={`hidden sm:flex lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl border items-center justify-center transition-all ${
               isLight
                 ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
                 : 'bg-slate-900/90 border-slate-800 text-slate-300 hover:text-white'
@@ -230,10 +230,10 @@ export default function TopNavHUD() {
             </button>
           </div>
 
-          {/* Live Leaderboard Button */}
+          {/* Live Leaderboard Button (Tablet & Desktop, dock handles on phone) */}
           <button
             onClick={() => setLeaderboardOpen(!isLeaderboardOpen)}
-            className={`flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-bold shadow-sm transition-all whitespace-nowrap shrink-0 ${
+            className={`hidden sm:flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl border text-xs font-bold shadow-sm transition-all whitespace-nowrap shrink-0 ${
               isLight
                 ? 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-800'
                 : 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-300'

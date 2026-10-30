@@ -15,7 +15,7 @@ export default function CameraControlsWidget() {
   if (viewMode !== '3d' || isDrawerOpen) return null;
 
   return (
-    <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-center gap-1.5 p-1.5 rounded-2xl backdrop-blur-xl border transition-colors duration-300 shadow-2xl pointer-events-auto ${
+    <div className={`fixed bottom-28 right-3.5 sm:bottom-6 sm:right-6 z-40 flex flex-col items-center gap-1.5 p-1.5 rounded-2xl backdrop-blur-xl border transition-colors duration-300 shadow-2xl pointer-events-auto ${
       isLight
         ? 'bg-white/90 border-slate-200 shadow-slate-300/40 text-slate-800'
         : 'bg-[#090e1a]/85 border-slate-700/60 shadow-black/80 text-white'
