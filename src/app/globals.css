@@ -1,10 +1,17 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #070b14;
-  --foreground: #f1f5f9;
+  --background: #f6f8fa;
+  --foreground: #1f2328;
   --font-sans: var(--font-outfit), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-space-grotesk), monospace;
+}
+
+html.dark {
+  --background: #070b14;
+  --foreground: #f1f5f9;
 }
 
 html, body {
@@ -12,6 +19,7 @@ html, body {
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .font-mono {
