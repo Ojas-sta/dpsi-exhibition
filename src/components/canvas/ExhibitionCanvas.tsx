@@ -32,8 +32,10 @@ function CanvasLoader() {
 }
 
 function SceneSetup() {
+  const theme = useExhibitionStore((state) => state.theme);
+  const isLight = theme === 'light';
   return (
-    <color attach="background" args={['#060913']} />
+    <color attach="background" args={[isLight ? '#dfe6ee' : '#060913']} />
   );
 }
 
@@ -44,13 +46,13 @@ export default function ExhibitionCanvas() {
   const isLight = theme === 'light';
 
   return (
-    <div className={`relative isolate w-full h-[100dvh] select-none touch-none transition-colors duration-500 ${isLight ? 'bg-[#f1f5f9]' : 'bg-[#060913]'}`}>
+    <div className={`relative isolate w-full h-[100dvh] select-none touch-none transition-colors duration-500 ${isLight ? 'bg-[#dfe6ee]' : 'bg-[#060913]'}`}>
       <Suspense fallback={<CanvasLoader />}>
         <Canvas
           shadows={!isMobile}
           camera={{
-            position: isMobile ? [-10, 92, 70] : [-10, 74, 56],
-            fov: isMobile ? 48 : 40,
+            position: isMobile ? [-12, 54, 52] : [-12, 40, 44],
+            fov: isMobile ? 48 : 38,
             near: 0.1,
             far: 2200,
           }}
@@ -64,10 +66,10 @@ export default function ExhibitionCanvas() {
             selectProject(null);
           }}
         >
-          {/* Default Clean Velvet Space Slate Background */}
+          {/* Dynamic Scene Background */}
           <SceneSetup />
 
-          {/* Photorealistic Denoised Milky Way Atmosphere */}
+          {/* Photorealistic Denoised Milky Way / Sky Atmosphere */}
           <MilkyWaySky />
 
           {/* Architectural Solid PBR Floor & Environment (Zero Noise, Zero Banding) */}
@@ -84,12 +86,12 @@ export default function ExhibitionCanvas() {
           {/* Clean Post Processing (Subtle Bloom Only on Emissive LEDs) */}
           <EffectComposer multisampling={isMobile ? 0 : 4}>
             <Bloom
-              luminanceThreshold={1.2}
+              luminanceThreshold={isLight ? 0.9 : 1.2}
               mipmapBlur
-              intensity={0.22}
+              intensity={isLight ? 0.15 : 0.22}
               radius={0.3}
             />
-            <Vignette eskil={false} offset={0.06} darkness={0.3} />
+            <Vignette eskil={false} offset={0.06} darkness={isLight ? 0.05 : 0.28} />
           </EffectComposer>
         </Canvas>
       </Suspense>

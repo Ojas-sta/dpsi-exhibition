@@ -57,14 +57,14 @@ export default function MilkyWaySky() {
         <mesh scale={[-1, 1, 1]}>
           <sphereGeometry args={[950, 32, 24]} />
           <meshBasicMaterial
-            color="#e0f2fe"
+            color="#e2e8f0"
             side={THREE.BackSide}
             toneMapped={false}
             fog={false}
             depthWrite={false}
           />
         </mesh>
-        <ambientLight intensity={0.7} color="#ffffff" />
+        <ambientLight intensity={0.8} color="#ffffff" />
       </group>
     );
   }

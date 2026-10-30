@@ -14,71 +14,71 @@ export type NavZoneId =
 export type ThemeMode = 'light' | 'dark';
 
 export const CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
-  // Zoomed-out master view matching user screenshot: captures Show & Tell, Main Hall, Robotics, and overhead banner
+  // Balanced isometric perspective capturing Show & Tell, Main Hall, and Robotics with clear depth
   overview: {
-    position: [-10, 74, 56],
-    target: [-10, 0, -14],
+    position: [-12, 40, 44],
+    target: [-12, 0.5, -12],
   },
   'zone-1': {
     // Show & Tell angled pavilion
-    position: [-36, 20, 8],
-    target: [-36, 1.2, -7],
+    position: [-36, 18, 12],
+    target: [-36, 1.0, -6],
   },
   'zone-2': {
     // Main Hall comprehensive view
-    position: [12, 34, 28],
-    target: [12, 1.2, 2],
+    position: [-1, 24, 26],
+    target: [-1, 1.0, 0],
   },
   'zone-3': {
     // Robotics arenas
-    position: [-1, 32, -14],
-    target: [-1, 1.2, -36],
+    position: [-1, 22, -14],
+    target: [-1, 1.0, -36],
   },
   physical: {
     // Physical Booths P01-P12
-    position: [13, 26, 12],
-    target: [13, 1.2, -9],
+    position: [-10, 16, 6],
+    target: [-10, 1.0, -8],
   },
   digital: {
     // Digital Booths D01-D12
-    position: [13, 26, 26],
-    target: [13, 1.2, 5],
+    position: [0, 16, 6],
+    target: [0, 1.0, 0],
   },
   business: {
     // Business Booths B01-B07
-    position: [13, 24, 36],
-    target: [13, 1.2, 17],
+    position: [10, 16, 6],
+    target: [10, 1.0, 0],
   },
 };
 
 export const MOBILE_CAMERA_PRESETS: Record<NavZoneId, CameraViewConfig> = {
   overview: {
-    position: [-10, 92, 70],
-    target: [-10, 0, -14],
+    position: [-12, 54, 52],
+    target: [-12, 0.5, -12],
   },
   'zone-1': {
-    position: [-36, 30, 18],
-    target: [-36, 1.2, -6],
+    position: [-36, 26, 18],
+    target: [-36, 1.0, -6],
   },
   'zone-2': {
-    position: [12, 44, 36],
-    target: [12, 1.2, 2],
+    position: [-1, 32, 32],
+    target: [-1, 1.0, 0],
   },
   'zone-3': {
-    position: [-1, 40, -10],
-    target: [-1, 1.2, -36],
+    position: [-1, 30, -8],
+    target: [-1, 1.0, -36],
   },
   physical: {
-    position: [13, 34, 18],
-    target: [13, 1.2, -9],
+    position: [-10, 22, 10],
+    target: [-10, 1.0, -8],
   },
   digital: {
-    position: [13, 34, 32],
-    target: [13, 1.2, 5],
+    position: [0, 22, 10],
+    target: [0, 1.0, 0],
   },
   business: {
-    position: [13, 32, 42],
-    target: [13, 1.2, 17],
+    position: [10, 22, 10],
+    target: [10, 1.0, 0],
   },
 };
 
