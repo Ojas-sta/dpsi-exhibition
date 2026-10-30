@@ -216,24 +216,65 @@ export default function LandingPage() {
           </div>
 
           {/* Element 2: <TechText /> */}
-          <div id="stage" className={`border-b transition-colors ${
-            isLight ? 'border-slate-200/80 bg-white/20 backdrop-blur-[2px]' : 'border-[#30363d] bg-[#050811]/40'
+          <div id="stage" className={`relative border-b transition-colors overflow-hidden ${
+            isLight
+              ? 'border-slate-200/80 bg-white/30 backdrop-blur-[2px]'
+              : 'border-[#30363d] bg-[#050811]/40'
           }`}>
-            <div className={`px-4 py-2 border-b flex items-center justify-between text-[11px] font-mono ${
+            {/* Engineering Blueprint Background Grid */}
+            <div
+              className={`absolute inset-0 pointer-events-none ${
+                isLight
+                  ? 'bg-[linear-gradient(to_right,#0f172a08_1px,transparent_1px),linear-gradient(to_bottom,#0f172a08_1px,transparent_1px)] bg-[size:32px_32px]'
+                  : 'bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:32px_32px]'
+              }`}
+            />
+
+            {/* Technical Sub-Header with Telemetry */}
+            <div className={`relative z-10 px-4 py-2 border-b flex items-center justify-between text-[11px] font-mono ${
               isLight ? 'border-slate-200/80 text-slate-600' : 'border-[#21262d] text-[#8b949e]'
             }`}>
-              <span>{'[ ELEMENT 02 ] :: INTERACTIVE PHYSICS WORDMARK'}</span>
-              <span className={isLight ? 'text-blue-600 font-semibold' : 'text-[#58a6ff]'}>CURSOR INTERACTION ENABLED</span>
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                <span>{'[ ELEMENT 02 ] :: INTERACTIVE PHYSICS WORDMARK'}</span>
+              </div>
+              <span className="hidden md:inline text-[10px] text-slate-400 font-mono tracking-widest">
+                COORDINATES: 28.6415° N, 77.3714° E // AUDITORIUM MAIN
+              </span>
+              <span className={isLight ? 'text-blue-600 font-semibold' : 'text-[#58a6ff]'}>
+                SPRING DYNAMICS ACTIVE
+              </span>
             </div>
-            <div style={{ width: '100%', height: '300px', position: 'relative' }}>
+
+            {/* Canvas Container with Balanced Proportions */}
+            <div className="relative z-10" style={{ width: '100%', height: '190px' }}>
+              {/* Corner Blueprint Crosshairs */}
+              <span className="absolute top-2 left-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
+              <span className="absolute top-2 right-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
+              <span className="absolute bottom-2 left-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
+              <span className="absolute bottom-2 right-3 text-[10px] font-mono text-slate-400 select-none pointer-events-none">＋</span>
+
               <TechText
                 text="DPSI TECH EXPO"
-                color={isLight ? '#1d4ed8' : '#2a75d3'}
+                color={isLight ? '#1d4ed8' : '#38bdf8'}
+                accentColor={isLight ? '#3b82f6' : '#60a5fa'}
                 fontFamily='"Space Grotesk", sans-serif'
-                fontSize={56}
+                fontSize={78}
                 fontWeight={800}
                 letterSpacing={0}
+                guides={true}
+                specks={16}
+                reach={180}
+                bounce={0.4}
               />
+            </div>
+
+            {/* Blueprint Micro-instruction Footer */}
+            <div className={`relative z-10 px-4 py-1.5 border-t flex items-center justify-between text-[10px] font-mono ${
+              isLight ? 'border-slate-200/60 bg-slate-100/50 text-slate-500' : 'border-[#21262d] bg-[#0d1117]/50 text-[#8b949e]'
+            }`}>
+              <span>{'// INTERACTION GUIDE: DRAG CHARACTERS • HOVER TO DISASSEMBLE VECTORS'}</span>
+              <span className="hidden sm:inline">{'PHYSICS ENGINE: VERLET-SPRING'}</span>
             </div>
           </div>
 
