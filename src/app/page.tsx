@@ -20,6 +20,7 @@ import {
   Lock,
   LayoutGrid,
   Image as ImageIcon,
+  QrCode,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
@@ -89,6 +90,7 @@ export default function LandingPage() {
   const setSearchModalOpen = useExhibitionStore((state) => state.setSearchModalOpen);
   const setLeaderboardOpen = useExhibitionStore((state) => state.setLeaderboardOpen);
   const setAuthModalOpen = useExhibitionStore((state) => state.setAuthModalOpen);
+  const setDelegatePassOpen = useExhibitionStore((state) => state.setDelegatePassOpen);
   const user = useExhibitionStore((state) => state.user);
   const votedProjectIds = useExhibitionStore((state) => state.votedProjectIds);
   const markProjectVoted = useExhibitionStore((state) => state.markProjectVoted);
@@ -1931,8 +1933,8 @@ export default function LandingPage() {
                   Toggle the notification bell below to enable audio chime alerts when round evaluations close.
                 </p>
 
-                {/* Element 3: <BellToggle /> in exact previous format */}
-                <div className="flex justify-start mt-5">
+                {/* Element 3: <BellToggle /> + Digital Pass Portal Actions */}
+                <div className="flex flex-wrap items-center gap-3 mt-5">
                   <BellToggle
                     offLabel="Notify me"
                     onLabel="You'll be notified"
@@ -1944,6 +1946,33 @@ export default function LandingPage() {
                     count={3}
                     onChange={(active: boolean) => console.log('active: ', active)}
                   />
+                  <Link
+                    href="/pass"
+                    onClick={() => playClick()}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border font-mono text-xs font-bold uppercase tracking-wider transition-colors active:scale-[0.98] ${
+                      isLight
+                        ? 'bg-white hover:bg-slate-100 border-slate-300 text-slate-900 shadow-xs'
+                        : 'bg-[#161b22] hover:bg-[#21262d] border-[#30363d] text-white'
+                    }`}
+                  >
+                    <QrCode className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span>Open Pass Portal</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClick();
+                      setDelegatePassOpen(true);
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border font-mono text-xs font-semibold transition-colors active:scale-[0.98] ${
+                      isLight
+                        ? 'border-slate-300/80 bg-white/70 hover:bg-white text-slate-700'
+                        : 'border-[#30363d] bg-[#0d1117] hover:bg-[#161b22] text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <span>Delegate Access Code</span>
+                  </button>
                 </div>
               </div>
 
@@ -2006,9 +2035,12 @@ export default function LandingPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex flex-wrap items-center gap-4 text-[11px]">
             <Link href="/expo" className={`hover:underline ${isLight ? 'text-blue-600 font-semibold' : 'text-white'}`}>
               3D Floor Plan
+            </Link>
+            <Link href="/pass" className={`hover:underline ${isLight ? 'text-blue-600 font-semibold' : 'text-white'}`}>
+              Pass Portal
             </Link>
             <a href="#gallery" className={`transition-colors ${isLight ? 'hover:text-slate-900' : 'hover:text-white'}`}>
               Photo View
